@@ -1,0 +1,5 @@
+export enum DonorType {
+    INDIVIDUAL = 'INDIVIDUAL',
+    ORGANIZATION = 'ORGANIZATION',
+    ANONYMOUS = 'ANONYMOUS',
+}

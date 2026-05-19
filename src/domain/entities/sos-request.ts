@@ -1,0 +1,44 @@
+import { Province } from './province';
+import { AdministrativeUnit } from './administrative-unit';
+import { User } from './user';
+import { IotDevice } from './iot-device';
+import { RescueTeam } from './rescue-team';
+import { Casualty } from './casualty';
+import { SosType } from '../enums/sosType.enum';
+import { SosStatus } from '../enums/sosStatus.enum';
+import { Severity } from '../enums/level.enum';
+import { SosSource } from '../enums/sosSource.enum';
+import { DispatchMethod } from '../enums/dispatchMethod.enum';
+
+export class SosRequest {
+  id: number;
+  provinceId: number;
+  adminUnitId: number;
+  userId: number;
+  deviceId?: number;
+  location: any // geometry;
+  requestType: SosType;
+  status: SosStatus;
+  severity: Severity;
+  imageUrls: string;
+  description?: string;
+  source: SosSource;
+  assignedTeamId?: number;
+  assignedBy?: number;
+  assignedAt?: Date;
+  dispatchMethod?: DispatchMethod | null;
+  resolvedAt?: Date;
+  resolvedBy?: number;
+  resolutionNotes?: string;
+  clusterId?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  province: Province;
+  adminUnit: AdministrativeUnit;
+  user: User;
+  iotDevice?: IotDevice | null;
+  assignedTeam?: RescueTeam | null;
+  assigner?: User | null;
+  resolver?: User | null;
+  casualties: Casualty[];
+}

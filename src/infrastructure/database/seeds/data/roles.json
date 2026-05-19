@@ -1,0 +1,30 @@
+[
+  {
+    "name": "SYSTEM_ADMIN",
+    "description": "Quản trị viên toàn hệ thống",
+    "level": 100,
+    "isSystem": true,
+    "isActive": true
+  },
+  {
+    "name": "PROVINCE_ADMIN",
+    "description": "Quản trị viên cấp Tỉnh/Thành phố",
+    "level": 80,
+    "isSystem": true,
+    "isActive": true
+  },
+  {
+    "name": "RESCUE_TEAM_LEADER",
+    "description": "Đội trưởng đội cứu hộ",
+    "level": 50,
+    "isSystem": true,
+    "isActive": true
+  },
+  {
+    "name": "USER",
+    "description": "Người dùng thường",
+    "level": 10,
+    "isSystem": true,
+    "isActive": true
+  }
+]

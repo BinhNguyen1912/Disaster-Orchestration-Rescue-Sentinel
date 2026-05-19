@@ -1,0 +1,8 @@
+export enum WeatherSource {
+    OPEN_METEO = 'OPEN_METEO',
+    OPENWEATHERMAP = 'OPENWEATHERMAP',
+    GDACS = 'GDACS',
+    NASA = 'NASA',
+    NCHMF = 'NCHMF',
+    MANUAL = 'MANUAL',
+}

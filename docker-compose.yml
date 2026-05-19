@@ -1,0 +1,39 @@
+# Docker Compose — PostgreSQL + PostGIS + Redis
+# Chạy: docker compose up -d
+
+services:
+  # === PostgreSQL + PostGIS ===
+  postgres:
+    image: postgis/postgis:15-3.4 # PostgreSQL 15 + PostGIS 3.4
+    container_name: rescue-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123123
+      POSTGRES_DB: rescue_system
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d rescue_system" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # === Redis (Cache + BullMQ) ===
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: rescue-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: [ "CMD", "redis-cli", "ping" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+volumes:
+  postgres_data: # redis_data:

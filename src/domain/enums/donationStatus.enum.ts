@@ -1,0 +1,6 @@
+export enum DonationStatus {
+    PLEDGED = 'PLEDGED',
+    RECEIVED = 'RECEIVED',
+    DISTRIBUTED = 'DISTRIBUTED',
+    CANCELLED = 'CANCELLED',
+}

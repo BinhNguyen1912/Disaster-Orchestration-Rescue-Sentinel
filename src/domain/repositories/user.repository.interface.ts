@@ -1,0 +1,6 @@
+import { User } from '../entities/user';
+import { IBaseRepository } from './base.repository.interface';
+
+export interface IUserRepository extends IBaseRepository<User> {
+  findByIdentifier(identifier: string): Promise<User | null>;
+}

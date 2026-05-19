@@ -1,0 +1,47 @@
+[
+  {
+    "fullName": "System Administrator",
+    "email": "admin@system.com",
+    "phone": "0000000000",
+    "nationalId": "000000000000",
+    "password": "Admin@123",
+    "provinceCode": 1,
+    "roleName": "SYSTEM_ADMIN"
+  },
+  {
+    "fullName": "Admin Hà Nội",
+    "email": "admin.hanoi@system.com",
+    "phone": "0900000001",
+    "nationalId": "000000000001",
+    "password": "Admin@123",
+    "provinceCode": 1,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Hồ Chí Minh",
+    "email": "admin.hcm@system.com",
+    "phone": "0900000079",
+    "nationalId": "000000000079",
+    "password": "Admin@123",
+    "provinceCode": 79,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Hải Phòng",
+    "email": "admin.haiphong@system.com",
+    "phone": "0900000031",
+    "nationalId": "000000000031",
+    "password": "Admin@123",
+    "provinceCode": 31,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Đà Nẵng",
+    "email": "admin.danang@system.com",
+    "phone": "0900000048",
+    "nationalId": "000000000048",
+    "password": "Admin@123",
+    "provinceCode": 48,
+    "roleName": "PROVINCE_ADMIN"
+  }
+]

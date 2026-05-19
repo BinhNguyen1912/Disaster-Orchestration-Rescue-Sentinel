@@ -1,0 +1,42 @@
+import { Province } from './province';
+import { AdministrativeUnit } from './administrative-unit';
+import { User } from './user';
+import { RescueTeamMember } from './rescue-team-member';
+import { DutyLog } from './duty-log';
+import { TeamAchievement } from './team-achievement';
+import { SosRequest } from './sos-request';
+import { Casualty } from './casualty';
+import { TeamType } from '../enums/teamType.enum';
+import { TeamStatus } from '../enums/teamStatus.enum';
+
+export class RescueTeam {
+  id: number;
+  provinceId: number;
+  adminUnitId: number;
+  name: string;
+  code: string;
+  teamType: TeamType;
+  status: TeamStatus;
+  currentLocation?: any // geometry;
+  baseLocation?: any // geometry;
+  coverageArea?: any // geometry;
+  maxCapacity?: number;
+  activeCasesCount: number;
+  specializations: string;
+  equipment?: any;
+  leaderId?: number;
+  totalMissions: number;
+  totalRescued: number;
+  totalHoursActive: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: number;
+  province: Province;
+  adminUnit: AdministrativeUnit;
+  leader?: User | null;
+  members: RescueTeamMember[];
+  dutyLogs: DutyLog[];
+  achievements: TeamAchievement[];
+  sosRequests: SosRequest[];
+  casualties: Casualty[];
+}

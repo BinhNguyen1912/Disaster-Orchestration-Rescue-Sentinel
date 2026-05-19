@@ -1,0 +1,7 @@
+export enum InfraStatus {
+    NORMAL = 'NORMAL',
+    DAMAGED = 'DAMAGED',
+    FLOODED = 'FLOODED',
+    UNDER_MAINTENANCE = 'UNDER_MAINTENANCE',
+    UNKNOWN = 'UNKNOWN',
+}

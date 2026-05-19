@@ -1,0 +1,83 @@
+schema: spec-driven
+
+context: |
+  ## Project: Disaster Rescue Management & Dispatch System (Backend)
+
+  Tech stack: NestJS 11 + TypeScript, PostgreSQL 15 + PostGIS 3, Prisma ORM (v7), Redis + BullMQ, Socket.io, JWT + Dynamic RBAC
+  Architecture: Clean Architecture (4 layers: domain / application / infrastructure / presentation)
+  Multi-tenant: Scoped by province_id in JWT. Every query filters by province_id automatically.
+  ORM: Prisma v7 with @prisma/adapter-pg (driver adapter). Connection via DATABASE_URL env var.
+
+  7 Default Roles: SUPER_ADMIN > PROVINCE_ADMIN > COORDINATOR > AREA_OFFICER > TEAM_LEADER > RESCUE_MEMBER > RESIDENT
+  Dynamic RBAC: Permissions are system-defined. Roles are admin-created via UI. Guard checks permission code, NOT role name.
+
+  SOLID Principles (must follow):
+  - S: Each Use Case does exactly 1 thing. Controller only: validate + call use-case + return.
+  - O: Strategies (Dispatch, Notification) use interfaces. New behavior = new class, not edit old.
+  - L: Repository impls must return domain Entity, never Prisma raw objects.
+  - I: IBaseRepository<T> for CRUD only. Domain-specific methods in dedicated interfaces.
+  - D: Use Cases inject Interfaces (tokens), NEVER inject PrismaService directly.
+
+  Base Repository:
+  - domain/repositories/base.repository.interface.ts -> IBaseRepository<T>
+  - infrastructure/database/prisma/base-prisma.repository.ts -> BasePrismaRepository<T> (abstract)
+  - All repo implementations MUST extend BasePrismaRepository.
+
+  File naming (kebab-case):
+  - Entity:               <name>.entity.ts
+  - Value Object:         <name>.vo.ts
+  - Repository Interface: <name>.repository.interface.ts
+  - Use Case:             <action>-<name>.use-case.ts  (1 class, 1 execute() method)
+  - DTO:                  <action>-<name>.dto.ts
+  - Controller:           <name>.controller.ts
+  - Repository Impl:      prisma-<name>.repository.ts
+  - Guard:                <name>.guard.ts
+  - Module:               <name>.module.ts
+
+  Key rules:
+  - Thin Controllers: validate + call use-case + return. NO business logic.
+  - RBAC via @RequirePermissions('permission:code') decorator + Guard. NEVER if-else in controllers.
+  - Soft delete (deleted_at). Audit trail (created_by, updated_by) on critical tables.
+  - Migrations ONLY via npx prisma migrate dev. NEVER synchronize: true.
+  - PostGIS functions (ST_Distance, ST_Within) ONLY inside infrastructure/database layer.
+  - GIST index required on all geometry columns.
+
+  Reference files:
+  - doc/PROJECT_RULES.md  — Full business requirements + Engineering Rules (Section 19)
+  - doc/RULES_VI.md       — Coding rules (Vietnamese)
+  - doc/RULES_EN.md       — Coding rules (English)
+  - doc/ROADMAP.md        — Development progress tracker
+  - openspec/specs/       — Feature specs (MUST exist before coding)
+  - openspec/changes/     — Changelog after completion
+
+rules:
+  spec:
+    - ALWAYS create a spec file in openspec/specs/<module>/<feature>.md BEFORE writing any code.
+    - Spec must include: Business description, API Contract, BR-* rules applied, Entities affected, Permissions required, Implementation order.
+    - Reference PROJECT_RULES.md section and BR-* codes in every spec.
+
+  proposal:
+    - Keep proposals concise — max 300 words.
+    - Always reference which ROADMAP phase/task this addresses.
+    - Always specify affected layers (domain / application / infrastructure / presentation).
+
+  design:
+    - Follow Clean Architecture: Entity -> Interface -> UseCase -> Repository -> Controller -> Module -> Migration.
+    - Include Prisma migration plan if schema changes.
+    - Specify which permissions from Section 3.3 are required.
+    - Specify which BR-* rules from Section 16 apply.
+
+  tasks:
+    - Break into chunks of max 1-2 hours each.
+    - Order tasks by dependency: Entity first, Controller last.
+    - Include migration as a separate task.
+    - Include changelog (openspec/changes/) as final task.
+
+  ai_checklist:
+    - Step 1: Read PROJECT_RULES.md for business context and BR-* rules.
+    - Step 2: Check openspec/specs/ for existing spec. Create if missing.
+    - Step 3: Identify required permissions from Section 3.3.
+    - Step 4: Code in order — Entity > Interface > UseCase > Repository > Controller > Module > Migration.
+    - Step 5: Never skip a layer. No Prisma in Controllers or Use Cases.
+    - Step 6: Name files per convention (Section 19.2).
+    - Step 7: Write changelog to openspec/changes/ when done.

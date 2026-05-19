@@ -1,0 +1,6 @@
+export enum FloodFrequency {
+    RARE = 'RARE',
+    OCCASIONAL = 'OCCASIONAL',
+    FREQUENT = 'FREQUENT',
+    VERY_FREQUENT = 'VERY_FREQUENT',
+}
