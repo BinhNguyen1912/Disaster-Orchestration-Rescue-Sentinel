@@ -83,4 +83,18 @@ export class User {
   devices: Device[];
   permissionsCreated: Permission[];
   permissionsUpdated: Permission[];
+
+  /**
+   * Lấy roleId đang hoạt động của User tương ứng với một tỉnh thành (mặc định là tỉnh chính của User)
+   */
+  getActiveRoleId(provinceId?: number): number | undefined {
+    const targetProvinceId = provinceId ?? this.provinceId;
+    if (!this.userRoles) return undefined;
+
+    const activeUserRole = this.userRoles.find(
+      (ur) => ur.provinceId === targetProvinceId && ur.isActive,
+    );
+
+    return activeUserRole?.roleId;
+  }
 }
