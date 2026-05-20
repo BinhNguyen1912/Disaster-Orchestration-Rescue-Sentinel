@@ -68,10 +68,18 @@ export abstract class BaseRepository<
       return null;
     }
 
-    const ormDataToUpdate = this.toOrmEntity(data);
+    // Strip undefined values to avoid overwriting with null
+    const cleanData: Partial<OrmEntity> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        (cleanData as any)[key] = value;
+      }
+    }
+
+    // Merge only defined values
     const updatedEntity = await this.repository.save({
       ...existingEntity,
-      ...ormDataToUpdate,
+      ...cleanData,
     });
 
     return this.toDomain(updatedEntity);

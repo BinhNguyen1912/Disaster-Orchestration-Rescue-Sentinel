@@ -41,3 +41,17 @@ This document outlines the core principles and rules for developing this project
   - Quy tắc này được áp dụng liên tục từ buổi hôm nay cho đến khi dự án hoàn thành.
   - Không cần xin phép trước khi cập nhật file này — đây là quy trình bắt buộc.
 
+## 6. Auto-save khi kết thúc buổi code
+- **Trigger:** Khi user nói **"kết thúc"**, **"end"**, **"dừng lại"**, hoặc báo hiệu kết thúc buổi làm việc.
+- **Actions tự động:**
+  1. **Cập nhật PROGRESS.md** — ghi lại lịch sử buổi code, trạng thái task, technical debt phát sinh
+  2. **Cập nhật progress.html** — rebuild dashboard để phản ánh tiến độ mới nhất
+- **Đây là quy trình tự động**, không cần xác nhận từ user. AI thực hiện ngay khi nhận được tín hiệu kết thúc.
+- **Dashboard HTML:** File `progress.html` đặt tại thư mục gốc `be/`, mở trong trình duyệt để xem tiến độ dự án dưới dạng web đẹp thay vì đọc Markdown.
+
+## 7. Dashboard Progress (progress.html)
+- **File:** `be/progress.html` — dashboard web hiển thị tiến độ dự án
+- **Mục đích:** User truy cập nhanh bằng trình duyệt thay vì đọc PROGRESS.md
+- **Nội dung:** Phase overview với progress bars, tables cho tasks/services, security badges, history
+- **Cập nhật:** Mỗi khi PROGRESS.md thay đổi, progress.html cũng phải được sync (bước 2 trong rule #6)
+

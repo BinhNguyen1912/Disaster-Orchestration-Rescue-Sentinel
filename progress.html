@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Dashboard - RescueSystem</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      padding: 30px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 { font-size: 24px; font-weight: 700; }
+    .header .meta { color: #bfdbfe; font-size: 13px; margin-top: 4px; }
+    .header-right { text-align: right; }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+    .refresh-btn {
+      margin-top: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    .refresh-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* Phase Overview */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .phase-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .phase-card h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .phase-card .progress-bar {
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .phase-card .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .phase-card .progress-fill.green { background: var(--green); }
+    .phase-card .progress-fill.yellow { background: var(--yellow); }
+    .phase-card .progress-fill.red { background: var(--red); }
+    .phase-card .percent { font-size: 20px; font-weight: 700; }
+    .phase-card .status {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .status-emoji {
+      font-size: 16px;
+      margin-right: 4px;
+    }
+
+    /* Section */
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .section h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    th { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    tr:hover { background: rgba(255,255,255,0.03); }
+    tr:last-child td { border-bottom: none; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge.done { background: rgba(34,197,94,0.15); color: var(--green); }
+    .badge.progress { background: rgba(234,179,8,0.15); color: var(--yellow); }
+    .badge.todo { background: rgba(239,68,68,0.15); color: var(--red); }
+    .badge.fixed { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+    .note { font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+    /* Auth Features */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .feature-item {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feature-item .check { color: var(--green); font-size: 16px; }
+    .feature-item .name { font-size: 13px; font-weight: 500; }
+    .feature-item .endpoint {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    /* Security section */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .security-item {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .security-item .check { color: var(--green); }
+
+    /* History */
+    .history-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-date {
+      font-size: 12px;
+      color: var(--blue);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .history-content { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Flow diagram */
+    .flow-diagram {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+      color: #a5f3fc;
+    }
+
+    /* Last updated */
+    .last-updated {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .last-updated span { color: var(--blue); }
+
+    @media (max-width: 768px) {
+      .phase-grid { grid-template-columns: 1fr; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>📊 Progress Dashboard</h1>
+        <div class="meta">Disaster Rescue Management System — Backend</div>
+      </div>
+      <div class="header-right">
+        <div class="status-badge">🟡 Phase 1 & 2 — Đang triển khai</div>
+        <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Phase Overview -->
+    <div class="phase-grid">
+      <div class="phase-card">
+        <h3>Phase 1 — Hạ tầng & Foundation</h3>
+        <div class="progress-bar"><div class="progress-fill green" style="width:80%"></div></div>
+        <div class="percent">80%</div>
+        <div class="status">🟡 Đang làm</div>
+      </div>
+      <div class="phase-card">
+        <h3>Phase 2 — Auth & Core Modules</h3>
+        <div class="progress-bar"><div class="progress-fill yellow" style="width:70%"></div></div>
+        <div class="percent">70%</div>
+        <div class="status">🟡 Đang làm</div>
+      </div>
+      <div class="phase-card">
+        <h3>Phase 3 — Nghiệp vụ chính</h3>
+        <div class="progress-bar"><div class="progress-fill red" style="width:0%"></div></div>
+        <div class="percent">0%</div>
+        <div class="status">🔲 Chưa bắt đầu</div>
+      </div>
+      <div class="phase-card">
+        <h3>Phase 4 — Mở rộng</h3>
+        <div class="progress-bar"><div class="progress-fill red" style="width:0%"></div></div>
+        <div class="percent">0%</div>
+        <div class="status">🔲 Chưa bắt đầu</div>
+      </div>
+    </div>
+
+    <!-- Phase 1 Tasks -->
+    <div class="section">
+      <h2>✅ Phase 1: Hạ tầng & Foundation</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Task</th>
+            <th>Trạng thái</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1.1</td><td>Docker Compose (PostgreSQL + PostGIS)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">docker-compose.yml đã có</td></tr>
+          <tr><td>1.2</td><td>Cài dependencies (NestJS, TypeORM, pg...)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">package.json đầy đủ</td></tr>
+          <tr><td>1.3</td><td>Clean Architecture (4 layers)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">4 layer tách biệt rõ ràng</td></tr>
+          <tr><td>1.4</td><td>Config module (env validation, DB)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">ConfigModule.forRoot() global</td></tr>
+          <tr><td>1.5</td><td>Base Repository (CRUD chung)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">base.repository.ts + interface</td></tr>
+          <tr><td>1.6</td><td>Shared Enums</td><td><span class="badge progress">🟡 Đang làm</span></td><td class="note">Gender đã có, còn thiếu một số enum</td></tr>
+          <tr><td>1.7</td><td>Health check endpoint</td><td><span class="badge todo">🔲 Chưa làm</span></td><td class="note"></td></tr>
+          <tr><td>1.8</td><td>ESLint + Prettier + Husky + Commitlint</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">Lint-staged chạy trước mỗi commit</td></tr>
+          <tr><td>1.9</td><td>Swagger UI (/api/docs)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">Bearer Auth + full documentation</td></tr>
+          <tr><td>1.10</td><td>Seed data (63 tỉnh + Admin + Roles)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">npm run seed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Auth Features -->
+    <div class="section">
+      <h2>🟡 Phase 2: Auth Module — Tính năng đã hoàn thành</h2>
+      <div class="feature-grid">
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng nhập</div><div class="endpoint">POST /auth/login</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng ký tài khoản</div><div class="endpoint">POST /auth/register</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Tạo tài khoản nhân viên</div><div class="endpoint">POST /auth/admin/register</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Cấp lại Access Token</div><div class="endpoint">POST /auth/refresh</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng xuất</div><div class="endpoint">POST /auth/logout</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Quên mật khẩu (OTP)</div><div class="endpoint">POST /auth/forgot-password</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đặt lại mật khẩu</div><div class="endpoint">POST /auth/reset-password</div></div></div>
+      </div>
+    </div>
+
+    <!-- Security -->
+    <div class="section">
+      <h2>🔒 Cơ chế bảo mật</h2>
+      <div class="security-grid">
+        <div class="security-item"><span class="check">✅</span> JWT Access Token (15 phút)</div>
+        <div class="security-item"><span class="check">✅</span> Refresh Token UUID, lưu DB</div>
+        <div class="security-item"><span class="check">✅</span> Rotate Refresh Token</div>
+        <div class="security-item"><span class="check">✅</span> bcrypt mã hóa mật khẩu</div>
+        <div class="security-item"><span class="check">✅</span> OTP 6 số, hết hạn 5 phút</div>
+        <div class="security-item"><span class="check">✅</span> Gửi Email thực qua SMTP</div>
+        <div class="security-item"><span class="check">✅</span> HTML email template Handlebars</div>
+        <div class="security-item"><span class="check">✅</span> Revoke toàn bộ phiên khi logout/reset</div>
+        <div class="security-item"><span class="check">✅</span> LocalStrategy xác thực SĐT/Email</div>
+      </div>
+
+      <h2 style="margin-top:20px">🔐 Bảo mật flow Quên mật khẩu (OTP + resetToken)</h2>
+      <div class="flow-diagram">User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) → Lưu DB → Gửi email cho user
+                                        ↓
+                        User gửi: resetToken + OTP + newPassword
+                                        ↓
+                          Server verify 3 điều kiện → Update password → Xóa OTP/resetToken</div>
+      <table style="margin-top:16px">
+        <thead><tr><th>Yếu tố</th><th>Mục đích</th></tr></thead>
+        <tbody>
+          <tr><td><code>resetToken</code></td><td>Là "key" — user truyền trong request reset password, không gửi qua email</td></tr>
+          <tr><td><code>OTP</code></td><td>Là "password" — gửi qua email/SMS, attacker không biết nếu không có quyền truy cập hòm thư</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        <strong>resetToken:</strong> UUID v4 ngẫu nhiên (~122 bit entropy, không đoán được). Dùng 1 lần — sau reset thành công, cả OTP và resetToken đều bị xóa khỏi DB.
+      </div>
+    </div>
+
+    <!-- RBAC -->
+    <div class="section">
+      <h2>👥 Phân quyền (RBAC)</h2>
+      <table>
+        <thead><tr><th>Vai trò</th><th>Level</th><th>Mô tả</th></tr></thead>
+        <tbody>
+          <tr><td>SYSTEM_ADMIN</td><td>100</td><td>Quản trị viên toàn hệ thống</td></tr>
+          <tr><td>PROVINCE_ADMIN</td><td>80</td><td>Quản trị viên cấp Tỉnh/Thành phố</td></tr>
+          <tr><td>RESCUE_TEAM_LEADER</td><td>50</td><td>Đội trưởng đội cứu hộ</td></tr>
+          <tr><td>USER</td><td>10</td><td>Người dùng thường</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;font-size:13px;color:var(--text-muted)">
+        ✅ JwtStrategy — giải mã token, inject userId/provinceId/roleId vào request<br>
+        ✅ JwtAuthGuard — bảo vệ các endpoint yêu cầu đăng nhập<br>
+        ✅ getActiveRoleId(provinceId?) — tự động lấy đúng roleId theo tỉnh thành<br>
+        ✅ Multi-tenant: Một user có thể giữ nhiều vai trò ở nhiều tỉnh (bảng user_role)<br>
+        🔲 Permission Guard (@RequirePermissions) — Chưa làm<br>
+        🔲 Province Scope Guard — Chưa làm
+      </div>
+    </div>
+
+    <!-- Technical Debt -->
+    <div class="section">
+      <h2>📋 Technical Debt</h2>
+      <table>
+        <thead><tr><th>#</th><th>Vấn đề</th><th>Mức độ</th><th>Ghi chú</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>OTP chỉ log ra console khi dùng SĐT (chưa có SMS)</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Cần tích hợp Twilio / ESMS</td></tr>
+          <tr><td>2</td><td>synchronize: true trong TypeORM (chỉ dùng dev)</td><td><span class="badge todo">🔴 Cao</span></td><td class="note">Phải chuyển sang migration trước khi production</td></tr>
+          <tr><td>3</td><td>Permission Guard chưa implement</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Cần trước Phase 3</td></tr>
+          <tr><td>4</td><td>Province Scope Guard chưa implement</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Cần để đảm bảo multi-tenant</td></tr>
+          <tr><td>5</td><td>Chưa có unit test</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Viết test song song với từng module</td></tr>
+          <tr><td>6</td><td>Health check endpoint chưa có</td><td><span class="badge todo">🟢 Thấp</span></td><td class="note"></td></tr>
+          <tr><td>7</td><td>Fix BaseRepository.update() — lọc undefined values tránh ghi đè null</td><td><span class="badge fixed">✅ Đã fix</span></td><td class="note">Bug gây lỗi provinceId khi update OTP</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Phase 3 & 4 -->
+    <div class="section">
+      <h2>🔲 Phase 3 & 4 — Chưa bắt đầu</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <h3 style="font-size:14px;color:var(--text-muted);margin-bottom:12px">Phase 3: Nghiệp vụ chính</h3>
+          <ul style="font-size:13px;color:var(--text-muted);list-style:none">
+            <li>🔲 Module Rescue (đội cứu hộ, thành viên, nhiệm vụ)</li>
+            <li>🔲 Module SOS (gửi SOS, auto-dispatch, WebSocket)</li>
+            <li>🔲 Module Flood Report (báo cáo lũ, xác minh)</li>
+            <li>🔲 Module Casualty (thương vong)</li>
+            <li>🔲 Module Disaster Event (sự kiện thiên tai)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size:14px;color:var(--text-muted);margin-bottom:12px">Phase 4: Mở rộng</h3>
+          <ul style="font-size:13px;color:var(--text-muted);list-style:none">
+            <li>🔲 Module Donation (quyên góp, chiến dịch)</li>
+            <li>🔲 Module Weather Alert (cảnh báo thời tiết, IoT)</li>
+            <li>🔲 Module Message (nhắn tin nội bộ)</li>
+            <li>🔲 Module Audit Log (nhật ký hành động)</li>
+            <li>🔲 GIS Layers (vùng ngập, hạ tầng)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="section">
+      <h2>📅 Lịch sử buổi code</h2>
+      <div class="history-item">
+        <div class="history-date">2026-05-20</div>
+        <div class="history-content">Thiết lập ESLint/Prettier/Husky, tạo AuthModule (Login + JWT), thiết kế kiến trúc Clean Architecture, implement đầy đủ Auth flow (Register, Refresh Token, Logout, Forgot/Reset Password), tạo bảng refresh_token, viết UserResponseDto.fromEntity()</div>
+      </div>
+      <div class="history-item">
+        <div class="history-date">2026-05-20</div>
+        <div class="history-content">Cài @nestjs-modules/mailer + handlebars, tạo MailModule + MailService, thiết kế template email OTP HTML đẹp, tích hợp gửi email thật qua SMTP Gmail khi quên mật khẩu, cập nhật nest-cli.json để copy .hbs sang dist</div>
+      </div>
+      <div class="history-item">
+        <div class="history-date">2026-05-20</div>
+        <div class="history-content">Fix lỗi HandlebarsAdapter import, bổ sung endpoint POST /auth/admin/register cho Admin tạo tài khoản nhân viên với roleId chỉ định, thêm assignRole() method trong IUserRepository</div>
+      </div>
+      <div class="history-item">
+        <div class="history-date">2026-05-20</div>
+        <div class="history-content">Ghi chú bảo mật flow Forgot Password (OTP + resetToken 2-yếu-tố), fix bug BaseRepository.update() ghi đè undefined thành null gây lỗi provinceId</div>
+      </div>
+    </div>
+
+    <div class="last-updated">
+      Lần cập nhật: <span>2026-05-20 (18:30)</span> — AI Assistant tự động cập nhật cuối mỗi buổi code
+    </div>
+
+  </div>
+</body>
+</html>

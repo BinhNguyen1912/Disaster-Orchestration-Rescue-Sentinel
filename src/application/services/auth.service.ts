@@ -18,6 +18,8 @@ import { BaseResponseDto } from '@presentation/common/base-response.dto';
 import { LoginResponseDto } from '@presentation/dtos/auth/login-response.dto';
 import { UserResponseDto } from '@presentation/dtos/auth/user-response.dto';
 import { RegisterDto } from '@presentation/dtos/auth/register.dto';
+import { AdminRegisterDto } from '@presentation/dtos/auth/admin-register.dto';
+import { MailService } from '@infrastructure/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +32,7 @@ export class AuthService {
     private readonly refreshTokenRepository: IRefreshTokenRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   // ──────────────────────────────────────────
@@ -121,6 +124,67 @@ export class AuthService {
   }
 
   // ──────────────────────────────────────────
+  // 3b. ĐĂNG KÝ CHO QUẢN TRỊ VIÊN
+  // ──────────────────────────────────────────
+
+  async adminRegister(
+    dto: AdminRegisterDto,
+    createdBy: number,
+  ): Promise<BaseResponseDto<UserResponseDto>> {
+    // Kiểm tra trùng lặp
+    const existing = await this.userRepository.findByIdentifier(dto.phone);
+    if (existing) {
+      throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
+    }
+    if (dto.email) {
+      const existingEmail = await this.userRepository.findByIdentifier(
+        dto.email,
+      );
+      if (existingEmail) {
+        throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
+      }
+    }
+
+    // Mã hóa mật khẩu
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    // Tạo user mới với role được chỉ định
+    const newUser = await this.userRepository.create({
+      fullName: dto.fullName,
+      phone: dto.phone,
+      email: dto.email,
+      password: hashedPassword,
+      nationalId: dto.nationalId,
+      dateOfBirth: new Date(dto.dateOfBirth),
+      gender: dto.gender,
+      provinceId: dto.provinceId,
+      phoneVerified: false,
+      emailVerified: false,
+      nationalIdVerified: false,
+      trustScore: 50,
+      isVerified: true, // Admin đã verify
+      isActive: true,
+    });
+
+    // Gán role cho user
+    await this.userRepository.assignRole(
+      newUser.id,
+      dto.roleId,
+      dto.provinceId,
+      createdBy,
+    );
+
+    // Load lại user với relations để trả về đầy đủ
+    const userWithRole = await this.userRepository.findById(newUser.id);
+
+    return {
+      statusCode: 201,
+      message: APP_MESSAGES.AUTH.REGISTER_SUCCESS,
+      data: UserResponseDto.fromEntity(userWithRole!),
+    };
+  }
+
+  // ──────────────────────────────────────────
   // 4. CẤP LẠI TOKEN (Rotate Refresh Token)
   // ──────────────────────────────────────────
 
@@ -179,16 +243,11 @@ export class AuthService {
     };
   }
 
-  // ──────────────────────────────────────────
-  // 6. QUÊN MẬT KHẨU – Gửi OTP
-  // ──────────────────────────────────────────
-
   async forgotPassword(
     identifier: string,
   ): Promise<BaseResponseDto<{ resetToken: string }>> {
     const user = await this.userRepository.findByIdentifier(identifier);
     if (!user) {
-      // Trả về thành công giả để tránh lộ thông tin user có tồn tại không
       return {
         statusCode: 200,
         message: APP_MESSAGES.AUTH.OTP_SENT,
@@ -208,10 +267,20 @@ export class AuthService {
       passwordResetToken: resetToken,
     });
 
-    // TODO: Thay bằng dịch vụ gửi SMS/Email thực tế
-    this.logger.warn(
-      `[DEV ONLY] OTP cho ${identifier}: ${otp} (hết hạn lúc ${otpExpires.toISOString()})`,
-    );
+    // Gửi OTP qua Email
+    if (user.email) {
+      await this.mailService.sendOtpResetPassword(
+        user.email,
+        user.fullName,
+        identifier,
+        otp,
+      );
+    } else {
+      // Fallback: log ra console khi chưa có email (dùng SĐT)
+      this.logger.warn(
+        `[DEV ONLY] OTP cho ${identifier}: ${otp} (hết hạn lúc ${otpExpires.toISOString()})`,
+      );
+    }
 
     return {
       statusCode: 200,

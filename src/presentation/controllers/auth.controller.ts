@@ -19,6 +19,7 @@ import {
 import { AuthService } from '../../application/services/auth.service';
 import { LoginDto } from '../dtos/auth/login.dto';
 import { RegisterDto } from '../dtos/auth/register.dto';
+import { AdminRegisterDto } from '../dtos/auth/admin-register.dto';
 import { RefreshTokenRequestDto } from '../dtos/auth/refresh-token-request.dto';
 import { ForgotPasswordDto } from '../dtos/auth/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/auth/reset-password.dto';
@@ -30,9 +31,6 @@ import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // ─────────────────────────────────────────
-  // POST /auth/login
-  // ─────────────────────────────────────────
   @ApiOperation({
     summary: 'Đăng nhập',
     description:
@@ -52,9 +50,6 @@ export class AuthController {
     return this.authService.login(req.user, ip, userAgent);
   }
 
-  // ─────────────────────────────────────────
-  // POST /auth/register
-  // ─────────────────────────────────────────
   @ApiOperation({
     summary: 'Đăng ký tài khoản',
     description: 'Tạo tài khoản người dùng mới',
@@ -71,9 +66,25 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  // ─────────────────────────────────────────
-  // POST /auth/refresh
-  // ─────────────────────────────────────────
+  @ApiOperation({
+    summary: 'Tạo tài khoản cho nhân viên (Admin)',
+    description:
+      'Admin/SysAdmin tạo tài khoản cho nhân viên với vai trò cụ thể (Admin tỉnh, Quản lý cứu hộ, Cứu hộ viên...)',
+  })
+  @ApiBearerAuth()
+  @ApiBody({ type: AdminRegisterDto })
+  @ApiResponse({ status: 201, description: 'Tạo tài khoản thành công' })
+  @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
+  @ApiResponse({ status: 401, description: 'Chưa xác thực' })
+  @ApiResponse({ status: 403, description: 'Không có quyền' })
+  @UseGuards(JwtAuthGuard)
+  @Post('admin/register')
+  @HttpCode(HttpStatus.CREATED)
+  async adminRegister(@Body() dto: AdminRegisterDto, @Request() req: any) {
+    const createdBy = req.user?.userId ?? req.user?.sub;
+    return this.authService.adminRegister(dto, createdBy);
+  }
+
   @ApiOperation({
     summary: 'Cấp lại Access Token',
     description:
@@ -95,9 +106,6 @@ export class AuthController {
     return this.authService.refresh(dto.refreshToken, ip, userAgent);
   }
 
-  // ─────────────────────────────────────────
-  // POST /auth/logout
-  // ─────────────────────────────────────────
   @ApiOperation({
     summary: 'Đăng xuất',
     description: 'Thu hồi Refresh Token hiện tại để đăng xuất khỏi thiết bị',
@@ -112,9 +120,6 @@ export class AuthController {
     return this.authService.logout(dto.refreshToken);
   }
 
-  // ─────────────────────────────────────────
-  // POST /auth/forgot-password
-  // ─────────────────────────────────────────
   @ApiOperation({
     summary: 'Quên mật khẩu',
     description: 'Yêu cầu mã OTP khôi phục mật khẩu (gửi qua Email/SMS)',
@@ -127,9 +132,6 @@ export class AuthController {
     return this.authService.forgotPassword(dto.identifier);
   }
 
-  // ─────────────────────────────────────────
-  // POST /auth/reset-password
-  // ─────────────────────────────────────────
   @ApiOperation({
     summary: 'Đặt lại mật khẩu',
     description: 'Xác nhận OTP và đặt lại mật khẩu mới',

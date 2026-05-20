@@ -9,13 +9,16 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import { RefreshTokenEntity } from '@infrastructure/database/entities/refresh-token.entity';
+import { UserRoleEntity } from '@infrastructure/database/entities/user-role.entity';
 import { UserRepositoryImpl } from '@infrastructure/database/repositories/user.repository';
 import { RefreshTokenRepositoryImpl } from '@infrastructure/database/repositories/refresh-token.repository';
+import { MailModule } from '@infrastructure/mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, RefreshTokenEntity]),
+    TypeOrmModule.forFeature([UserEntity, RefreshTokenEntity, UserRoleEntity]),
     PassportModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

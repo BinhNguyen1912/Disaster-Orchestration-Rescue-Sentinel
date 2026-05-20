@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '@domain/entities/user';
 import { IUserRepository } from '@domain/repositories/user.repository.interface';
 import { UserEntity } from '../entities/user.entity';
+import { UserRoleEntity } from '../entities/user-role.entity';
 import { BaseRepository } from './base.repository';
 
 @Injectable()
@@ -14,6 +15,8 @@ export class UserRepositoryImpl
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserRoleEntity)
+    private readonly userRoleRepository: Repository<UserRoleEntity>,
   ) {
     super(userRepository);
   }
@@ -44,5 +47,21 @@ export class UserRepositoryImpl
       where: { passwordResetToken: resetToken },
     });
     return entity ? this.toDomain(entity) : null;
+  }
+
+  async assignRole(
+    userId: number,
+    roleId: number,
+    provinceId: number,
+    assignedBy?: number,
+  ): Promise<void> {
+    const userRole = this.userRoleRepository.create({
+      userId,
+      roleId,
+      provinceId,
+      assignedBy,
+      isActive: true,
+    });
+    await this.userRoleRepository.save(userRole);
   }
 }

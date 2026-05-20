@@ -1,6 +1,6 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-05-20
+> **Lần cập nhật gần nhất:** 2026-05-20 (18:30)
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
 > **Trạng thái tổng:** 🟡 **Phase 1 & 2 — Đang triển khai**
 
@@ -72,16 +72,23 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 ### 2.2 Module Xác thực (AuthModule) ✅
 
-Đây là module đã hoàn thiện nhất trong hệ thống:
+Đây là module đã hoàn thiện nhất trong hệ thống. Các DTOs đã được tạo trong `src/presentation/dtos/auth/`:
+- `LoginDto` — đăng nhập
+- `RegisterDto` — đăng ký người dân
+- `AdminRegisterDto` — Admin tạo tài khoản nhân viên *(mới)*
+- `ForgotPasswordDto` / `ResetPasswordDto` — quên/khôi phục mật khẩu
+- `RefreshTokenRequestDto` — refresh token
+- `UserResponseDto` — trả về thông tin user
 
 | Tính năng | Endpoint | Trạng thái |
 |-----------|----------|-----------|
 | Đăng nhập | `POST /auth/login` | ✅ Hoàn thành |
-| Đăng ký tài khoản | `POST /auth/register` | ✅ Hoàn thành *(mới)* |
-| Cấp lại Access Token | `POST /auth/refresh` | ✅ Hoàn thành *(mới)* |
-| Đăng xuất | `POST /auth/logout` | ✅ Hoàn thành *(mới)* |
-| Quên mật khẩu (OTP) | `POST /auth/forgot-password` | ✅ Hoàn thành *(mới — log OTP ra console)* |
-| Đặt lại mật khẩu | `POST /auth/reset-password` | ✅ Hoàn thành *(mới)* |
+| Đăng ký tài khoản | `POST /auth/register` | ✅ Hoàn thành |
+| Tạo tài khoản nhân viên (Admin) | `POST /auth/admin/register` | ✅ Hoàn thành *(mới — 2026-05-20)* |
+| Cấp lại Access Token | `POST /auth/refresh` | ✅ Hoàn thành |
+| Đăng xuất | `POST /auth/logout` | ✅ Hoàn thành |
+| Quên mật khẩu (OTP) | `POST /auth/forgot-password` | ✅ Hoàn thành |
+| Đặt lại mật khẩu | `POST /auth/reset-password` | ✅ Hoàn thành |
 
 **Cơ chế bảo mật đã áp dụng:**
 - ✅ JWT Access Token (hạn ngắn, mặc định 15 phút)
@@ -89,8 +96,44 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 - ✅ **Rotate Refresh Token** — token cũ bị revoke sau mỗi lần dùng
 - ✅ Mật khẩu mã hóa bằng `bcrypt` (salt rounds = 10)
 - ✅ OTP 6 số, hết hạn sau 5 phút
+- ✅ OTP gửi qua **Email thực tế** bằng `@nestjs-modules/mailer` + SMTP Gmail
+- ✅ Email template HTML đẹp với Handlebars (từng ô chữ số OTP riêng biệt)
 - ✅ Đăng xuất/Reset mật khẩu tự động revoke toàn bộ phiên
 - ✅ LocalStrategy (Passport) xác thực bằng SĐT hoặc Email
+
+### 2.2.1 Bảo mật flow Quên mật khẩu (OTP + resetToken)
+
+```
+User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) → Lưu DB → Gửi email cho user
+                                        ↓
+                        User gửi: resetToken + OTP + newPassword
+                                        ↓
+                          Server verify 3 điều kiện → Update password → Xóa OTP/resetToken
+```
+
+**Tại sao cần 2 yếu tố (OTP + resetToken)?**
+
+| Yếu tố | Mục đích |
+|--------|----------|
+| `resetToken` | Là "key" — user truyền trong request reset password, không gửi qua email |
+| `OTP` | Là "password" — gửi qua email/SMS, attacker không biết nếu không có quyền truy cập hòm thư |
+
+**Cách tấn công bị chặn:**
+1. Attacker gửi `POST /auth/forgot-password` với email nạn nhân
+2. Server gửi OTP cho nạn nhân (không phải attacker)
+3. Attacker không có OTP → không reset được
+4. Attacker không có resetToken (về client) → không reset được
+5. Attacker cần kiểm soát **cả email lẫn resetToken** mới hack được
+
+**resetToken là gì?**
+- UUID v4 ngẫu nhiên (~122 bit entropy, không đoán được)
+- Không liên quan OTP (không thể suy ra từ OTP)
+- Dùng 1 lần — sau reset thành công, cả OTP và resetToken đều bị xóa khỏi DB
+
+**Điểm yếu tiềm năng (đã mitigate):**
+- OTP brute-force? → Hết hạn sau 5 phút, không đủ thời gian
+- Attacker vào email victim? → Cần resetToken (về client) + OTP → vẫn cần 2 yếu tố
+- Email bị forward/screenshot? → resetToken không gửi qua email, chỉ có OTP
 
 ### 2.3 Phân quyền (RBAC)
 
@@ -148,13 +191,13 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 | # | Vấn đề | Mức độ | Ghi chú |
 |---|--------|--------|---------|
-| 1 | OTP chỉ log ra console, chưa gửi SMS/Email thực tế | 🟡 Trung bình | Cần tích hợp Twilio / SendGrid |
+| 1 | OTP chỉ log ra console khi user dùng SĐT (chưa có SMS) | 🟡 Trung bình | Cần tích hợp Twilio / ESMS |
 | 2 | `synchronize: true` trong TypeORM (chỉ dùng dev) | 🔴 Cao | Phải chuyển sang migration trước khi production |
 | 3 | Permission Guard chưa implement | 🟡 Trung bình | Cần trước Phase 3 |
 | 4 | Province Scope Guard chưa implement | 🟡 Trung bình | Cần để đảm bảo multi-tenant |
 | 5 | Chưa có unit test | 🟡 Trung bình | Viết test song song với từng module |
 | 6 | Health check endpoint chưa có | 🟢 Thấp | |
-| 7 | Refresh token đăng ký chưa được gán role USER mặc định | 🟡 Trung bình | Cần khi hoàn thiện Register flow |
+| 7 | Fix bug `BaseRepository.update()` — lọc undefined values trước khi merge vào entity để tránh ghi đè thành null | ✅ Đã fix | Bug gây lỗi `null value in column "provinceId"` khi update OTP fields |
 
 ---
 
@@ -163,6 +206,10 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 | Ngày | Nội dung công việc |
 |------|--------------------|
 | 2026-05-20 | Thiết lập ESLint/Prettier/Husky, tạo `AuthModule` (Login + JWT), thiết kế kiến trúc Clean Architecture, implement đầy đủ Auth flow (Register, Refresh Token, Logout, Forgot/Reset Password), tạo bảng `refresh_token`, viết `UserResponseDto.fromEntity()` |
+| 2026-05-20 | Cài `@nestjs-modules/mailer` + `handlebars`, tạo `MailModule` + `MailService`, thiết kế template email OTP HTML đẹp, tích hợp gửi email thật qua SMTP Gmail khi quên mật khẩu, cập nhật `nest-cli.json` để copy `.hbs` sang `dist` |
+| 2026-05-20 | Fix lỗi `HandlebarsAdapter` import, bổ sung endpoint `POST /auth/admin/register` cho Admin tạo tài khoản nhân viên (Admin tỉnh, Quản lý cứu hộ, Cứu hộ viên...) với roleId chỉ định, thêm `assignRole()` method trong `IUserRepository` |
+| 2026-05-20 | Ghi chú bảo mật flow Forgot Password (OTP + resetToken 2-yếu-tố), fix bug `BaseRepository.update()` ghi đè undefined thành null gây lỗi `provinceId` |
+| 2026-05-20 | Tạo dashboard web `progress.html` để xem tiến độ bằng trình duyệt thay vì Markdown, bổ sung rules #6/#7 vào `PROJECT_RULES.md` về auto-save khi kết thúc buổi code |
 
 ---
 
