@@ -38,4 +38,11 @@ export class UserRepositoryImpl
 
     return entity ? this.toDomain(entity) : null;
   }
+
+  async findByResetToken(resetToken: string): Promise<User | null> {
+    const entity = await this.userRepository.findOne({
+      where: { passwordResetToken: resetToken },
+    });
+    return entity ? this.toDomain(entity) : null;
+  }
 }

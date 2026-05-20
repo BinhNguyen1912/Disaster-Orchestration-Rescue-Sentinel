@@ -51,6 +51,11 @@ export class User {
   updatedAt: Date;
   lastSeenAt?: Date;
   deletedAt?: Date;
+
+  // Trường hỗ trợ tính năng quên mật khẩu (lưu tạm thời)
+  passwordResetOtp?: string;
+  passwordResetOtpExpires?: Date;
+  passwordResetToken?: string;
   province: Province;
   adminUnit?: AdministrativeUnit | null;
   userRoles: UserRole[];

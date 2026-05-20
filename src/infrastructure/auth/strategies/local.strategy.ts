@@ -2,6 +2,7 @@ import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '../../../application/services/auth.service';
+import { APP_MESSAGES } from '@common/constants/messages.constant';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -15,7 +16,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   async validate(identifier: string, pass: string): Promise<any> {
     const user = await this.authService.validateUser(identifier, pass);
     if (!user) {
-      throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+      throw new UnauthorizedException(APP_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
     return user;
   }

@@ -125,6 +125,16 @@ export class UserEntity {
   @Column({ type: 'timestamp', nullable: true })
   deletedAt?: Date;
 
+  // Các trường hỗ trợ tính năng quên mật khẩu (lưu tạm, xóa sau khi dùng)
+  @Column({ type: 'varchar', nullable: true })
+  passwordResetOtp?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  passwordResetOtpExpires?: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  passwordResetToken?: string;
+
   @ManyToOne(() => ProvinceEntity)
   @JoinColumn({ name: 'provinceId' })
   province: ProvinceEntity;

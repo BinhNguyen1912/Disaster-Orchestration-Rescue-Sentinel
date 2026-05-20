@@ -8,18 +8,20 @@ import { AuthController } from '../../presentation/controllers/auth.controller';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
+import { RefreshTokenEntity } from '@infrastructure/database/entities/refresh-token.entity';
 import { UserRepositoryImpl } from '@infrastructure/database/repositories/user.repository';
+import { RefreshTokenRepositoryImpl } from '@infrastructure/database/repositories/refresh-token.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, RefreshTokenEntity]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1d') as any,
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '15m') as any,
         },
       }),
       inject: [ConfigService],
@@ -33,6 +35,10 @@ import { UserRepositoryImpl } from '@infrastructure/database/repositories/user.r
     {
       provide: 'IUserRepository',
       useClass: UserRepositoryImpl,
+    },
+    {
+      provide: 'IRefreshTokenRepository',
+      useClass: RefreshTokenRepositoryImpl,
     },
   ],
   exports: [AuthService],

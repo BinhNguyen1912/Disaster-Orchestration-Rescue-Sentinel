@@ -28,3 +28,16 @@ This document outlines the core principles and rules for developing this project
   - DO NOT run `git add`, `git commit`, `git push`, or branching commands automatically using the `run_command` tool.
   - ALWAYS display the exact Git commands in code blocks inside the chat response so the user can manually copy and execute them in their own terminal.
   - Explain what the commands do so the user builds muscle memory and understands the professional Git workflow (Husky, Lint-Staged, Conventional Commits).
+
+## 5. Progress Report (PROGRESS.md) — BẮT BUỘC CẬP NHẬT
+- **Goal:** Theo dõi toàn bộ tiến độ dự án, các tính năng đã hoàn thành, phân quyền, và các vấn đề còn tồn đọng.
+- **Action:**
+  - Vào **cuối mỗi buổi code**, AI PHẢI cập nhật file `PROGRESS.md` ở thư mục gốc của project (`be/PROGRESS.md`).
+  - Nội dung cập nhật bao gồm:
+    1. Thêm dòng vào bảng **"Lịch sử buổi code"** với ngày và mô tả công việc đã làm.
+    2. Cập nhật **trạng thái** (✅ / 🟡 / 🔲) của các task tương ứng trong các Phase.
+    3. Bổ sung vào bảng **"Technical Debt"** nếu phát sinh vấn đề kỹ thuật mới.
+    4. Cập nhật **% tiến độ** và trạng thái tổng của từng Phase.
+  - Quy tắc này được áp dụng liên tục từ buổi hôm nay cho đến khi dự án hoàn thành.
+  - Không cần xin phép trước khi cập nhật file này — đây là quy trình bắt buộc.
+
