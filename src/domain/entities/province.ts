@@ -25,11 +25,11 @@ export class Province {
   name: string;
   shortName?: string;
   // Tọa độ điểm trung tâm (Centroid/Point) của tỉnh để định vị nhanh trên bản đồ
-  boundary?: any // geometry; 
-  centerPoint?: any // geometry;
+  boundary?: any; // geometry;
+  centerPoint?: any; // geometry;
   isActive: boolean;
   createdAt: Date;
-  onboardedAt?: Date;  // Thời gian tỉnh này chính thức được số hóa/tích hợp vào hệ thống cứu hộ
+  onboardedAt?: Date; // Thời gian tỉnh này chính thức được số hóa/tích hợp vào hệ thống cứu hộ
   metadata?: any;
   administrativeUnits: AdministrativeUnit[]; // Danh sách các Quận/Huyện, Phường/Xã thuộc tỉnh này
   users: User[];
@@ -53,7 +53,7 @@ export class Province {
   disasterEvents: DisasterEvent[];
   // Các khoản tiền/nhu yếu phẩm tài trợ được gửi đến tỉnh này
   donations: Donation[];
-  donationCampaigns: DonationCampaign[];// Các chiến dịch kêu gọi quyên góp, cứu trợ đang hướng về tỉnh này
+  donationCampaigns: DonationCampaign[]; // Các chiến dịch kêu gọi quyên góp, cứu trợ đang hướng về tỉnh này
   // Lịch sử giao tiếp và trao đổi thông tin
   messages: Message[];
   // Khu vực ngập lụt trong tỉnh
@@ -64,6 +64,6 @@ export class Province {
   weatherAlerts: WeatherAlert[];
   // Các thiết bị IoT được triển khai tại tỉnh , (ví dụ: trạm đo mưa tự động, camera giám sát mực nước)
   iotDevices: IotDevice[];
-  // Lịch sử truy cập/hành động của người dùng trong hệ thống tại tỉnh này  
+  // Lịch sử truy cập/hành động của người dùng trong hệ thống tại tỉnh này
   auditLogs: AuditLog[];
 }

@@ -22,18 +22,11 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@domain/*": [
-        "domain/*"
-      ],
-      "@infrastructure/*": [
-        "infrastructure/*"
-      ],
-      "@common/*": [
-        "common/*"
-      ],
-      "@interface/*": [
-        "interface/*"
-      ]
+      "@domain/*": ["domain/*"],
+      "@infrastructure/*": ["infrastructure/*"],
+      "@common/*": ["common/*"],
+      "@interface/*": ["interface/*"],
+      "@presentation/*": ["presentation/*"]
     }
   }
 }

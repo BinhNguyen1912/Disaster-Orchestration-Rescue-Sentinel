@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserRoleEntity } from './user-role.entity';
@@ -78,11 +88,21 @@ export class UserEntity {
   @Column({ type: 'varchar', nullable: true })
   addressDetail?: string;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  homeLocation?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  homeLocation?: any; // geometry;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  currentLocation?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  currentLocation?: any; // geometry;
 
   @Column({ type: 'float' })
   trustScore: number;
@@ -202,5 +222,4 @@ export class UserEntity {
 
   @OneToMany(() => PermissionEntity, (entity) => entity.updater)
   permissionsUpdated: PermissionEntity[];
-
 }

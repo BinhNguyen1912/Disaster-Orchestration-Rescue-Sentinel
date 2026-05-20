@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
@@ -20,7 +30,7 @@ export class FloodZoneEntity {
   name: string;
 
   @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 4326 })
-  boundary: any // geometry;
+  boundary: any; // geometry;
 
   @Column({ type: 'int' })
   severityLevel: number;
@@ -57,5 +67,4 @@ export class FloodZoneEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'updatedBy' })
   updater?: UserEntity | null;
-
 }

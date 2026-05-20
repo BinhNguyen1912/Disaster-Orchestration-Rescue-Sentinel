@@ -10,7 +10,7 @@ export class InfrastructureLayer {
   adminUnitId: number;
   type: InfraType;
   name: string;
-  location: any // geometry;
+  location: any; // geometry;
   status: InfraStatus;
   lastDredgedAt?: Date;
   lastFloodedAt?: Date;

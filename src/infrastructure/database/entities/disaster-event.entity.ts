@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { DonationEntity } from './donation.entity';
@@ -26,8 +36,13 @@ export class DisasterEventEntity {
   @Column({ type: 'timestamp', nullable: true })
   endedAt?: Date;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'MultiPolygon', srid: 4326, nullable: true })
-  affectedArea?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'MultiPolygon',
+    srid: 4326,
+    nullable: true,
+  })
+  affectedArea?: any; // geometry;
 
   @Column({ type: 'int' })
   totalDeceased: number;
@@ -81,5 +96,4 @@ export class DisasterEventEntity {
 
   @OneToMany(() => DonationCampaignEntity, (entity) => entity.event)
   campaigns: DonationCampaignEntity[];
-
 }

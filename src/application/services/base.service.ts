@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { IBaseRepository } from '../../domain/repositories/base.repository.interface';
 
 export abstract class BaseService<T> {
-  constructor(protected readonly repository: IBaseRepository<T>) { }
+  constructor(protected readonly repository: IBaseRepository<T>) {}
 
   /**
    * Tên của entity dùng để hiển thị lỗi (ví dụ: 'User', 'RescueTeam').
@@ -34,7 +34,9 @@ export abstract class BaseService<T> {
 
     const updatedEntity = await this.repository.update(id, data);
     if (!updatedEntity) {
-      throw new NotFoundException(`${this.entityName} with id ${id} not found after update attempt`);
+      throw new NotFoundException(
+        `${this.entityName} with id ${id} not found after update attempt`,
+      );
     }
     return updatedEntity;
   }
@@ -44,7 +46,9 @@ export abstract class BaseService<T> {
 
     const isDeleted = await this.repository.delete(id);
     if (!isDeleted) {
-      throw new NotFoundException(`Could not delete ${this.entityName} with id ${id}`);
+      throw new NotFoundException(
+        `Could not delete ${this.entityName} with id ${id}`,
+      );
     }
     return true;
   }

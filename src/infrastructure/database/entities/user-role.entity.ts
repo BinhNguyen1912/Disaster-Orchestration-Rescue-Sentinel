@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { UserEntity } from './user.entity';
 import { RoleEntity } from './role.entity';
 import { ProvinceEntity } from './province.entity';
@@ -46,5 +56,4 @@ export class UserRoleEntity {
   @ManyToOne(() => ProvinceEntity)
   @JoinColumn({ name: 'provinceId' })
   province: ProvinceEntity;
-
 }

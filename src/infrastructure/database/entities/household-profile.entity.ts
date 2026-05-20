@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { UserEntity } from './user.entity';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
@@ -21,8 +31,13 @@ export class HouseholdProfileEntity {
   @Column({ type: 'varchar', nullable: true })
   addressDetail?: string;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  homeLocation?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  homeLocation?: any; // geometry;
 
   @Column({ type: 'int', nullable: true })
   floorCount?: number;
@@ -95,5 +110,4 @@ export class HouseholdProfileEntity {
   @ManyToOne(() => AdministrativeUnitEntity)
   @JoinColumn({ name: 'adminUnitId' })
   adminUnit: AdministrativeUnitEntity;
-
 }

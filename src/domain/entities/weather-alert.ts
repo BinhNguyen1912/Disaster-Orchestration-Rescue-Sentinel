@@ -8,7 +8,7 @@ export class WeatherAlert {
   provinceId: number;
   source: WeatherSource;
   alertType: WeatherAlertType;
-  area?: any // geometry;
+  area?: any; // geometry;
   severityLevel: number;
   issuedAt: Date;
   expiresAt?: Date;

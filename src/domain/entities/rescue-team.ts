@@ -17,9 +17,9 @@ export class RescueTeam {
   code: string;
   teamType: TeamType;
   status: TeamStatus;
-  currentLocation?: any // geometry;
-  baseLocation?: any // geometry;
-  coverageArea?: any // geometry;
+  currentLocation?: any; // geometry;
+  baseLocation?: any; // geometry;
+  coverageArea?: any; // geometry;
   maxCapacity?: number;
   activeCasesCount: number;
   specializations: string;

@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
@@ -33,14 +43,29 @@ export class RescueTeamEntity {
   @Column({ type: 'enum', enum: TeamStatus })
   status: TeamStatus;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  currentLocation?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  currentLocation?: any; // geometry;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  baseLocation?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  baseLocation?: any; // geometry;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 4326, nullable: true })
-  coverageArea?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Polygon',
+    srid: 4326,
+    nullable: true,
+  })
+  coverageArea?: any; // geometry;
 
   @Column({ type: 'int', nullable: true })
   maxCapacity?: number;
@@ -101,5 +126,4 @@ export class RescueTeamEntity {
 
   @OneToMany(() => CasualtyEntity, (entity) => entity.rescueTeam)
   casualties: CasualtyEntity[];
-
 }

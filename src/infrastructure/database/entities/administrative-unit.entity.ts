@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { HouseholdProfileEntity } from './household-profile.entity';
@@ -31,11 +41,21 @@ export class AdministrativeUnitEntity {
   @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'MultiPolygon', srid: 4326, nullable: true })
-  boundary?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'MultiPolygon',
+    srid: 4326,
+    nullable: true,
+  })
+  boundary?: any; // geometry;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  centerPoint?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  centerPoint?: any; // geometry;
 
   @ManyToOne(() => ProvinceEntity)
   @JoinColumn({ name: 'provinceId' })
@@ -74,5 +94,4 @@ export class AdministrativeUnitEntity {
 
   @OneToMany(() => InfrastructureLayerEntity, (entity) => entity.adminUnit)
   infrastructureLayers: InfrastructureLayerEntity[];
-
 }

@@ -1,5 +1,5 @@
 export enum ReportStatus {
-    PENDING = 'PENDING',
-    VERIFIED = 'VERIFIED',
-    DISMISSED = 'DISMISSED',
+  PENDING = 'PENDING',
+  VERIFIED = 'VERIFIED',
+  DISMISSED = 'DISMISSED',
 }

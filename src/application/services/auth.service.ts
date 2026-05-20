@@ -3,14 +3,15 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import type { IUserRepository } from '@domain/repositories/user.repository.interface';
 import { JwtPayload } from '@domain/interfaces/jwt-payload.interface';
-import { LoginDto } from '../../presentation/dtos/auth/login.dto';
+import { APP_MESSAGES } from '@common/constants/messages.constant';
+import { LoginDto } from '@presentation/dtos/auth/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('IUserRepository') private readonly userRepository: IUserRepository,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async validateUser(identifier: string, pass: string): Promise<any> {
     const user = await this.userRepository.findByIdentifier(identifier);
@@ -25,9 +26,12 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.validateUser(loginDto.identifier, loginDto.password);
+    const user = await this.validateUser(
+      loginDto.identifier,
+      loginDto.password,
+    );
     if (!user) {
-      throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+      throw new UnauthorizedException(APP_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
     const payload: JwtPayload = {
@@ -37,7 +41,7 @@ export class AuthService {
 
     return {
       statusCode: 200,
-      message: 'Login successful',
+      message: APP_MESSAGES.AUTH.LOGIN_SUCCESS,
       data: {
         accessToken: this.jwtService.sign(payload),
         user: {

@@ -7,7 +7,7 @@ export class IotDevice {
   provinceId: number;
   serialNumber: string;
   ownerId?: number;
-  lastLocation?: any // geometry;
+  lastLocation?: any; // geometry;
   lastSeenAt?: Date;
   batteryLevel?: number;
   simPhoneNumber?: string;

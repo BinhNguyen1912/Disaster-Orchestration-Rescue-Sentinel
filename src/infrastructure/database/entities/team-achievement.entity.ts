@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { RescueTeamEntity } from './rescue-team.entity';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
@@ -44,5 +54,4 @@ export class TeamAchievementEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'awardedBy' })
   awarder?: UserEntity | null;
-
 }

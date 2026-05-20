@@ -21,3 +21,10 @@ This document outlines the core principles and rules for developing this project
 - **Pattern:** Clean Architecture.
 - **Stack:** NestJS, TypeORM, PostgreSQL, PostGIS.
 - **Rule:** Strict separation of concerns between Domain Layer (entities, repository interfaces), Application Layer (services, use cases), Infrastructure Layer (TypeORM entities, repository implementations), and Presentation Layer (Controllers).
+
+## 4. Git Training & Workflow
+- **Goal:** The user wants to learn and memorize Git commands through hands-on practice ("thực tập với git").
+- **Action:**
+  - DO NOT run `git add`, `git commit`, `git push`, or branching commands automatically using the `run_command` tool.
+  - ALWAYS display the exact Git commands in code blocks inside the chat response so the user can manually copy and execute them in their own terminal.
+  - Explain what the commands do so the user builds muscle memory and understands the professional Git workflow (Husky, Lint-Staged, Conventional Commits).

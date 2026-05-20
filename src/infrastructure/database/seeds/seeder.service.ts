@@ -36,7 +36,9 @@ export class SeederService {
     const provinces = JSON.parse(rawData);
 
     for (const province of provinces) {
-      const exists = await this.provinceRepo.findOne({ where: { code: province.code } });
+      const exists = await this.provinceRepo.findOne({
+        where: { code: province.code },
+      });
       if (!exists) {
         await this.provinceRepo.save(this.provinceRepo.create(province));
         this.logger.debug(`Inserted province: ${province.name}`);
@@ -51,7 +53,9 @@ export class SeederService {
     const roles = JSON.parse(rawData);
 
     for (const role of roles) {
-      const exists = await this.roleRepo.findOne({ where: { name: role.name } });
+      const exists = await this.roleRepo.findOne({
+        where: { name: role.name },
+      });
       if (!exists) {
         await this.roleRepo.save(this.roleRepo.create(role));
         this.logger.debug(`Inserted role: ${role.name}`);
@@ -66,18 +70,24 @@ export class SeederService {
       this.logger.warn('admin-users.json not found, skipping admin seeding.');
       return;
     }
-    
+
     const rawData = fs.readFileSync(filePath, 'utf-8');
     const admins = JSON.parse(rawData);
 
     for (const adminData of admins) {
       const { password, provinceCode, roleName, ...userData } = adminData;
 
-      const adminExists = await this.userRepo.findOne({ where: { email: userData.email } });
+      const adminExists = await this.userRepo.findOne({
+        where: { email: userData.email },
+      });
       if (!adminExists) {
-        const province = await this.provinceRepo.findOne({ where: { code: provinceCode } });
+        const province = await this.provinceRepo.findOne({
+          where: { code: provinceCode },
+        });
         if (!province) {
-          this.logger.warn(`Province with code ${provinceCode} not found for admin ${userData.email}`);
+          this.logger.warn(
+            `Province with code ${provinceCode} not found for admin ${userData.email}`,
+          );
           continue;
         }
 
@@ -99,7 +109,7 @@ export class SeederService {
           }),
         );
         this.logger.debug(`Inserted Admin: ${userData.email}`);
-        
+
         // Optionally assign Role explicitly here if there is a UserRole mapping needed.
       }
     }

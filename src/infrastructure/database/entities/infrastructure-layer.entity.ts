@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
@@ -23,7 +33,7 @@ export class InfrastructureLayerEntity {
   name: string;
 
   @Column({ type: 'geometry', spatialFeatureType: 'Geometry', srid: 4326 })
-  location: any // geometry;
+  location: any; // geometry;
 
   @Column({ type: 'enum', enum: InfraStatus })
   status: InfraStatus;
@@ -57,5 +67,4 @@ export class InfrastructureLayerEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'updatedBy' })
   updater?: UserEntity | null;
-
 }

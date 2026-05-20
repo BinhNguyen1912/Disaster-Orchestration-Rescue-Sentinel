@@ -1,10 +1,19 @@
-import { Repository, FindManyOptions, FindOneOptions, DeepPartial, ObjectLiteral } from 'typeorm';
+import {
+  Repository,
+  FindManyOptions,
+  FindOneOptions,
+  DeepPartial,
+  ObjectLiteral,
+} from 'typeorm';
 import { IBaseRepository } from '@domain/repositories/base.repository.interface';
 
-export abstract class BaseRepository<DomainEntity, OrmEntity extends ObjectLiteral> implements IBaseRepository<DomainEntity> {
+export abstract class BaseRepository<
+  DomainEntity,
+  OrmEntity extends ObjectLiteral,
+> implements IBaseRepository<DomainEntity> {
   //DomainEntity: Là thực thể thuần túy chứa logic nghiệp vụ, không phụ thuộc vào framework
   //OrmEntity: Là các Class map trực tiếp với các bảng trong Database của TypeORM
-  constructor(protected readonly repository: Repository<OrmEntity>) { }
+  constructor(protected readonly repository: Repository<OrmEntity>) {}
 
   /**
    * Mỗi DB Entity chưa chắc đã giống 100% với Domain Entity. Vì vậy, class này định nghĩa 2 phương thức trừu tượng (abstract):
@@ -12,7 +21,9 @@ export abstract class BaseRepository<DomainEntity, OrmEntity extends ObjectLiter
    * toOrmEntity(domainEntity): Chuyển đổi dữ liệu từ Domain xuống định dạng mà TypeORM có thể hiểu để lưu vào DB.
    */
   protected abstract toDomain(ormEntity: OrmEntity): DomainEntity;
-  protected abstract toOrmEntity(domainEntity: Partial<DomainEntity>): DeepPartial<OrmEntity>;
+  protected abstract toOrmEntity(
+    domainEntity: Partial<DomainEntity>,
+  ): DeepPartial<OrmEntity>;
 
   async findById(id: number | string): Promise<DomainEntity | null> {
     const options = { where: { id } } as unknown as FindOneOptions<OrmEntity>;
@@ -25,7 +36,9 @@ export abstract class BaseRepository<DomainEntity, OrmEntity extends ObjectLiter
     return entities.map((entity) => this.toDomain(entity));
   }
 
-  async findAndCount(options?: FindManyOptions<OrmEntity>): Promise<[DomainEntity[], number]> {
+  async findAndCount(
+    options?: FindManyOptions<OrmEntity>,
+  ): Promise<[DomainEntity[], number]> {
     const [entities, count] = await this.repository.findAndCount(options);
     return [entities.map((entity) => this.toDomain(entity)), count];
   }
@@ -44,7 +57,10 @@ export abstract class BaseRepository<DomainEntity, OrmEntity extends ObjectLiter
     return savedEntities.map((entity) => this.toDomain(entity));
   }
 
-  async update(id: number | string, data: Partial<DomainEntity>): Promise<DomainEntity | null> {
+  async update(
+    id: number | string,
+    data: Partial<DomainEntity>,
+  ): Promise<DomainEntity | null> {
     const options = { where: { id } } as unknown as FindOneOptions<OrmEntity>;
     const existingEntity = await this.repository.findOne(options);
 

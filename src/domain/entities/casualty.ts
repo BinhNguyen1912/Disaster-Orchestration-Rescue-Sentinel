@@ -14,7 +14,7 @@ export class Casualty {
   sosRequestId?: number;
   rescueTeamId?: number;
   reporterId?: number;
-  location: any // geometry;
+  location: any; // geometry;
   incidentAt?: Date;
   status: CasualtyStatus;
   victimName?: string;

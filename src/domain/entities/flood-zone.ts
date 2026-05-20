@@ -9,7 +9,7 @@ export class FloodZone {
   provinceId: number;
   adminUnitId: number;
   name: string;
-  boundary: any // geometry;
+  boundary: any; // geometry;
   severityLevel: number;
   floodFrequency: FloodFrequency;
   avgDepthCm?: number;

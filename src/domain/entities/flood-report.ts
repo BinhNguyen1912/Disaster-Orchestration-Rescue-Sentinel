@@ -9,7 +9,7 @@ export class FloodReport {
   provinceId: number;
   adminUnitId: number;
   reporterId: number;
-  location: any // geometry;
+  location: any; // geometry;
   reportType: FloodReportType;
   waterDepthCm?: number;
   imageUrls: string;

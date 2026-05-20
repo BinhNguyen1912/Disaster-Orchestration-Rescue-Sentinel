@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { DisasterEventEntity } from './disaster-event.entity';
 import { UserEntity } from './user.entity';
@@ -68,5 +78,4 @@ export class DonationCampaignEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'createdBy' })
   creator?: UserEntity | null;
-
 }

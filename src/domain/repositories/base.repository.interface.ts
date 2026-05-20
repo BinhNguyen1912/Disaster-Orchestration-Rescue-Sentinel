@@ -1,5 +1,4 @@
 export interface IBaseRepository<T> {
-
   findById(id: number | string): Promise<T | null>;
 
   findAll(options?: any): Promise<T[]>;

@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { MessageReadEntity } from './message-read.entity';
@@ -63,5 +73,4 @@ export class MessageEntity {
 
   @OneToMany(() => MessageReadEntity, (entity) => entity.message)
   reads: MessageReadEntity[];
-
 }

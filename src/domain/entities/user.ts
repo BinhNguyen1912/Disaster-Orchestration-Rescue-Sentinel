@@ -42,8 +42,8 @@ export class User {
   nationalIdFrontUrl?: string;
   nationalIdBackUrl?: string;
   addressDetail?: string;
-  homeLocation?: any // geometry;
-  currentLocation?: any // geometry;
+  homeLocation?: any; // geometry;
+  currentLocation?: any; // geometry;
   trustScore: number;
   isVerified: boolean;
   isActive: boolean;

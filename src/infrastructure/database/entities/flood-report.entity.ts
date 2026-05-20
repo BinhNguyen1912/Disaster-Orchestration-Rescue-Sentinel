@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
@@ -20,7 +30,7 @@ export class FloodReportEntity {
   reporterId: number;
 
   @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326 })
-  location: any // geometry;
+  location: any; // geometry;
 
   @Column({ type: 'enum', enum: FloodReportType })
   reportType: FloodReportType;
@@ -67,5 +77,4 @@ export class FloodReportEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'verifiedBy' })
   verifier?: UserEntity | null;
-
 }

@@ -1,4 +1,4 @@
 export enum DispatchMethod {
-    AUTO = 'AUTO',
-    MANUAL = 'MANUAL',
+  AUTO = 'AUTO',
+  MANUAL = 'MANUAL',
 }

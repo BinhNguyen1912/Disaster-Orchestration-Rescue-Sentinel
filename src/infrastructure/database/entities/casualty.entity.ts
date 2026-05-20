@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { SosRequestEntity } from './sos-request.entity';
@@ -29,7 +39,7 @@ export class CasualtyEntity {
   reporterId?: number;
 
   @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326 })
-  location: any // geometry;
+  location: any; // geometry;
 
   @Column({ type: 'timestamp', nullable: true })
   incidentAt?: Date;
@@ -118,5 +128,4 @@ export class CasualtyEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'victimUserId' })
   victim?: UserEntity | null;
-
 }

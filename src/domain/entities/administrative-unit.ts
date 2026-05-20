@@ -17,8 +17,8 @@ export class AdministrativeUnit {
   type: AdministrativeUnitType;
   code: string;
   name: string;
-  boundary?: any // geometry;
-  centerPoint?: any // geometry;
+  boundary?: any; // geometry;
+  centerPoint?: any; // geometry;
   province: Province;
   parent?: AdministrativeUnit | null;
   subUnits: AdministrativeUnit[];

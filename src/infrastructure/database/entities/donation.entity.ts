@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { DisasterEventEntity } from './disaster-event.entity';
 import { UserEntity } from './user.entity';
@@ -102,5 +112,4 @@ export class DonationEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'distributedBy' })
   distributor?: UserEntity | null;
-
 }

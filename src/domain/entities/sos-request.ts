@@ -16,7 +16,7 @@ export class SosRequest {
   adminUnitId: number;
   userId: number;
   deviceId?: number;
-  location: any // geometry;
+  location: any; // geometry;
   requestType: SosType;
   status: SosStatus;
   severity: Severity;

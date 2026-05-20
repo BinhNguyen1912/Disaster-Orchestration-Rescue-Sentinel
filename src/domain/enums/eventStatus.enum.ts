@@ -1,5 +1,5 @@
 export enum EventStatus {
-    ONGOING = 'ONGOING',
-    RESOLVED = 'RESOLVED',
-    ARCHIVED = 'ARCHIVED',
+  ONGOING = 'ONGOING',
+  RESOLVED = 'RESOLVED',
+  ARCHIVED = 'ARCHIVED',
 }

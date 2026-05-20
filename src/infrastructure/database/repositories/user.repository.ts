@@ -7,7 +7,10 @@ import { UserEntity } from '../entities/user.entity';
 import { BaseRepository } from './base.repository';
 
 @Injectable()
-export class UserRepositoryImpl extends BaseRepository<User, UserEntity> implements IUserRepository {
+export class UserRepositoryImpl
+  extends BaseRepository<User, UserEntity>
+  implements IUserRepository
+{
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
@@ -29,10 +32,7 @@ export class UserRepositoryImpl extends BaseRepository<User, UserEntity> impleme
 
   async findByIdentifier(identifier: string): Promise<User | null> {
     const entity = await this.userRepository.findOne({
-      where: [
-        { email: identifier },
-        { phone: identifier },
-      ],
+      where: [{ email: identifier }, { phone: identifier }],
       relations: ['userRoles', 'userRoles.role'],
     });
 

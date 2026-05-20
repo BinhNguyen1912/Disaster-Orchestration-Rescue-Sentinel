@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { RescueTeamEntity } from './rescue-team.entity';
 import { UserEntity } from './user.entity';
 import { ProvinceEntity } from './province.entity';
@@ -61,5 +71,4 @@ export class DutyLogEntity {
   @ManyToOne(() => AdministrativeUnitEntity)
   @JoinColumn({ name: 'adminUnitId' })
   adminUnit: AdministrativeUnitEntity;
-
 }

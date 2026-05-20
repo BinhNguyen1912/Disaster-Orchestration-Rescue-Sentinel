@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { SosRequestEntity } from './sos-request.entity';
@@ -17,8 +27,13 @@ export class IotDeviceEntity {
   @Column({ type: 'int', nullable: true })
   ownerId?: number;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  lastLocation?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  lastLocation?: any; // geometry;
 
   @Column({ type: 'timestamp', nullable: true })
   lastSeenAt?: Date;
@@ -45,5 +60,4 @@ export class IotDeviceEntity {
 
   @OneToMany(() => SosRequestEntity, (entity) => entity.iotDevice)
   sosRequests: SosRequestEntity[];
-
 }

@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { WeatherSource } from '@domain/enums/weatherSource.enum';
@@ -18,8 +28,13 @@ export class WeatherAlertEntity {
   @Column({ type: 'enum', enum: WeatherAlertType })
   alertType: WeatherAlertType;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 4326, nullable: true })
-  area?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Polygon',
+    srid: 4326,
+    nullable: true,
+  })
+  area?: any; // geometry;
 
   @Column({ type: 'int' })
   severityLevel: number;
@@ -46,5 +61,4 @@ export class WeatherAlertEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'triggeredBy' })
   triggerer?: UserEntity | null;
-
 }

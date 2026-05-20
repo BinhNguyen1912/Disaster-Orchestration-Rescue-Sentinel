@@ -9,7 +9,7 @@ export class HouseholdProfile {
   provinceId: number;
   adminUnitId: number;
   addressDetail?: string;
-  homeLocation?: any // geometry;
+  homeLocation?: any; // geometry;
   floorCount?: number;
   totalMembers: number;
   elderlyCount: number;

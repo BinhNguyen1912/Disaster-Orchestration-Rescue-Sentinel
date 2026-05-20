@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
 import { RoleEntity } from './role.entity';
@@ -34,11 +44,21 @@ export class ProvinceEntity {
   @Column({ type: 'varchar', nullable: true })
   shortName?: string;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'MultiPolygon', srid: 4326, nullable: true })
-  boundary?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'MultiPolygon',
+    srid: 4326,
+    nullable: true,
+  })
+  boundary?: any; // geometry;
 
-  @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326, nullable: true })
-  centerPoint?: any // geometry;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  centerPoint?: any; // geometry;
 
   @Column({ type: 'boolean' })
   isActive: boolean;
@@ -111,5 +131,4 @@ export class ProvinceEntity {
 
   @OneToMany(() => AuditLogEntity, (entity) => entity.province)
   auditLogs: AuditLogEntity[];
-
 }

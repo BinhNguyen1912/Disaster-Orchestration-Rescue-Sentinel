@@ -12,7 +12,7 @@ export class DisasterEvent {
   eventType: DisasterEventType;
   startedAt: Date;
   endedAt?: Date;
-  affectedArea?: any // geometry;
+  affectedArea?: any; // geometry;
   totalDeceased: number;
   totalInjured: number;
   totalMissing: number;
