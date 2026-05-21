@@ -25,6 +25,7 @@ import { ForgotPasswordDto } from '../dtos/auth/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/auth/reset-password.dto';
 import { LocalAuthGuard } from '../../infrastructure/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
+import { Public } from '../../infrastructure/auth/decorators/public.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -39,6 +40,7 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Đăng nhập thành công' })
   @ApiResponse({ status: 401, description: 'Thông tin đăng nhập không hợp lệ' })
+  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -60,6 +62,7 @@ export class AuthController {
     status: 400,
     description: 'Dữ liệu không hợp lệ hoặc tài khoản đã tồn tại',
   })
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto) {
@@ -96,6 +99,7 @@ export class AuthController {
     status: 401,
     description: 'Refresh token không hợp lệ hoặc đã hết hạn',
   })
+  @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(
@@ -126,6 +130,7 @@ export class AuthController {
   })
   @ApiBody({ type: ForgotPasswordDto })
   @ApiResponse({ status: 200, description: 'Mã OTP đã được gửi' })
+  @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -139,6 +144,7 @@ export class AuthController {
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({ status: 200, description: 'Đặt lại mật khẩu thành công' })
   @ApiResponse({ status: 400, description: 'OTP không hợp lệ hoặc đã hết hạn' })
+  @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
