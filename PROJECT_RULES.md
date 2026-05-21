@@ -55,3 +55,11 @@ This document outlines the core principles and rules for developing this project
 - **Nội dung:** Phase overview với progress bars, tables cho tasks/services, security badges, history
 - **Cập nhật:** Mỗi khi PROGRESS.md thay đổi, progress.html cũng phải được sync (bước 2 trong rule #6)
 
+## 8. Deep Learning & Step-by-Step Mentorship for Complex Features
+- **Goal:** Nâng cao trình độ lập trình cho user thông qua giải thích kỹ thuật chuyên sâu và học tập có định hướng.
+- **Action:**
+  - Với bất kỳ phần nghiệp vụ nào phức tạp hoặc mang tính đột phá về kiến trúc (như Custom Guards, Metaprogramming, Custom Param Decorators, Transaction Management, Multi-tenant, etc.), AI **phải tiến hành chậm rãi**.
+  - Không viết code ồ ạt mà phải **giải thích cặn kẽ tại sao lại thiết kế như vậy** (kiến trúc bên dưới hoạt động ra sao).
+  - Luôn cung cấp các **Keywords (Từ khóa kỹ thuật nâng cao)** tương ứng để người dùng có thể tự tra cứu, nghiên cứu sâu hơn và nâng cao trình độ thực tế.
+
+
