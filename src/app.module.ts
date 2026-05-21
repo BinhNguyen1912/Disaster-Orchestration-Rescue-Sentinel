@@ -5,6 +5,8 @@ import { AppController } from './presentation/controllers/app.controller';
 import { AppService } from './application/services/app.service';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { AuthModule } from './infrastructure/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AccessGuard } from './infrastructure/auth/guards/access.guard';
 
 @Module({
   imports: [
@@ -15,7 +17,13 @@ import { AuthModule } from './infrastructure/auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AccessGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -253,8 +253,8 @@
       </div>
       <div class="phase-card">
         <h3>Phase 2 — Auth & Core Modules</h3>
-        <div class="progress-bar"><div class="progress-fill yellow" style="width:70%"></div></div>
-        <div class="percent">70%</div>
+        <div class="progress-bar"><div class="progress-fill yellow" style="width:75%"></div></div>
+        <div class="percent">75%</div>
         <div class="status">🟡 Đang làm</div>
       </div>
       <div class="phase-card">
@@ -360,6 +360,9 @@
       <div style="margin-top:16px;font-size:13px;color:var(--text-muted)">
         ✅ JwtStrategy — giải mã token, inject userId/provinceId/roleId vào request<br>
         ✅ JwtAuthGuard — bảo vệ các endpoint yêu cầu đăng nhập<br>
+        ✅ LocalAuthGuard — bảo vệ endpoint /auth/login<br>
+        ✅ AccessGuard & @Public() — custom guard toàn cục, bảo vệ toàn hệ thống với 3 chế độ: none (public), api-key, và access (JWT)<br>
+        ✅ @CurrentUser() — decorator lấy thông tin user/payload đã xác thực trong controller<br>
         ✅ getActiveRoleId(provinceId?) — tự động lấy đúng roleId theo tỉnh thành<br>
         ✅ Multi-tenant: Một user có thể giữ nhiều vai trò ở nhiều tỉnh (bảng user_role)<br>
         🔲 Permission Guard (@RequirePermissions) — Chưa làm<br>
@@ -415,6 +418,10 @@
     <div class="section">
       <h2>📅 Lịch sử buổi code</h2>
       <div class="history-item">
+        <div class="history-date">2026-05-21</div>
+        <div class="history-content">Xây dựng Unified Access Guard (none, api-key, access), AccessService, @Public và @CurrentUser decorator. Áp dụng bảo vệ toàn cục ứng dụng (APP_GUARD), bổ sung cấu hình API_KEY và cấu hình các route public.</div>
+      </div>
+      <div class="history-item">
         <div class="history-date">2026-05-20</div>
         <div class="history-content">Thiết lập ESLint/Prettier/Husky, tạo AuthModule (Login + JWT), thiết kế kiến trúc Clean Architecture, implement đầy đủ Auth flow (Register, Refresh Token, Logout, Forgot/Reset Password), tạo bảng refresh_token, viết UserResponseDto.fromEntity()</div>
       </div>
@@ -433,7 +440,7 @@
     </div>
 
     <div class="last-updated">
-      Lần cập nhật: <span>2026-05-20 (18:30)</span> — AI Assistant tự động cập nhật cuối mỗi buổi code
+      Lần cập nhật: <span>2026-05-21 (10:35)</span> — AI Assistant tự động cập nhật cuối mỗi buổi code
     </div>
 
   </div>

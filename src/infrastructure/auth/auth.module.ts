@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from '../../application/services/auth.service';
+import { AccessService } from '../../application/services/access.service';
 import { AuthController } from '../../presentation/controllers/auth.controller';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -33,6 +34,7 @@ import { MailModule } from '@infrastructure/mail/mail.module';
   controllers: [AuthController],
   providers: [
     AuthService,
+    AccessService,
     LocalStrategy,
     JwtStrategy,
     {
@@ -44,6 +46,6 @@ import { MailModule } from '@infrastructure/mail/mail.module';
       useClass: RefreshTokenRepositoryImpl,
     },
   ],
-  exports: [AuthService],
+  exports: [AuthService, AccessService],
 })
 export class AuthModule {}

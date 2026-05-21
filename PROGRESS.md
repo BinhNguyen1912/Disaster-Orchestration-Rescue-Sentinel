@@ -1,6 +1,6 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-05-20 (18:30)
+> **Lần cập nhật gần nhất:** 2026-05-21 (10:35)
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
 > **Trạng thái tổng:** 🟡 **Phase 1 & 2 — Đang triển khai**
 
@@ -11,7 +11,7 @@
 | Phase | Tên | Tiến độ | Trạng thái |
 |-------|-----|---------|-----------|
 | 1 | Hạ tầng & Foundation | ████████░░ 80% | 🟡 Đang làm |
-| 2 | Auth & Core Modules | ███████░░░ 70% | 🟡 Đang làm |
+| 2 | Auth & Core Modules | ████████░░ 75% | 🟡 Đang làm |
 | 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
@@ -150,6 +150,8 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 - ✅ `JwtStrategy` — giải mã token, inject `userId`, `provinceId`, `roleId` vào request
 - ✅ `JwtAuthGuard` — bảo vệ các endpoint yêu cầu đăng nhập
 - ✅ `LocalAuthGuard` — bảo vệ endpoint `/auth/login`
+- ✅ `AccessGuard` & `@Public()` — custom guard toàn cục, bảo vệ toàn hệ thống với 3 chế độ: none (public), api-key, và access (JWT).
+- ✅ `@CurrentUser()` — decorator lấy thông tin user/payload đã xác thực trong controller.
 - ✅ **JWT Payload** chứa: `sub` (userId), `provinceId`, `roleId`, `email`
 - ✅ `getActiveRoleId(provinceId?)` — hàm nghiệp vụ trong Domain Entity `User`, tự động lấy đúng roleId theo tỉnh thành
 - ✅ **Multi-tenant**: Một user có thể giữ nhiều vai trò ở nhiều tỉnh khác nhau (bảng `user_role` làm cầu nối)
@@ -210,6 +212,7 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 | 2026-05-20 | Fix lỗi `HandlebarsAdapter` import, bổ sung endpoint `POST /auth/admin/register` cho Admin tạo tài khoản nhân viên (Admin tỉnh, Quản lý cứu hộ, Cứu hộ viên...) với roleId chỉ định, thêm `assignRole()` method trong `IUserRepository` |
 | 2026-05-20 | Ghi chú bảo mật flow Forgot Password (OTP + resetToken 2-yếu-tố), fix bug `BaseRepository.update()` ghi đè undefined thành null gây lỗi `provinceId` |
 | 2026-05-20 | Tạo dashboard web `progress.html` để xem tiến độ bằng trình duyệt thay vì Markdown, bổ sung rules #6/#7 vào `PROJECT_RULES.md` về auto-save khi kết thúc buổi code |
+| 2026-05-21 | Xây dựng Unified Access Guard (none, api-key, access), AccessService, `@Public` và `@CurrentUser` decorator. Áp dụng bảo vệ toàn cục ứng dụng (APP_GUARD), bổ sung cấu hình API_KEY và cấu hình các route public. |
 
 ---
 

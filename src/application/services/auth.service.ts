@@ -35,10 +35,7 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  // ──────────────────────────────────────────
-  // 1. XÁC THỰC (dùng bởi LocalStrategy)
-  // ──────────────────────────────────────────
-
+  //XÁC THỰC (dùng bởi LocalStrategy)
   async validateUser(identifier: string, pass: string): Promise<User | null> {
     const user = await this.userRepository.findByIdentifier(identifier);
     if (user && user.password) {
@@ -49,10 +46,6 @@ export class AuthService {
     }
     return null;
   }
-
-  // ──────────────────────────────────────────
-  // 2. ĐĂNG NHẬP – Cấp cả Access + Refresh Token
-  // ──────────────────────────────────────────
 
   async login(
     user: User,
@@ -76,12 +69,7 @@ export class AuthService {
     };
   }
 
-  // ──────────────────────────────────────────
-  // 3. ĐĂNG KÝ
-  // ──────────────────────────────────────────
-
   async register(dto: RegisterDto): Promise<BaseResponseDto<UserResponseDto>> {
-    // Kiểm tra trùng lặp
     const existing = await this.userRepository.findByIdentifier(dto.phone);
     if (existing) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
@@ -95,10 +83,8 @@ export class AuthService {
       }
     }
 
-    // Mã hóa mật khẩu
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // Tạo user mới
     const newUser = await this.userRepository.create({
       fullName: dto.fullName,
       phone: dto.phone,
@@ -122,10 +108,6 @@ export class AuthService {
       data: UserResponseDto.fromEntity(newUser),
     };
   }
-
-  // ──────────────────────────────────────────
-  // 3b. ĐĂNG KÝ CHO QUẢN TRỊ VIÊN
-  // ──────────────────────────────────────────
 
   async adminRegister(
     dto: AdminRegisterDto,
