@@ -1,8 +1,8 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-05-21 (10:35)
+> **Lần cập nhật gần nhất:** 2026-05-21 (14:40)
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
-> **Trạng thái tổng:** 🟡 **Phase 1 & 2 — Đang triển khai**
+> **Trạng thái tổng:** 🟡 **Phase 1 ✅ & Phase 2 — Gần hoàn thành**
 
 ---
 
@@ -10,8 +10,8 @@
 
 | Phase | Tên | Tiến độ | Trạng thái |
 |-------|-----|---------|-----------|
-| 1 | Hạ tầng & Foundation | ████████░░ 80% | 🟡 Đang làm |
-| 2 | Auth & Core Modules | ████████░░ 75% | 🟡 Đang làm |
+| 1 | Hạ tầng & Foundation | ██████████ 95% | ✅ Gần xong |
+| 2 | Auth & Core Modules | █████████░ 90% | 🟡 Đang làm |
 | 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
@@ -26,8 +26,8 @@
 | 1.3 | Cấu trúc thư mục Clean Architecture (domain/application/infrastructure/presentation) | ✅ Hoàn thành | 4 layer tách biệt rõ ràng |
 | 1.4 | Config module (env validation, DB connection) | ✅ Hoàn thành | `ConfigModule.forRoot()` global |
 | 1.5 | Base Repository (CRUD chung cho tất cả) | ✅ Hoàn thành | `base.repository.ts` + `base.repository.interface.ts` |
-| 1.6 | Shared Enums (Gender...) | 🟡 Đang làm | `Gender` đã có, còn thiếu một số enum |
-| 1.7 | Health check endpoint | 🔲 Chưa làm | |
+| 1.6 | Shared Enums (Gender...) | ✅ Hoàn thành | Tất cả enums đã có trong `domain/enums/` |
+| 1.7 | Health check endpoint | ✅ Hoàn thành | `@nestjs/terminus`, `GET /health` — DB + Memory check |
 | 1.8 | ESLint + Prettier + Husky + Commitlint | ✅ Hoàn thành | Lint-staged chạy trước mỗi commit |
 | 1.9 | Swagger UI (`/api/docs`) | ✅ Hoàn thành | Bearer Auth + full documentation |
 | 1.10 | Seed data (63 tỉnh + Admin mặc định + Roles) | ✅ Hoàn thành | Script `npm run seed` |
@@ -48,8 +48,8 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 | `RoleEntity` | `role` | ✅ Hoàn thành |
 | `UserRoleEntity` | `user_role` | ✅ Hoàn thành |
 | `RefreshTokenEntity` | `refresh_token` | ✅ Hoàn thành *(mới — buổi hôm nay)* |
-| `PermissionEntity` | `permission` | ✅ Entity có, chưa có logic |
-| `RolePermissionEntity` | `role_permission` | ✅ Entity có, chưa có logic |
+| `PermissionEntity` | `permission` | ✅ Hoàn thành — PermissionGuard + Sync Script |
+| `RolePermissionEntity` | `role_permission` | ✅ Hoàn thành — PermissionGuard + Sync Script |
 | `DeviceEntity` | `device` | ✅ Entity có, chưa có logic |
 | `AuditLogEntity` | `audit_log` | ✅ Entity có, chưa có logic |
 | `HouseholdProfileEntity` | `household_profile` | ✅ Entity có, chưa có logic |
@@ -155,17 +155,20 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 - ✅ **JWT Payload** chứa: `sub` (userId), `provinceId`, `roleId`, `email`
 - ✅ `getActiveRoleId(provinceId?)` — hàm nghiệp vụ trong Domain Entity `User`, tự động lấy đúng roleId theo tỉnh thành
 - ✅ **Multi-tenant**: Một user có thể giữ nhiều vai trò ở nhiều tỉnh khác nhau (bảng `user_role` làm cầu nối)
-- 🔲 **Permission Guard** (`@RequirePermissions()` decorator) — *Chưa làm*
-- 🔲 **Province Scope Guard** (auto-filter theo province_id từ JWT) — *Chưa làm*
+- ✅ **Permission Guard** (`@RequirePermissions()` decorator) — Hoàn thành (2026-05-21)
+- ✅ **Province Scope** (explicit trong Service) — Hoàn thành (2026-05-21)
+- ✅ **Permission Sync Script** (`npm run sync:permissions`) — Hoàn thành (2026-05-21)
+- ✅ **Permission Constants** (`PermModule`, `PermAction`, `ActionSet`, `Permissions`) — Hoàn thành (2026-05-21)
+- ✅ **ROLE_PERMISSION_MATRIX** — Khai báo matrix gọn, auto-generate permissions — Hoàn thành (2026-05-21)
 
 ### 2.4 Kiến trúc Clean Architecture
 
 | Tầng | Nội dung | Trạng thái |
 |------|---------|-----------|
-| **Domain Layer** | 27 Domain Entities + 3 Repository Interfaces | ✅ |
-| **Application Layer** | `AuthService` (đầy đủ 6 methods) | 🟡 (chỉ mới có Auth) |
-| **Infrastructure Layer** | TypeORM Entities, 3 Repository Impls, Strategies, Guards | 🟡 |
-| **Presentation Layer** | `AuthController`, DTOs, Swagger | 🟡 (chỉ mới có Auth) |
+| **Domain Layer** | 27 Domain Entities + 4 Repository Interfaces (thêm IPermissionRepository) | ✅ |
+| **Application Layer** | `AuthService`, `AccessService` | 🟡 |
+| **Infrastructure Layer** | TypeORM Entities, 4 Repository Impls, Strategies, Guards (AccessGuard, PermissionGuard) | ✅ |
+| **Presentation Layer** | `AuthController`, `HealthController`, DTOs, Swagger | 🟡 (chỉ mới có Auth + Health) |
 
 ---
 
@@ -195,11 +198,13 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 |---|--------|--------|---------|
 | 1 | OTP chỉ log ra console khi user dùng SĐT (chưa có SMS) | 🟡 Trung bình | Cần tích hợp Twilio / ESMS |
 | 2 | `synchronize: true` trong TypeORM (chỉ dùng dev) | 🔴 Cao | Phải chuyển sang migration trước khi production |
-| 3 | Permission Guard chưa implement | 🟡 Trung bình | Cần trước Phase 3 |
-| 4 | Province Scope Guard chưa implement | 🟡 Trung bình | Cần để đảm bảo multi-tenant |
+| 3 | Permission Guard chưa implement | ✅ Đã hoàn thành | `PermissionGuard` + `@RequirePermissions()` + Sync Script |
+| 4 | Province Scope chưa implement | ✅ Đã hoàn thành | Explicit trong Service, không dùng Interceptor |
 | 5 | Chưa có unit test | 🟡 Trung bình | Viết test song song với từng module |
-| 6 | Health check endpoint chưa có | 🟢 Thấp | |
+| 6 | Health check endpoint chưa có | ✅ Đã hoàn thành | `@nestjs/terminus`, `GET /health` — DB + Memory |
 | 7 | Fix bug `BaseRepository.update()` — lọc undefined values trước khi merge vào entity để tránh ghi đè thành null | ✅ Đã fix | Bug gây lỗi `null value in column "provinceId"` khi update OTP fields |
+| 8 | Admin users seed thiếu `user_role` mapping → JWT không có roleId | ✅ Đã fix | Đã re-seed, tạo đủ user_role cho 36 admins |
+| 9 | Permission check query DB mỗi request (chưa có Redis cache) | 🟡 Trung bình | Thêm Redis cache layer khi traffic tăng |
 
 ---
 
@@ -213,6 +218,11 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 | 2026-05-20 | Ghi chú bảo mật flow Forgot Password (OTP + resetToken 2-yếu-tố), fix bug `BaseRepository.update()` ghi đè undefined thành null gây lỗi `provinceId` |
 | 2026-05-20 | Tạo dashboard web `progress.html` để xem tiến độ bằng trình duyệt thay vì Markdown, bổ sung rules #6/#7 vào `PROJECT_RULES.md` về auto-save khi kết thúc buổi code |
 | 2026-05-21 | Xây dựng Unified Access Guard (none, api-key, access), AccessService, `@Public` và `@CurrentUser` decorator. Áp dụng bảo vệ toàn cục ứng dụng (APP_GUARD), bổ sung cấu hình API_KEY và cấu hình các route public. |
+| 2026-05-21 | Xây dựng RBAC Permission Guard (`PermissionGuard` + `@RequirePermissions()` decorator), `IPermissionRepository` interface + implementation, đăng ký `PermissionGuard` làm APP_GUARD thứ 2. Cập nhật `JwtStrategy` thêm roleId vào request.user. |
+| 2026-05-21 | Tạo Permission Sync Script (`npm run sync:permissions`) — đồng bộ permissions + role-permission mappings từ config vào DB. Idempotent, upsert, không auto-delete. |
+| 2026-05-21 | Redesign Permission Constants: `PermModule` enum, `PermAction` enum, `HTTP_METHOD_ACTION` mapping, `ActionSet` const, `ROLE_PERMISSION_MATRIX` (khai báo matrix gọn). `Permissions` object auto-generate từ matrix. `PermissionString` type cho type-safe decorator. |
+| 2026-05-21 | Xây dựng Health Check endpoint (`GET /health`) dùng `@nestjs/terminus`. Kiểm tra kết nối DB (TypeORM ping), Memory Heap (< 300MB), Memory RSS (< 500MB). Public endpoint, trả 200 nếu OK, 503 nếu fail. |
+| 2026-05-21 | Chạy lại seeder (xóa 34 admin cũ, tạo mới 36 admins), tạo file `user-role.json` seed data, phát hiện và giải thích lỗi PostgreSQL `user` là keyword reserved. |
 
 ---
 

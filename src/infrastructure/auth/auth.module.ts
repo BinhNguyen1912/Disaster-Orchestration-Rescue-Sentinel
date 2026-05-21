@@ -8,16 +8,26 @@ import { AccessService } from '../../application/services/access.service';
 import { AuthController } from '../../presentation/controllers/auth.controller';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { PermissionGuard } from './guards/permission.guard';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import { RefreshTokenEntity } from '@infrastructure/database/entities/refresh-token.entity';
 import { UserRoleEntity } from '@infrastructure/database/entities/user-role.entity';
+import { PermissionEntity } from '@infrastructure/database/entities/permission.entity';
+import { RolePermissionEntity } from '@infrastructure/database/entities/role-permission.entity';
 import { UserRepositoryImpl } from '@infrastructure/database/repositories/user.repository';
 import { RefreshTokenRepositoryImpl } from '@infrastructure/database/repositories/refresh-token.repository';
+import { PermissionRepositoryImpl } from '@infrastructure/database/repositories/permission.repository';
 import { MailModule } from '@infrastructure/mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, RefreshTokenEntity, UserRoleEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      RefreshTokenEntity,
+      UserRoleEntity,
+      PermissionEntity,
+      RolePermissionEntity,
+    ]),
     PassportModule,
     MailModule,
     JwtModule.registerAsync({
@@ -37,6 +47,7 @@ import { MailModule } from '@infrastructure/mail/mail.module';
     AccessService,
     LocalStrategy,
     JwtStrategy,
+    PermissionGuard,
     {
       provide: 'IUserRepository',
       useClass: UserRepositoryImpl,
@@ -45,7 +56,11 @@ import { MailModule } from '@infrastructure/mail/mail.module';
       provide: 'IRefreshTokenRepository',
       useClass: RefreshTokenRepositoryImpl,
     },
+    {
+      provide: 'IPermissionRepository',
+      useClass: PermissionRepositoryImpl,
+    },
   ],
-  exports: [AuthService, AccessService],
+  exports: [AuthService, AccessService, 'IPermissionRepository'],
 })
 export class AuthModule {}

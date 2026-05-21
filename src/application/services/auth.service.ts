@@ -11,7 +11,10 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import type { IUserRepository } from '@domain/repositories/user.repository.interface';
 import type { IRefreshTokenRepository } from '@domain/repositories/refresh-token.repository.interface';
-import { JwtPayload } from '@domain/interfaces/jwt-payload.interface';
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+} from '@domain/interfaces/jwt-payload.interface';
 import { User } from '@domain/entities/user';
 import { APP_MESSAGES } from '@common/constants/messages.constant';
 import { BaseResponseDto } from '@presentation/common/base-response.dto';
@@ -113,7 +116,6 @@ export class AuthService {
     dto: AdminRegisterDto,
     createdBy: number,
   ): Promise<BaseResponseDto<UserResponseDto>> {
-    // Kiểm tra trùng lặp
     const existing = await this.userRepository.findByIdentifier(dto.phone);
     if (existing) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
@@ -127,10 +129,8 @@ export class AuthService {
       }
     }
 
-    // Mã hóa mật khẩu
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // Tạo user mới với role được chỉ định
     const newUser = await this.userRepository.create({
       fullName: dto.fullName,
       phone: dto.phone,
@@ -144,11 +144,10 @@ export class AuthService {
       emailVerified: false,
       nationalIdVerified: false,
       trustScore: 50,
-      isVerified: true, // Admin đã verify
+      isVerified: true,
       isActive: true,
     });
 
-    // Gán role cho user
     await this.userRepository.assignRole(
       newUser.id,
       dto.roleId,
@@ -156,7 +155,6 @@ export class AuthService {
       createdBy,
     );
 
-    // Load lại user với relations để trả về đầy đủ
     const userWithRole = await this.userRepository.findById(newUser.id);
 
     return {
@@ -165,10 +163,6 @@ export class AuthService {
       data: UserResponseDto.fromEntity(userWithRole!),
     };
   }
-
-  // ──────────────────────────────────────────
-  // 4. CẤP LẠI TOKEN (Rotate Refresh Token)
-  // ──────────────────────────────────────────
 
   async refresh(
     token: string,
@@ -181,7 +175,6 @@ export class AuthService {
       throw new UnauthorizedException(APP_MESSAGES.AUTH.INVALID_REFRESH_TOKEN);
     }
 
-    // Lấy thông tin user
     const user = await this.userRepository.findById(storedToken.userId);
     if (!user) {
       throw new UnauthorizedException(APP_MESSAGES.AUTH.USER_NOT_FOUND);
@@ -192,7 +185,6 @@ export class AuthService {
       isRevoked: true,
     });
 
-    // Cấp cặp token mới
     const { accessToken, refreshToken } = await this.generateTokenPair(
       user,
       ipAddress,
@@ -205,10 +197,6 @@ export class AuthService {
       data: { accessToken, refreshToken },
     };
   }
-
-  // ──────────────────────────────────────────
-  // 5. ĐĂNG XUẤT
-  // ──────────────────────────────────────────
 
   async logout(token: string): Promise<BaseResponseDto<null>> {
     const storedToken = await this.refreshTokenRepository.findByToken(token);
@@ -237,19 +225,16 @@ export class AuthService {
       };
     }
 
-    // Tạo mã OTP 6 số ngẫu nhiên
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
     const resetToken = randomUUID();
 
-    // Lưu vào database
     await this.userRepository.update(user.id, {
       passwordResetOtp: otp,
       passwordResetOtpExpires: otpExpires,
       passwordResetToken: resetToken,
     });
 
-    // Gửi OTP qua Email
     if (user.email) {
       await this.mailService.sendOtpResetPassword(
         user.email,
@@ -271,10 +256,6 @@ export class AuthService {
     };
   }
 
-  // ──────────────────────────────────────────
-  // 7. ĐẶT LẠI MẬT KHẨU
-  // ──────────────────────────────────────────
-
   async resetPassword(
     resetToken: string,
     otp: string,
@@ -294,16 +275,27 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    await Promise.all([
+      // Cập nhật mật khẩu và xóa sạch OTP để tránh dùng lại
+      this.userRepository.update(user.id, {
+        password: hashedPassword,
+        passwordResetOtp: undefined,
+        passwordResetOtpExpires: undefined,
+        passwordResetToken: undefined,
+      }),
+      // Thu hồi toàn bộ refresh token hiện có (bắt đăng nhập lại)
+      this.refreshTokenRepository.revokeAllByUserId(user.id),
+    ]);
     // Cập nhật mật khẩu và xóa sạch OTP để tránh dùng lại
-    await this.userRepository.update(user.id, {
-      password: hashedPassword,
-      passwordResetOtp: undefined,
-      passwordResetOtpExpires: undefined,
-      passwordResetToken: undefined,
-    });
+    // await this.userRepository.update(user.id, {
+    //   password: hashedPassword,
+    //   passwordResetOtp: undefined,
+    //   passwordResetOtpExpires: undefined,
+    //   passwordResetToken: undefined,
+    // });
 
-    // Thu hồi toàn bộ refresh token hiện có (bắt đăng nhập lại)
-    await this.refreshTokenRepository.revokeAllByUserId(user.id);
+    // // Thu hồi toàn bộ refresh token hiện có (bắt đăng nhập lại)
+    // await this.refreshTokenRepository.revokeAllByUserId(user.id);
 
     return {
       statusCode: 200,
@@ -312,26 +304,26 @@ export class AuthService {
     };
   }
 
-  // ──────────────────────────────────────────
-  // PRIVATE HELPERS
-  // ──────────────────────────────────────────
-
   private async generateTokenPair(
     user: User,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload: JwtPayload = {
+    const payload: AccessTokenPayload = {
       sub: user.id,
       provinceId: user.provinceId,
       email: user.email,
       roleId: user.getActiveRoleId(),
     };
+    const refreshPayload: RefreshTokenPayload = {
+      sub: user.id,
+      provinceId: user.provinceId,
+    };
 
     const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(refreshPayload);
 
-    // Refresh Token là UUID ngẫu nhiên, không chứa thông tin nhạy cảm
-    const refreshToken = randomUUID();
+    // const refreshToken = randomUUID();
     const refreshExpiresInDays = parseInt(
       this.configService.get<string>('JWT_REFRESH_EXPIRES_DAYS', '7'),
     );

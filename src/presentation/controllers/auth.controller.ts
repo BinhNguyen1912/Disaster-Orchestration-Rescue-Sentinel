@@ -26,6 +26,8 @@ import { ResetPasswordDto } from '../dtos/auth/reset-password.dto';
 import { LocalAuthGuard } from '../../infrastructure/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
 import { Public } from '../../infrastructure/auth/decorators/public.decorator';
+import { RequirePermissions } from '../../infrastructure/auth/decorators/permissions.decorator';
+import { Permissions } from '@common/constants/permissions.constant';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -81,6 +83,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Chưa xác thực' })
   @ApiResponse({ status: 403, description: 'Không có quyền' })
   @UseGuards(JwtAuthGuard)
+  @RequirePermissions(Permissions.USER_MANAGE)
   @Post('admin/register')
   @HttpCode(HttpStatus.CREATED)
   async adminRegister(@Body() dto: AdminRegisterDto, @Request() req: any) {

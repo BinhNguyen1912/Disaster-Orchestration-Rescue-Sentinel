@@ -2,7 +2,7 @@
   {
     "fullName": "System Administrator",
     "email": "admin@system.com",
-    "phone": "0000000000",
+    "phone": "0900000000",
     "nationalId": "000000000000",
     "password": "Admin@123",
     "provinceCode": 1,
@@ -10,38 +10,308 @@
   },
   {
     "fullName": "Admin Hà Nội",
-    "email": "admin.hanoi@system.com",
+    "email": "admin.hanoi@rescue.gov.vn",
     "phone": "0900000001",
-    "nationalId": "000000000001",
+    "nationalId": "001000000001",
     "password": "Admin@123",
     "provinceCode": 1,
     "roleName": "PROVINCE_ADMIN"
   },
   {
-    "fullName": "Admin Hồ Chí Minh",
-    "email": "admin.hcm@system.com",
-    "phone": "0900000079",
-    "nationalId": "000000000079",
+    "fullName": "Admin Cao Bằng",
+    "email": "admin.caobang@rescue.gov.vn",
+    "phone": "0900000004",
+    "nationalId": "001000000004",
     "password": "Admin@123",
-    "provinceCode": 79,
+    "provinceCode": 4,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Tuyên Quang",
+    "email": "admin.tuyenquang@rescue.gov.vn",
+    "phone": "0900000008",
+    "nationalId": "001000000008",
+    "password": "Admin@123",
+    "provinceCode": 8,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Điện Biên",
+    "email": "admin.dienbien@rescue.gov.vn",
+    "phone": "0900000011",
+    "nationalId": "001000000011",
+    "password": "Admin@123",
+    "provinceCode": 11,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Lai Châu",
+    "email": "admin.laichau@rescue.gov.vn",
+    "phone": "0900000012",
+    "nationalId": "001000000012",
+    "password": "Admin@123",
+    "provinceCode": 12,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Sơn La",
+    "email": "admin.sonla@rescue.gov.vn",
+    "phone": "0900000014",
+    "nationalId": "001000000014",
+    "password": "Admin@123",
+    "provinceCode": 14,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Lào Cai",
+    "email": "admin.laocai@rescue.gov.vn",
+    "phone": "0900000015",
+    "nationalId": "001000000015",
+    "password": "Admin@123",
+    "provinceCode": 15,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Thái Nguyên",
+    "email": "admin.thainguyen@rescue.gov.vn",
+    "phone": "0900000019",
+    "nationalId": "001000000019",
+    "password": "Admin@123",
+    "provinceCode": 19,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Lạng Sơn",
+    "email": "admin.langson@rescue.gov.vn",
+    "phone": "0900000020",
+    "nationalId": "001000000020",
+    "password": "Admin@123",
+    "provinceCode": 20,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Quảng Ninh",
+    "email": "admin.quangninh@rescue.gov.vn",
+    "phone": "0900000022",
+    "nationalId": "001000000022",
+    "password": "Admin@123",
+    "provinceCode": 22,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Bắc Ninh",
+    "email": "admin.bacninh@rescue.gov.vn",
+    "phone": "0900000024",
+    "nationalId": "001000000024",
+    "password": "Admin@123",
+    "provinceCode": 24,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Phú Thọ",
+    "email": "admin.phutho@rescue.gov.vn",
+    "phone": "0900000025",
+    "nationalId": "001000000025",
+    "password": "Admin@123",
+    "provinceCode": 25,
     "roleName": "PROVINCE_ADMIN"
   },
   {
     "fullName": "Admin Hải Phòng",
-    "email": "admin.haiphong@system.com",
+    "email": "admin.haiphong@rescue.gov.vn",
     "phone": "0900000031",
-    "nationalId": "000000000031",
+    "nationalId": "001000000031",
     "password": "Admin@123",
     "provinceCode": 31,
     "roleName": "PROVINCE_ADMIN"
   },
   {
+    "fullName": "Admin Hưng Yên",
+    "email": "admin.hungyen@rescue.gov.vn",
+    "phone": "0900000033",
+    "nationalId": "001000000033",
+    "password": "Admin@123",
+    "provinceCode": 33,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Ninh Bình",
+    "email": "admin.ninhbinh@rescue.gov.vn",
+    "phone": "0900000037",
+    "nationalId": "001000000037",
+    "password": "Admin@123",
+    "provinceCode": 37,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Thanh Hóa",
+    "email": "admin.thanhhoa@rescue.gov.vn",
+    "phone": "0900000038",
+    "nationalId": "001000000038",
+    "password": "Admin@123",
+    "provinceCode": 38,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Nghệ An",
+    "email": "admin.nghean@rescue.gov.vn",
+    "phone": "0900000040",
+    "nationalId": "001000000040",
+    "password": "Admin@123",
+    "provinceCode": 40,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Hà Tĩnh",
+    "email": "admin.hatinh@rescue.gov.vn",
+    "phone": "0900000042",
+    "nationalId": "001000000042",
+    "password": "Admin@123",
+    "provinceCode": 42,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Quảng Trị",
+    "email": "admin.quangtri@rescue.gov.vn",
+    "phone": "0900000044",
+    "nationalId": "001000000044",
+    "password": "Admin@123",
+    "provinceCode": 44,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Huế",
+    "email": "admin.hue@rescue.gov.vn",
+    "phone": "0900000046",
+    "nationalId": "001000000046",
+    "password": "Admin@123",
+    "provinceCode": 46,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
     "fullName": "Admin Đà Nẵng",
-    "email": "admin.danang@system.com",
+    "email": "admin.danang@rescue.gov.vn",
     "phone": "0900000048",
-    "nationalId": "000000000048",
+    "nationalId": "001000000048",
     "password": "Admin@123",
     "provinceCode": 48,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Quảng Ngãi",
+    "email": "admin.quangngai@rescue.gov.vn",
+    "phone": "0900000051",
+    "nationalId": "001000000051",
+    "password": "Admin@123",
+    "provinceCode": 51,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Gia Lai",
+    "email": "admin.gialai@rescue.gov.vn",
+    "phone": "0900000052",
+    "nationalId": "001000000052",
+    "password": "Admin@123",
+    "provinceCode": 52,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Khánh Hòa",
+    "email": "admin.khanhhoa@rescue.gov.vn",
+    "phone": "0900000056",
+    "nationalId": "001000000056",
+    "password": "Admin@123",
+    "provinceCode": 56,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Đắk Lắk",
+    "email": "admin.daklak@rescue.gov.vn",
+    "phone": "0900000066",
+    "nationalId": "001000000066",
+    "password": "Admin@123",
+    "provinceCode": 66,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Lâm Đồng",
+    "email": "admin.lamdong@rescue.gov.vn",
+    "phone": "0900000068",
+    "nationalId": "001000000068",
+    "password": "Admin@123",
+    "provinceCode": 68,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Đồng Nai",
+    "email": "admin.dongnai@rescue.gov.vn",
+    "phone": "0900000075",
+    "nationalId": "001000000075",
+    "password": "Admin@123",
+    "provinceCode": 75,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin TP.Hồ Chí Minh",
+    "email": "admin.hcm@rescue.gov.vn",
+    "phone": "0900000079",
+    "nationalId": "001000000079",
+    "password": "Admin@123",
+    "provinceCode": 79,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Tây Ninh",
+    "email": "admin.tayninh@rescue.gov.vn",
+    "phone": "0900000080",
+    "nationalId": "001000000080",
+    "password": "Admin@123",
+    "provinceCode": 80,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Đồng Tháp",
+    "email": "admin.dongthap@rescue.gov.vn",
+    "phone": "0900000082",
+    "nationalId": "001000000082",
+    "password": "Admin@123",
+    "provinceCode": 82,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Vĩnh Long",
+    "email": "admin.vinhlong@rescue.gov.vn",
+    "phone": "0900000086",
+    "nationalId": "001000000086",
+    "password": "Admin@123",
+    "provinceCode": 86,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin An Giang",
+    "email": "admin.angiang@rescue.gov.vn",
+    "phone": "0900000091",
+    "nationalId": "001000000091",
+    "password": "Admin@123",
+    "provinceCode": 91,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Cần Thơ",
+    "email": "admin.cantho@rescue.gov.vn",
+    "phone": "0900000092",
+    "nationalId": "001000000092",
+    "password": "Admin@123",
+    "provinceCode": 92,
+    "roleName": "PROVINCE_ADMIN"
+  },
+  {
+    "fullName": "Admin Cà Mau",
+    "email": "admin.camau@rescue.gov.vn",
+    "phone": "0900000096",
+    "nationalId": "001000000096",
+    "password": "Admin@123",
+    "provinceCode": 96,
     "roleName": "PROVINCE_ADMIN"
   }
 ]

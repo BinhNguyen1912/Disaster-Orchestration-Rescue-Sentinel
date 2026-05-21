@@ -5,8 +5,10 @@ import { AppController } from './presentation/controllers/app.controller';
 import { AppService } from './application/services/app.service';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { AuthModule } from './infrastructure/auth/auth.module';
+import { HealthModule } from './infrastructure/health/health.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessGuard } from './infrastructure/auth/guards/access.guard';
+import { PermissionGuard } from './infrastructure/auth/guards/permission.guard';
 
 @Module({
   imports: [
@@ -15,13 +17,19 @@ import { AccessGuard } from './infrastructure/auth/guards/access.guard';
     }),
     DatabaseModule,
     AuthModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    // Guard Pipeline: AccessGuard chạy TRƯỚC (xác thực), PermissionGuard chạy SAU (phân quyền)
     {
       provide: APP_GUARD,
       useClass: AccessGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
   ],
 })

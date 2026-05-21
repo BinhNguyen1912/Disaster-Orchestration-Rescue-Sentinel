@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { ProvinceEntity } from '../entities/province.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { UserEntity } from '../entities/user.entity';
+import { UserRoleEntity } from '../entities/user-role.entity';
 import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -19,6 +20,8 @@ export class SeederService {
     private readonly roleRepo: Repository<RoleEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(UserRoleEntity)
+    private readonly userRoleRepo: Repository<UserRoleEntity>,
   ) {}
 
   async seed() {
@@ -77,10 +80,15 @@ export class SeederService {
     for (const adminData of admins) {
       const { password, provinceCode, roleName, ...userData } = adminData;
 
-      const adminExists = await this.userRepo.findOne({
-        where: { email: userData.email },
+      let user = await this.userRepo.findOne({
+        where: [
+          { email: userData.email },
+          { phone: userData.phone },
+          { nationalId: userData.nationalId },
+        ],
       });
-      if (!adminExists) {
+
+      if (!user) {
         const province = await this.provinceRepo.findOne({
           where: { code: provinceCode },
         });
@@ -91,9 +99,19 @@ export class SeederService {
           continue;
         }
 
+        const role = await this.roleRepo.findOne({
+          where: { name: roleName },
+        });
+        if (!role) {
+          this.logger.warn(
+            `Role "${roleName}" not found for admin ${userData.email}`,
+          );
+          continue;
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await this.userRepo.save(
+        user = (await this.userRepo.save(
           this.userRepo.create({
             ...userData,
             password: hashedPassword,
@@ -107,10 +125,39 @@ export class SeederService {
             isActive: true,
             provinceId: province.id,
           }),
-        );
+        )) as unknown as UserEntity;
         this.logger.debug(`Inserted Admin: ${userData.email}`);
+      }
 
-        // Optionally assign Role explicitly here if there is a UserRole mapping needed.
+      // Tạo user_role record nếu chưa có
+      if (!user) continue;
+
+      const role = await this.roleRepo.findOne({
+        where: { name: roleName },
+      });
+      if (!role) continue;
+
+      const province = await this.provinceRepo.findOne({
+        where: { code: provinceCode },
+      });
+      if (!province) continue;
+
+      const existingUserRole = await this.userRoleRepo.findOne({
+        where: { userId: user.id, roleId: role.id, provinceId: province.id },
+      });
+
+      if (!existingUserRole) {
+        await this.userRoleRepo.save(
+          this.userRoleRepo.create({
+            userId: user.id,
+            roleId: role.id,
+            provinceId: province.id,
+            isActive: true,
+          }),
+        );
+        this.logger.debug(
+          `Assigned role ${roleName} to ${userData.email} in province ${provinceCode}`,
+        );
       }
     }
   }
