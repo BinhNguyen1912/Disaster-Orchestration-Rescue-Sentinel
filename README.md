@@ -1,98 +1,239 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Disaster Rescue Management System — Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> Hệ thống quản lý cứu hộ thiên tai | NestJS + PostgreSQL + TypeORM
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/typescript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/nestjs-10.x-red.svg)](https://nestjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-15+-blue.svg)](https://www.postgresql.org/)
+[![PostGIS](https://img.shields.io/badge/postgis-3.x-green.svg)](https://postgis.net/)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📌 Mục lục
 
-## Project setup
+- [Giới thiệu](#-giới-thiệu)
+- [Tính năng](#-tính-năng)
+- [Kiến trúc](#-kiến-trúc)
+- [Công nghệ](#-công-nghệ)
+- [API Endpoints](#-api-endpoints)
+- [Tiến độ](#-tiến-độ)
+- [Setup](#-setup)
 
-```bash
-$ npm install
+---
+
+## 🎯 Giới thiệu
+
+**Disaster Rescue Management System (DORS)** là backend API cho hệ thống quản lý cứu hộ thiên tai tại Việt Nam.
+
+Hệ thống hỗ trợ:
+- Quản lý đội cứu hộ và nhân viên cứu hộ
+- Tiếp nhận và xử lý tín hiệu SOS
+- Báo cáo và theo dõi lũ lụt
+- Quản lý sự kiện thiên tai
+- Cảnh báo thời tiết và IoT
+- Quyên góp và chiến dịch cứu trợ
+
+---
+
+## ⚡ Tính năng
+
+### Đã hoàn thành
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **Authentication** | JWT Access Token + Refresh Token, đăng nhập email/SĐT, OTP email, RBAC phân quyền |
+| **Rescue Teams** | CRUD đội cứu hộ, quản lý thành viên (thêm/xóa/promote), phân loại chuyên môn |
+| **Permissions** | Permission Guard với 80+ permissions, role-permission matrix, sync script |
+| **Health Check** | Kiểm tra DB, memory heap, memory RSS |
+| **API Documentation** | Swagger UI tại `/api/docs` |
+
+### Đang phát triển
+
+| Module | Trạng thái |
+|--------|-----------|
+| SOS Request | 🔄 |
+| Flood Report | 🔄 |
+| Disaster Event | 🔄 |
+| Donation Campaign | 📋 |
+| Weather Alert | 📋 |
+| Message System | 📋 |
+
+---
+
+## 🏗️ Kiến trúc
+
+```
+src/
+├── domain/                    # Business logic
+│   ├── entities/              # Domain entities
+│   ├── enums/                 # Business enums
+│   └── repositories/          # Repository interfaces
+├── application/               # Application services
+│   └── services/              # Business services
+├── infrastructure/            # External concerns
+│   ├── database/             # TypeORM entities & repositories
+│   ├── auth/                  # JWT strategies, guards
+│   ├── mail/                  # Email service
+│   └── rescue-team/          # Module registration
+└── presentation/             # API layer
+    ├── controllers/           # REST controllers
+    └── dtos/                  # Data transfer objects
 ```
 
-## Compile and run the project
+**Clean Architecture layers:**
 
-```bash
-# development
-$ npm run start
+| Layer | Vai trò |
+|-------|---------|
+| **Domain** | Entities, Enums, Repository interfaces (không phụ thuộc gì) |
+| **Application** | Services chứa business logic |
+| **Infrastructure** | Database, Auth, Mail, External services |
+| **Presentation** | Controllers, DTOs, Swagger |
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
+## 🛠️ Công nghệ
+
+| Category | Tech |
+|----------|------|
+| Framework | NestJS 10 |
+| Language | TypeScript 5 |
+| Database | PostgreSQL 15 + PostGIS 3 |
+| ORM | TypeORM |
+| Authentication | JWT + Refresh Token (rotate) |
+| Validation | class-validator + class-transformer |
+| Documentation | Swagger (OpenAPI 3.0) |
+| Email | @nestjs-modules/mailer + Handlebars |
+| Testing | Jest |
+| Linting | ESLint + Prettier + Husky |
+
+---
+
+## 📡 API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/api/v1/auth/login` | Đăng nhập |
+| POST | `/api/v1/auth/register` | Đăng ký tài khoản công dân |
+| POST | `/api/v1/auth/admin/register` | Admin tạo tài khoản nhân viên |
+| POST | `/api/v1/auth/refresh` | Làm mới access token |
+| POST | `/api/v1/auth/logout` | Đăng xuất |
+| POST | `/api/v1/auth/forgot-password` | Yêu cầu OTP |
+| POST | `/api/v1/auth/reset-password` | Đặt lại mật khẩu |
+
+### Rescue Teams
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/api/v1/team-specializations` | Danh sách chuyên môn đội |
+| GET | `/api/v1/rescue-teams` | Danh sách đội cứu hộ (filter, search, phân trang) |
+| POST | `/api/v1/rescue-teams` | Tạo đội cứu hộ |
+| GET | `/api/v1/rescue-teams/:id` | Chi tiết đội |
+| PATCH | `/api/v1/rescue-teams/:id` | Cập nhật đội |
+| PATCH | `/api/v1/rescue-teams/:id/location` | Cập nhật vị trí GPS |
+| DELETE | `/api/v1/rescue-teams/:id` | Xóa đội |
+| POST | `/api/v1/rescue-teams/:id/members` | Thêm thành viên |
+| GET | `/api/v1/rescue-teams/:id/members` | Danh sách thành viên |
+| DELETE | `/api/v1/rescue-teams/:id/members/:memberId` | Xóa thành viên |
+| PATCH | `/api/v1/rescue-teams/:id/members/:memberId/role` | Thay đổi vai trò |
+| POST | `/api/v1/rescue-teams/leave` | Rời đội |
+
+### Health
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/api/v1/health` | Health check (DB + Memory) |
+
+---
+
+## 📊 Tiến độ
+
+```
+Phase 1: Infrastructure & Foundation    ████████████████████ 100% ✅
+Phase 2: Auth & Core Modules            ████████████████████ 100% ✅
+Phase 3: Business Modules
+  ├── Rescue Team Module                ████████████████████ 100% ✅
+  ├── SOS Module                        ░░░░░░░░░░░░░░░░░░░  0%
+  ├── Flood Report                      ░░░░░░░░░░░░░░░░░░░  0%
+  ├── Disaster Event                     ░░░░░░░░░░░░░░░░░░░  0%
+  └── Casualty                           ░░░░░░░░░░░░░░░░░░░  0%
+Phase 4: Extensions                     ░░░░░░░░░░░░░░░░░░░  0%
+  ├── Donation Campaign                  ░░░░░░░░░░░░░░░░░░░  0%
+  ├── Weather Alert                      ░░░░░░░░░░░░░░░░░░░  0%
+  └── Message System                     ░░░░░░░░░░░░░░░░░░░  0%
 ```
 
-## Run tests
+**Stats:**
+- 30+ Domain entities
+- 80+ Permissions configured
+- 15 Unit tests (RescueTeamService)
+- 63 Tỉnh/Thành seed data
+
+---
+
+## 🚀 Setup
 
 ```bash
-# unit tests
-$ npm run test
+# Clone & install
+npm install
 
-# e2e tests
-$ npm run test:e2e
+# Setup database (PostgreSQL + PostGIS via Docker)
+docker-compose up -d
 
-# test coverage
-$ npm run test:cov
+# Run migrations & seed
+npm run seed
+
+# Start development
+npm run dev
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
+
+# Start production
+npm run start:prod
 ```
 
-## Deployment
+### Environment Variables
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=dors
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+# JWT
+JWT_ACCESS_SECRET=your-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Mail (SMTP Gmail)
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=your-email@gmail.com
+MAIL_PASS=your-app-password
+MAIL_FROM_NAME=RescueSystem
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🔐 Security
 
-Check out a few resources that may come in handy when working with NestJS:
+- JWT Access Token (15 phút) + Refresh Token (7 ngày, rotate)
+- Mật khẩu mã hóa bcrypt (salt rounds = 10)
+- OTP 6 số, hết hạn 5 phút
+- Permission-based access control (RBAC)
+- Rotate refresh token on every use
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📄 License
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT
