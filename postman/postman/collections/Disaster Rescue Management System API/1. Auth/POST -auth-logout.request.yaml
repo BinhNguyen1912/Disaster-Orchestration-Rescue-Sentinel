@@ -1,0 +1,12 @@
+$kind: http-request
+name: POST /auth/logout
+description: Logout and revoke refresh token
+url: "{{baseUrl}}/auth/logout"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "refreshToken": "{{refreshToken}}"
+    }
+order: 4000

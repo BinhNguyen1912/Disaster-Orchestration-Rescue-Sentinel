@@ -1,0 +1,10 @@
+$kind: http-request
+name: GET /rescue-teams/:teamId/members
+description: Get members of a rescue team
+url: "{{baseUrl}}/rescue-teams/1/members?isActive=true"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+queryParams:
+  isActive: "true"
+order: 10000

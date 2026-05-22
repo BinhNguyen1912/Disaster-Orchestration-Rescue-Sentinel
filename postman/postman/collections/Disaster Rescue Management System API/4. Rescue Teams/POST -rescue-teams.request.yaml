@@ -1,0 +1,25 @@
+$kind: http-request
+name: POST /rescue-teams
+description: Create a new rescue team (requires rescue_team:create permission)
+url: "{{baseUrl}}/rescue-teams"
+method: POST
+headers:
+  Authorization: Bearer {{accessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "provinceId": 1,
+        "name": "Đội PCCC Quận 1",
+        "teamType": "PCCC",
+        "adminUnitId": 1,
+        "maxCapacity": 20,
+        "specializationIds": [1, 2],
+        "equipment": {
+            "truck": true,
+            "hose": 5,
+            "extinguisher": 10
+        }
+    }
+order: 1000

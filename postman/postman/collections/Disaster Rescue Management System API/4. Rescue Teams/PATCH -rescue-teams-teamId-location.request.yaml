@@ -1,0 +1,19 @@
+$kind: http-request
+name: PATCH /rescue-teams/:teamId/location
+description: Update rescue team current location
+url: "{{baseUrl}}/rescue-teams/1/location"
+method: PATCH
+headers:
+  Authorization: Bearer {{accessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "currentLocation": {
+            "type": "Point",
+            "coordinates": [106.7004, 10.7589]
+        },
+        "status": "AVAILABLE"
+    }
+order: 7000

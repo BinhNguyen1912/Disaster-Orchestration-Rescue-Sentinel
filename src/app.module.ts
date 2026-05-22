@@ -6,6 +6,7 @@ import { AppService } from './application/services/app.service';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { AuthModule } from './infrastructure/auth/auth.module';
 import { HealthModule } from './infrastructure/health/health.module';
+import { RescueTeamModule } from './infrastructure/rescue-team/rescue-team.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessGuard } from './infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from './infrastructure/auth/guards/permission.guard';
@@ -18,6 +19,7 @@ import { PermissionGuard } from './infrastructure/auth/guards/permission.guard';
     DatabaseModule,
     AuthModule,
     HealthModule,
+    RescueTeamModule,
   ],
   controllers: [AppController],
   providers: [

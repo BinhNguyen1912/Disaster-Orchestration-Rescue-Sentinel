@@ -1,0 +1,522 @@
+{
+  "info": {
+    "name": "Disaster Rescue Management System API",
+    "description": "API documentation for Disaster Rescue Management System Backend. Base URL: http://localhost:3000/api/v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "description": "Authentication endpoints",
+      "item": [
+        {
+          "name": "POST /auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "}",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "url": "{{baseUrl}}/auth/login",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"identifier\": \"admin@hcm.gov.vn\",\n    \"password\": \"123123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Login with email or phone number"
+          }
+        },
+        {
+          "name": "POST /auth/register",
+          "request": {
+            "url": "{{baseUrl}}/auth/register",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Nguyễn Văn Test\",\n    \"phone\": \"0909123456\",\n    \"email\": \"test@example.com\",\n    \"password\": \"123123\",\n    \"nationalId\": \"123456789\",\n    \"dateOfBirth\": \"1990-01-01\",\n    \"gender\": \"MALE\",\n    \"provinceId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Register new citizen account"
+          }
+        },
+        {
+          "name": "POST /auth/refresh",
+          "request": {
+            "url": "{{baseUrl}}/auth/refresh",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Refresh access token using refresh token"
+          }
+        },
+        {
+          "name": "POST /auth/logout",
+          "request": {
+            "url": "{{baseUrl}}/auth/logout",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logout and revoke refresh token"
+          }
+        },
+        {
+          "name": "POST /auth/forgot-password",
+          "request": {
+            "url": "{{baseUrl}}/auth/forgot-password",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"identifier\": \"admin@hcm.gov.vn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Request OTP for password reset"
+          }
+        },
+        {
+          "name": "POST /auth/reset-password",
+          "request": {
+            "url": "{{baseUrl}}/auth/reset-password",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"resetToken\": \"uuid-from-forgot-password-response\",\n    \"otp\": \"123456\",\n    \"newPassword\": \"newpassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Reset password with OTP and resetToken"
+          }
+        },
+        {
+          "name": "POST /auth/admin/register",
+          "request": {
+            "url": "{{baseUrl}}/auth/admin/register",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Nhân viên Test\",\n    \"phone\": \"0912345678\",\n    \"email\": \"staff@test.com\",\n    \"password\": \"123123\",\n    \"nationalId\": \"987654321\",\n    \"dateOfBirth\": \"1990-05-15\",\n    \"gender\": \"MALE\",\n    \"provinceId\": 1,\n    \"roleId\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Admin create staff account (requires auth)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "url": "{{baseUrl}}/health",
+            "method": "GET",
+            "description": "Health check - public endpoint"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Team Specializations",
+      "item": [
+        {
+          "name": "GET /team-specializations",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get all team specializations (public)"
+          }
+        },
+        {
+          "name": "GET /team-specializations?teamType=Y_TE",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations?teamType=Y_TE",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get specializations filtered by team type"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Rescue Teams",
+      "item": [
+        {
+          "name": "POST /rescue-teams",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"provinceId\": 1,\n    \"name\": \"Đội PCCC Quận 1\",\n    \"teamType\": \"PCCC\",\n    \"adminUnitId\": 1,\n    \"maxCapacity\": 20,\n    \"specializationIds\": [1, 2],\n    \"equipment\": {\n        \"truck\": true,\n        \"hose\": 5,\n        \"extinguisher\": 10\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a new rescue team (requires rescue_team:create permission)"
+          }
+        },
+        {
+          "name": "GET /rescue-teams",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams?page=1&limit=20",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get paginated list of rescue teams"
+          }
+        },
+        {
+          "name": "GET /rescue-teams?provinceId=1&status=AVAILABLE",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams?provinceId=1&status=AVAILABLE",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get available rescue teams in a province"
+          }
+        },
+        {
+          "name": "GET /rescue-teams?search=PCCC",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams?search=PCCC",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Search rescue teams by name"
+          }
+        },
+        {
+          "name": "GET /rescue-teams/:teamId",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get rescue team details by ID"
+          }
+        },
+        {
+          "name": "PATCH /rescue-teams/:teamId",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Đội PCCC Quận 1 - Cập nhật\",\n    \"status\": \"STANDBY\",\n    \"maxCapacity\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update rescue team info"
+          }
+        },
+        {
+          "name": "PATCH /rescue-teams/:teamId/location",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1/location",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"currentLocation\": {\n        \"type\": \"Point\",\n        \"coordinates\": [106.7004, 10.7589]\n    },\n    \"status\": \"AVAILABLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update rescue team current location"
+          }
+        },
+        {
+          "name": "DELETE /rescue-teams/:teamId",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1",
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Delete rescue team (only if no active members)"
+          }
+        },
+        {
+          "name": "POST /rescue-teams/:teamId/members",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1/members",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 5,\n    \"roleInTeam\": \"LEADER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Add member to rescue team"
+          }
+        },
+        {
+          "name": "GET /rescue-teams/:teamId/members",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1/members?isActive=true",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get members of a rescue team"
+          }
+        },
+        {
+          "name": "DELETE /rescue-teams/:teamId/members/:memberId",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1/members/5",
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Remove member from rescue team (soft delete)"
+          }
+        },
+        {
+          "name": "PATCH /rescue-teams/:teamId/members/:memberId/role",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/1/members/5/role",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"roleInTeam\": \"DEPUTY_LEADER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Change member role in team"
+          }
+        },
+        {
+          "name": "POST /rescue-teams/leave",
+          "request": {
+            "url": "{{baseUrl}}/rescue-teams/leave",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "User leaves their current rescue team"
+          }
+        }
+      ]
+    }
+  ]
+}

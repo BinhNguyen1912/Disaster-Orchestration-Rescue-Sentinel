@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST /auth/register
+description: Register new citizen account
+url: "{{baseUrl}}/auth/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "fullName": "Nguyễn Văn Test",
+        "phone": "0909123456",
+        "email": "test@example.com",
+        "password": "123123",
+        "nationalId": "123456789",
+        "dateOfBirth": "1990-01-01",
+        "gender": "MALE",
+        "provinceId": 1
+    }
+order: 2000

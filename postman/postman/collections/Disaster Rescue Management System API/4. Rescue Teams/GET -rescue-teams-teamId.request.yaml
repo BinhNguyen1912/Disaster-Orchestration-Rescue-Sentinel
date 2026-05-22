@@ -1,0 +1,8 @@
+$kind: http-request
+name: GET /rescue-teams/:teamId
+description: Get rescue team details by ID
+url: "{{baseUrl}}/rescue-teams/1"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+order: 5000

@@ -1,0 +1,22 @@
+import { TeamType } from '@domain/enums/teamType.enum';
+import { TeamStatus } from '@domain/enums/teamStatus.enum';
+
+export class RescueTeamResponseDto {
+  id: number;
+  provinceId: number;
+  adminUnitId: number;
+  name: string;
+  teamType: TeamType;
+  status: TeamStatus;
+  baseLocation?: any;
+  maxCapacity?: number;
+  activeCasesCount: number;
+  specializationIds: number[];
+  equipment?: any;
+  leaderId?: number;
+  totalMissions: number;
+  totalRescued: number;
+  totalHoursActive: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

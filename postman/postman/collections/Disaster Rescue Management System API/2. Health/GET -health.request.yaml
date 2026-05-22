@@ -1,0 +1,6 @@
+$kind: http-request
+name: GET /health
+description: Health check - public endpoint
+url: "{{baseUrl}}/health"
+method: GET
+order: 1000

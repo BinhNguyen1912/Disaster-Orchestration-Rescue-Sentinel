@@ -1,0 +1,11 @@
+# Use this workspace to collaborate
+workspace:
+  id: d4aa1f1d-681d-4df7-8178-d7d365f693ae
+
+localResources:
+  collections:
+    - ..\Disaster_Rescue_API.postman_collection.json
+
+cloudResources:
+  collections:
+    ..\postman\collections\Disaster Rescue Management System API: 6fa8cdc7-c5f1-42f8-826a-af637eae1b29

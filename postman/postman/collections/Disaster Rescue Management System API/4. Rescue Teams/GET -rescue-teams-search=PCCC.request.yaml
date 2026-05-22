@@ -1,0 +1,10 @@
+$kind: http-request
+name: GET /rescue-teams?search=PCCC
+description: Search rescue teams by name
+url: "{{baseUrl}}/rescue-teams?search=PCCC"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+queryParams:
+  search: PCCC
+order: 4000

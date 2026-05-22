@@ -238,7 +238,7 @@
         <div class="meta">Disaster Rescue Management System — Backend</div>
       </div>
       <div class="header-right">
-        <div class="status-badge">🟡 Phase 1 ✅ & Phase 2 — Gần hoàn thành</div>
+        <div class="status-badge">🟡 Phase 2 ✅ & Phase 3 — Đã bắt đầu</div>
         <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
       </div>
     </div>
@@ -247,21 +247,21 @@
     <div class="phase-grid">
       <div class="phase-card">
         <h3>Phase 1 — Hạ tầng & Foundation</h3>
-        <div class="progress-bar"><div class="progress-fill green" style="width:95%"></div></div>
-        <div class="percent">95%</div>
-        <div class="status">✅ Gần xong</div>
+        <div class="progress-bar"><div class="progress-fill green" style="width:100%"></div></div>
+        <div class="percent">100%</div>
+        <div class="status">✅ Hoàn thành</div>
       </div>
       <div class="phase-card">
         <h3>Phase 2 — Auth & Core Modules</h3>
-        <div class="progress-bar"><div class="progress-fill green" style="width:90%"></div></div>
-        <div class="percent">90%</div>
-        <div class="status">🟡 Đang làm</div>
+        <div class="progress-bar"><div class="progress-fill green" style="width:100%"></div></div>
+        <div class="percent">100%</div>
+        <div class="status">✅ Hoàn thành</div>
       </div>
       <div class="phase-card">
         <h3>Phase 3 — Nghiệp vụ chính</h3>
-        <div class="progress-bar"><div class="progress-fill red" style="width:0%"></div></div>
-        <div class="percent">0%</div>
-        <div class="status">🔲 Chưa bắt đầu</div>
+        <div class="progress-bar"><div class="progress-fill yellow" style="width:15%"></div></div>
+        <div class="percent">15%</div>
+        <div class="status">🟡 Đang làm</div>
       </div>
       <div class="phase-card">
         <h3>Phase 4 — Mở rộng</h3>
@@ -382,7 +382,7 @@
           <tr><td>2</td><td>synchronize: true trong TypeORM (chỉ dùng dev)</td><td><span class="badge todo">🔴 Cao</span></td><td class="note">Phải chuyển sang migration trước khi production</td></tr>
           <tr><td>3</td><td>Permission Guard chưa implement</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">PermissionGuard + @RequirePermissions() + Sync Script</td></tr>
           <tr><td>4</td><td>Province Scope chưa implement</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">Explicit trong Service, không dùng Interceptor</td></tr>
-          <tr><td>5</td><td>Chưa có unit test</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Viết test song song với từng module</td></tr>
+          <tr><td>5</td><td>Chưa có unit test</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">RescueTeamService: 15 unit tests passed</td></tr>
           <tr><td>6</td><td>Health check endpoint chưa có</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">@nestjs/terminus, GET /health</td></tr>
           <tr><td>7</td><td>Fix BaseRepository.update() — lọc undefined values tránh ghi đè null</td><td><span class="badge fixed">✅ Đã fix</span></td><td class="note">Bug gây lỗi provinceId khi update OTP</td></tr>
           <tr><td>8</td><td>Admin users seed thiếu user_role mapping → JWT không có roleId</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">Đã re-seed, tạo đủ user_role cho 36 admins</td></tr>
@@ -393,12 +393,12 @@
 
     <!-- Phase 3 & 4 -->
     <div class="section">
-      <h2>🔲 Phase 3 & 4 — Chưa bắt đầu</h2>
+      <h2>🔲 Phase 3 & 4 — Tiến độ</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div>
           <h3 style="font-size:14px;color:var(--text-muted);margin-bottom:12px">Phase 3: Nghiệp vụ chính</h3>
           <ul style="font-size:13px;color:var(--text-muted);list-style:none">
-            <li>🔲 Module Rescue (đội cứu hộ, thành viên, nhiệm vụ)</li>
+            <li>✅ Module Rescue Team — Hoàn thành 2026-05-22</li>
             <li>🔲 Module SOS (gửi SOS, auto-dispatch, WebSocket)</li>
             <li>🔲 Module Flood Report (báo cáo lũ, xác minh)</li>
             <li>🔲 Module Casualty (thương vong)</li>
@@ -421,6 +421,10 @@
     <!-- History -->
     <div class="section">
       <h2>📅 Lịch sử buổi code</h2>
+      <div class="history-item">
+        <div class="history-date">2026-05-22</div>
+        <div class="history-content">Implement Rescue Team Module hoàn chỉnh: TeamSpecializationEntity, IRescueTeamRepository, IRescueTeamMemberRepository, ITeamSpecializationRepository + implementations, RescueTeamService (11 endpoints), RescueTeamController, TeamSpecializationController, RescueTeamModule, seed 13 team specializations. Bỏ code field khỏi RescueTeam, đổi specializations → specializationIds. Unit test 15 cases — tất cả passed.</div>
+      </div>
       <div class="history-item">
         <div class="history-date">2026-05-21</div>
         <div class="history-content">Chạy lại seeder (xóa 34 admin cũ, tạo mới 36 admins), tạo file user-role.json seed data, phát hiện và giải thích lỗi PostgreSQL `user` là keyword reserved.</div>
@@ -452,7 +456,7 @@
     </div>
 
     <div class="last-updated">
-      Lần cập nhật: <span>2026-05-21 (14:40)</span> — AI Assistant tự động cập nhật cuối mỗi buổi code
+      Lần cập nhật: <span>2026-05-22</span> — AI Assistant tự động cập nhật cuối mỗi buổi code
     </div>
 
   </div>

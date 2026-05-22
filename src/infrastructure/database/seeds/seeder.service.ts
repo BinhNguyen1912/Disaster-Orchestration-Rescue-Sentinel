@@ -5,6 +5,8 @@ import { ProvinceEntity } from '../entities/province.entity';
 import { RoleEntity } from '../entities/role.entity';
 import { UserEntity } from '../entities/user.entity';
 import { UserRoleEntity } from '../entities/user-role.entity';
+import { TeamSpecializationEntity } from '../entities/team-specialization.entity';
+import { TeamType } from '@domain/enums/teamType.enum';
 import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -22,12 +24,15 @@ export class SeederService {
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(UserRoleEntity)
     private readonly userRoleRepo: Repository<UserRoleEntity>,
+    @InjectRepository(TeamSpecializationEntity)
+    private readonly specRepo: Repository<TeamSpecializationEntity>,
   ) {}
 
   async seed() {
     this.logger.log('Starting database seeding...');
     await this.seedProvinces();
     await this.seedRoles();
+    await this.seedTeamSpecializations();
     await this.seedAdmins();
     this.logger.log('Database seeding completed successfully.');
   }
@@ -62,6 +67,102 @@ export class SeederService {
       if (!exists) {
         await this.roleRepo.save(this.roleRepo.create(role));
         this.logger.debug(`Inserted role: ${role.name}`);
+      }
+    }
+  }
+
+  private async seedTeamSpecializations() {
+    this.logger.log('Seeding Team Specializations...');
+    const specs = [
+      // PCCC
+      {
+        code: 'PCCC_CHUA_CHAY',
+        name: 'Chữa cháy',
+        teamType: TeamType.PCCC,
+        description: 'Chữa cháy các loại',
+      },
+      {
+        code: 'PCCC_CUU_HO',
+        name: 'Cứu hộ',
+        teamType: TeamType.PCCC,
+        description: 'Cứu hộ tai nạn',
+      },
+      {
+        code: 'PCCC_Kiem_Tra',
+        name: 'Kiểm tra an toàn',
+        teamType: TeamType.PCCC,
+        description: 'Kiểm tra PCCC',
+      },
+      // Y_TE
+      {
+        code: 'YTE_SO_CUU',
+        name: 'Sơ cấp cứu',
+        teamType: TeamType.Y_TE,
+        description: 'Sơ cấp cứu ban đầu',
+      },
+      {
+        code: 'YTE_TRIAGE',
+        name: 'Phân loại bệnh nhân',
+        teamType: TeamType.Y_TE,
+        description: 'Phân loại nạn nhân',
+      },
+      {
+        code: 'YTE_VAN_CHuyen',
+        name: 'Vận chuyển nạn nhân',
+        teamType: TeamType.Y_TE,
+        description: 'Vận chuyển nạn nhân',
+      },
+      // DAN_PHONG
+      {
+        code: 'DP_TIM_KIEM',
+        name: 'Tìm kiếm cứu nạn',
+        teamType: TeamType.DAN_PHONG,
+        description: 'Tìm kiếm trong thiên tai',
+      },
+      {
+        code: 'DP_TRUONG_THANH',
+        name: 'Trường thành',
+        teamType: TeamType.DAN_PHONG,
+        description: 'Xây dựng trường thành',
+      },
+      // QUAN_SU
+      {
+        code: 'QS_HOI_SINH',
+        name: 'Hồi sinh',
+        teamType: TeamType.QUAN_SU,
+        description: 'Hồi sinh cơ thể',
+      },
+      // TINH_NGUYEN
+      {
+        code: 'TN_VAN_TAI',
+        name: 'Vận tải',
+        teamType: TeamType.TINH_NGUYEN,
+        description: 'Vận tải cứu hộ',
+      },
+      {
+        code: 'TN_TIEN_TRINH',
+        name: 'Tiếp tế',
+        teamType: TeamType.TINH_NGUYEN,
+        description: 'Tiếp tế lương thực',
+      },
+      // TONG_HOP
+      {
+        code: 'TH_TOAN_RONG',
+        name: 'Toàn rừng',
+        teamType: TeamType.TONG_HOP,
+        description: 'Tìm kiếm toàn rừng',
+      },
+    ];
+
+    for (const spec of specs) {
+      const exists = await this.specRepo.findOne({
+        where: { code: spec.code },
+      });
+      if (!exists) {
+        await this.specRepo.save(
+          this.specRepo.create({ ...spec, isActive: true }),
+        );
+        this.logger.debug(`Inserted specialization: ${spec.code}`);
       }
     }
   }

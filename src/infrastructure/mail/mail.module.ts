@@ -25,7 +25,15 @@ import { MailService } from './mail.service';
         },
         template: {
           // Trỏ đến thư mục templates (tương thích cả dev lẫn dist)
-          dir: join(__dirname, 'templates'),
+          // Dev:  src/infrastructure/mail/templates
+          // Dist: dist/infrastructure/mail/templates
+          dir: join(
+            process.cwd(),
+            'src',
+            'infrastructure',
+            'mail',
+            'templates',
+          ),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,

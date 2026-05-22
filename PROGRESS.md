@@ -1,8 +1,8 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-05-21 (14:40)
+> **Lần cập nhật gần nhất:** 2026-05-22
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
-> **Trạng thái tổng:** 🟡 **Phase 1 ✅ & Phase 2 — Gần hoàn thành**
+> **Trạng thái tổng:** 🟡 **Phase 2 ✅ & Phase 3 — Đã bắt đầu**
 
 ---
 
@@ -10,9 +10,9 @@
 
 | Phase | Tên | Tiến độ | Trạng thái |
 |-------|-----|---------|-----------|
-| 1 | Hạ tầng & Foundation | ██████████ 95% | ✅ Gần xong |
-| 2 | Auth & Core Modules | █████████░ 90% | 🟡 Đang làm |
-| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
+| 1 | Hạ tầng & Foundation | ██████████ 100% | ✅ Hoàn thành |
+| 2 | Auth & Core Modules | ██████████ 100% | ✅ Hoàn thành |
+| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ██░░░░░░░░ 15% | 🟡 Đang làm |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
 ---
@@ -172,9 +172,17 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 
 ---
 
-## 🔲 Phase 3: Nghiệp vụ chính (Chưa bắt đầu)
+## 🔲 Phase 3: Nghiệp vụ chính (Đang làm)
 
-- [ ] Module Rescue (đội cứu hộ, thành viên, nhiệm vụ)
+- [x] Module Rescue Team (đội cứu hộ, thành viên, nhiệm vụ) — **Hoàn thành 2026-05-22**
+  - ✅ `TeamSpecializationEntity` + `ITeamSpecializationRepository`
+  - ✅ `RescueTeamRepository` + `RescueTeamMemberRepository`
+  - ✅ `RescueTeamService` (11 endpoints, business logic đầy đủ)
+  - ✅ `RescueTeamController` + `TeamSpecializationController`
+  - ✅ `RescueTeamModule` đăng ký vào `AppModule`
+  - ✅ `TeamSpecialization` seed data (13 specs: PCCC, Y_TE, DAN_PHONG, QUAN_SU, TINH_NGUYEN, TONG_HOP)
+  - ✅ Bỏ `code` field khỏi RescueTeam (thừa), đổi `specializations: string[]` → `specializationIds: number[]`
+  - ✅ Unit test 15 cases — tất cả passed
 - [ ] Module SOS (gửi SOS, auto-dispatch theo PostGIS, realtime WebSocket)
 - [ ] Module Flood Report (báo cáo lũ, xác minh)
 - [ ] Module Casualty (thương vong)
@@ -200,7 +208,7 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 | 2 | `synchronize: true` trong TypeORM (chỉ dùng dev) | 🔴 Cao | Phải chuyển sang migration trước khi production |
 | 3 | Permission Guard chưa implement | ✅ Đã hoàn thành | `PermissionGuard` + `@RequirePermissions()` + Sync Script |
 | 4 | Province Scope chưa implement | ✅ Đã hoàn thành | Explicit trong Service, không dùng Interceptor |
-| 5 | Chưa có unit test | 🟡 Trung bình | Viết test song song với từng module |
+| 5 | Chưa có unit test | ✅ Đã hoàn thành | RescueTeamService: 15 unit tests passed |
 | 6 | Health check endpoint chưa có | ✅ Đã hoàn thành | `@nestjs/terminus`, `GET /health` — DB + Memory |
 | 7 | Fix bug `BaseRepository.update()` — lọc undefined values trước khi merge vào entity để tránh ghi đè thành null | ✅ Đã fix | Bug gây lỗi `null value in column "provinceId"` khi update OTP fields |
 | 8 | Admin users seed thiếu `user_role` mapping → JWT không có roleId | ✅ Đã fix | Đã re-seed, tạo đủ user_role cho 36 admins |
@@ -223,6 +231,7 @@ User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) �
 | 2026-05-21 | Redesign Permission Constants: `PermModule` enum, `PermAction` enum, `HTTP_METHOD_ACTION` mapping, `ActionSet` const, `ROLE_PERMISSION_MATRIX` (khai báo matrix gọn). `Permissions` object auto-generate từ matrix. `PermissionString` type cho type-safe decorator. |
 | 2026-05-21 | Xây dựng Health Check endpoint (`GET /health`) dùng `@nestjs/terminus`. Kiểm tra kết nối DB (TypeORM ping), Memory Heap (< 300MB), Memory RSS (< 500MB). Public endpoint, trả 200 nếu OK, 503 nếu fail. |
 | 2026-05-21 | Chạy lại seeder (xóa 34 admin cũ, tạo mới 36 admins), tạo file `user-role.json` seed data, phát hiện và giải thích lỗi PostgreSQL `user` là keyword reserved. |
+| 2026-05-22 | Implement **Rescue Team Module** hoàn chỉnh: `TeamSpecializationEntity`, `IRescueTeamRepository`, `IRescueTeamMemberRepository`, `ITeamSpecializationRepository` + implementations, `RescueTeamService` (11 endpoints), `RescueTeamController`, `TeamSpecializationController`, `RescueTeamModule`, seed 13 team specializations. Bỏ `code` field khỏi RescueTeam, đổi `specializations` → `specializationIds`. Unit test 15 cases — tất cả passed. |
 
 ---
 

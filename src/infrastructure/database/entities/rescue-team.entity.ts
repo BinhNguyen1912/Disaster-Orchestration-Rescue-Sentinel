@@ -34,9 +34,6 @@ export class RescueTeamEntity {
   @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ type: 'varchar', unique: true })
-  code: string;
-
   @Column({ type: 'enum', enum: TeamType })
   teamType: TeamType;
 

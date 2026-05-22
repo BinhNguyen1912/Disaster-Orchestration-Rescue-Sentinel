@@ -14,7 +14,6 @@ export class RescueTeam {
   provinceId: number;
   adminUnitId: number;
   name: string;
-  code: string;
   teamType: TeamType;
   status: TeamStatus;
   currentLocation?: any; // geometry;
@@ -22,7 +21,7 @@ export class RescueTeam {
   coverageArea?: any; // geometry;
   maxCapacity?: number;
   activeCasesCount: number;
-  specializations: string;
+  specializationIds: number[];
   equipment?: any;
   leaderId?: number;
   totalMissions: number;

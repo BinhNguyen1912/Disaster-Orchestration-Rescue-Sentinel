@@ -1,0 +1,15 @@
+$kind: http-request
+name: PATCH /rescue-teams/:teamId/members/:memberId/role
+description: Change member role in team
+url: "{{baseUrl}}/rescue-teams/1/members/5/role"
+method: PATCH
+headers:
+  Authorization: Bearer {{accessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "roleInTeam": "DEPUTY_LEADER"
+    }
+order: 12000
