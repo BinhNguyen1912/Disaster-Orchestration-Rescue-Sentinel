@@ -5,7 +5,12 @@
       "Bash(npx nest *)",
       "Bash(npx ts-node *)",
       "Bash(npx tsx -e ' *)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npx jest *)"
     ]
   }
 }

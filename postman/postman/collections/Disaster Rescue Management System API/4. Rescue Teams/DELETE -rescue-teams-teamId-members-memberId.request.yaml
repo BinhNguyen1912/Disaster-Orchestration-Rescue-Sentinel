@@ -1,8 +1,0 @@
-$kind: http-request
-name: DELETE /rescue-teams/:teamId/members/:memberId
-description: Remove member from rescue team (soft delete)
-url: "{{baseUrl}}/rescue-teams/1/members/5"
-method: DELETE
-headers:
-  Authorization: Bearer {{accessToken}}
-order: 11000
