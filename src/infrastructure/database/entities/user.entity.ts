@@ -33,7 +33,7 @@ import { IotDeviceEntity } from './iot-device.entity';
 import { AuditLogEntity } from './audit-log.entity';
 import { DeviceEntity } from './device.entity';
 import { PermissionEntity } from './permission.entity';
-import { Gender } from '@domain/enums/gender.enum';
+import { Gender } from '@shared/core/enums/gender.enum';
 
 @Entity('user')
 export class UserEntity {

@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { RescueTeamEntity } from './rescue-team.entity';
 import { UserEntity } from './user.entity';
-import { RoleInTeam } from '@domain/enums/roleInTeam.enum';
+import { RoleInTeam } from '@shared/core/enums/roleInTeam.enum';
 
 @Entity('rescue_team_member')
 export class RescueTeamMemberEntity {

@@ -13,7 +13,7 @@ import { RescueTeamEntity } from './rescue-team.entity';
 import { UserEntity } from './user.entity';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
-import { DutyStatus } from '@domain/enums/dutyStatus.enum';
+import { DutyStatus } from '@shared/core/enums/dutyStatus.enum';
 
 @Entity('duty_log')
 export class DutyLogEntity {

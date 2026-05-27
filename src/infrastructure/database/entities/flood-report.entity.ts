@@ -12,8 +12,8 @@ import {
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
-import { FloodReportType } from '@domain/enums/floodReportType.enum';
-import { ReportStatus } from '@domain/enums/reportStatus.enum';
+import { FloodReportType } from '@shared/core/enums/floodReportType.enum';
+import { ReportStatus } from '@shared/core/enums/reportStatus.enum';
 
 @Entity('flood_report')
 export class FloodReportEntity {

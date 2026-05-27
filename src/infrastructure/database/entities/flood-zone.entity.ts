@@ -12,8 +12,8 @@ import {
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
-import { FloodFrequency } from '@domain/enums/floodFrequency.enum';
-import { FloodReason } from '@domain/enums/floodReason.enum';
+import { FloodFrequency } from '@shared/core/enums/floodFrequency.enum';
+import { FloodReason } from '@shared/core/enums/floodReason.enum';
 
 @Entity('flood_zone')
 export class FloodZoneEntity {

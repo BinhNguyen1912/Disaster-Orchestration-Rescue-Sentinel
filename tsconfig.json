@@ -27,7 +27,13 @@
       "@infrastructure/*": ["infrastructure/*"],
       "@common/*": ["common/*"],
       "@interface/*": ["interface/*"],
-      "@presentation/*": ["presentation/*"]
+      "@presentation/*": ["presentation/*"],
+      "@shared/*": ["shared/*"],
+      "@modules/auth/*": ["modules/auth/*"],
+      "@modules/rescue-team/*": ["modules/rescue-team/*"],
+      "@modules/health/*": ["modules/health/*"],
+      "@modules/mail/*": ["modules/mail/*"],
+      "@modules/seeder/*": ["modules/seeder/*"]
     }
   }
 }

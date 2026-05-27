@@ -1,0 +1,100 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  IRescueTeamRepository,
+  RescueTeamFilters,
+  PaginationOptions,
+  PaginatedResult,
+} from '../../../domain/repositories/rescue-team.repository.interface';
+import { RescueTeamEntity } from '@infrastructure/database/entities/rescue-team.entity';
+
+@Injectable()
+export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
+  constructor(
+    @InjectRepository(RescueTeamEntity)
+    private readonly repo: Repository<RescueTeamEntity>,
+  ) {}
+
+  async findById(id: number): Promise<RescueTeamEntity | null> {
+    return this.repo.findOne({
+      where: { id },
+      relations: ['province', 'adminUnit', 'leader'],
+    });
+  }
+
+  async findAll(
+    filters: RescueTeamFilters,
+    pagination: PaginationOptions,
+  ): Promise<PaginatedResult<RescueTeamEntity>> {
+    const { page = 1, limit = 20 } = pagination;
+    const skip = (page - 1) * limit;
+
+    let queryBuilder = this.repo
+      .createQueryBuilder('rt')
+      .leftJoinAndSelect('rt.province', 'province')
+      .leftJoinAndSelect('rt.adminUnit', 'adminUnit');
+
+    queryBuilder = this.applyFilters(queryBuilder, filters);
+
+    const [items, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return { items, total };
+  }
+
+  private applyFilters(
+    queryBuilder: SelectQueryBuilder<RescueTeamEntity>,
+    filters: RescueTeamFilters,
+  ): SelectQueryBuilder<RescueTeamEntity> {
+    if (filters.provinceId) {
+      queryBuilder.andWhere('rt.provinceId = :provinceId', {
+        provinceId: filters.provinceId,
+      });
+    }
+    if (filters.status) {
+      queryBuilder.andWhere('rt.status = :status', { status: filters.status });
+    }
+    if (filters.teamType) {
+      queryBuilder.andWhere('rt.teamType = :teamType', {
+        teamType: filters.teamType,
+      });
+    }
+    if (filters.availableOnly) {
+      queryBuilder.andWhere('rt.status = :status', { status: 'AVAILABLE' });
+    }
+    if (filters.search) {
+      queryBuilder.andWhere('rt.name ILIKE :search', {
+        search: `%${filters.search}%`,
+      });
+    }
+    return queryBuilder;
+  }
+
+  async create(data: Partial<RescueTeamEntity>): Promise<RescueTeamEntity> {
+    return this.repo.save(this.repo.create(data));
+  }
+
+  async update(
+    id: number,
+    data: Partial<RescueTeamEntity>,
+  ): Promise<RescueTeamEntity | null> {
+    const existing = await this.repo.findOne({ where: { id } });
+    if (!existing) return null;
+    return this.repo.save({ ...existing, ...data });
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const result = await this.repo.delete(id);
+    return result.affected ? result.affected > 0 : false;
+  }
+
+  async countActiveCases(teamId: number): Promise<number> {
+    const result = await this.repo.count({
+      where: { id: teamId, activeCasesCount: 0 },
+    });
+    return result;
+  }
+}

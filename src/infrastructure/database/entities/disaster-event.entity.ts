@@ -13,8 +13,8 @@ import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { DonationEntity } from './donation.entity';
 import { DonationCampaignEntity } from './donation-campaign.entity';
-import { DisasterEventType } from '@domain/enums/disasterEventType.enum';
-import { EventStatus } from '@domain/enums/eventStatus.enum';
+import { DisasterEventType } from '@shared/core/enums/disasterEventType.enum';
+import { EventStatus } from '@shared/core/enums/eventStatus.enum';
 
 @Entity('disaster_event')
 export class DisasterEventEntity {

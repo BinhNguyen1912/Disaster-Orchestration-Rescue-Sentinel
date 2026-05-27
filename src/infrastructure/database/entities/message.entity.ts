@@ -12,9 +12,9 @@ import {
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
 import { MessageReadEntity } from './message-read.entity';
-import { MessageType } from '@domain/enums/messageType.enum';
-import { TargetType } from '@domain/enums/targetType.enum';
-import { MessageChannel } from '@domain/enums/messageChannel.enum';
+import { MessageType } from '@shared/core/enums/messageType.enum';
+import { TargetType } from '@shared/core/enums/targetType.enum';
+import { MessageChannel } from '@shared/core/enums/messageChannel.enum';
 
 @Entity('message')
 export class MessageEntity {

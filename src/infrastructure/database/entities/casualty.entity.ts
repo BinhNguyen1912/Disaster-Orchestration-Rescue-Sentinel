@@ -14,9 +14,9 @@ import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { SosRequestEntity } from './sos-request.entity';
 import { RescueTeamEntity } from './rescue-team.entity';
 import { UserEntity } from './user.entity';
-import { CasualtyStatus } from '@domain/enums/casualtyStatus.enum';
-import { Gender } from '@domain/enums/gender.enum';
-import { IncidentCause } from '@domain/enums/incidentCause.enum';
+import { CasualtyStatus } from '@shared/core/enums/casualtyStatus.enum';
+import { Gender } from '@shared/core/enums/gender.enum';
+import { IncidentCause } from '@shared/core/enums/incidentCause.enum';
 
 @Entity('casualty')
 export class CasualtyEntity {

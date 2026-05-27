@@ -12,7 +12,7 @@ import {
 import { ProvinceEntity } from './province.entity';
 import { DisasterEventEntity } from './disaster-event.entity';
 import { UserEntity } from './user.entity';
-import { CampaignStatus } from '@domain/enums/campaignStatus.enum';
+import { CampaignStatus } from '@shared/core/enums/campaignStatus.enum';
 
 @Entity('donation_campaign')
 export class DonationCampaignEntity {

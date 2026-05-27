@@ -12,7 +12,10 @@ import {
 import { UserEntity } from './user.entity';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
-import { AssetValueLevel, WaterUsageLevel } from '@domain/enums/level.enum';
+import {
+  AssetValueLevel,
+  WaterUsageLevel,
+} from '@shared/core/enums/level.enum';
 
 @Entity('household_profile')
 export class HouseholdProfileEntity {

@@ -12,7 +12,7 @@ import {
 import { RescueTeamEntity } from './rescue-team.entity';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
-import { AchievementCategory } from '@domain/enums/achievementCategory.enum';
+import { AchievementCategory } from '@shared/core/enums/achievementCategory.enum';
 
 @Entity('team_achievement')
 export class TeamAchievementEntity {

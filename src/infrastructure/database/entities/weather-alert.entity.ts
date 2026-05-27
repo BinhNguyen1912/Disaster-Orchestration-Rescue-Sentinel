@@ -11,8 +11,8 @@ import {
 } from 'typeorm';
 import { ProvinceEntity } from './province.entity';
 import { UserEntity } from './user.entity';
-import { WeatherSource } from '@domain/enums/weatherSource.enum';
-import { WeatherAlertType } from '@domain/enums/weatherAlertType.enum';
+import { WeatherSource } from '@shared/core/enums/weatherSource.enum';
+import { WeatherAlertType } from '@shared/core/enums/weatherAlertType.enum';
 
 @Entity('weather_alert')
 export class WeatherAlertEntity {

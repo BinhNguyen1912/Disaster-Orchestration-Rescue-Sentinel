@@ -22,7 +22,7 @@ export {
   MODULE_DESCRIPTIONS,
   ACTION_DESCRIPTIONS,
   buildPermission,
-} from '@common/constants/permissions.constant';
+} from '@shared/common/constants/permissions.constant';
 
 export interface PermissionEntry {
   name: string;

@@ -17,8 +17,8 @@ import { DutyLogEntity } from './duty-log.entity';
 import { TeamAchievementEntity } from './team-achievement.entity';
 import { SosRequestEntity } from './sos-request.entity';
 import { CasualtyEntity } from './casualty.entity';
-import { TeamStatus } from '@domain/enums/teamStatus.enum';
-import { TeamType } from '@domain/enums/teamType.enum';
+import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
+import { TeamType } from '@shared/core/enums/teamType.enum';
 
 @Entity('rescue_team')
 export class RescueTeamEntity {

@@ -12,9 +12,9 @@ import {
 import { ProvinceEntity } from './province.entity';
 import { DisasterEventEntity } from './disaster-event.entity';
 import { UserEntity } from './user.entity';
-import { DonorType } from '@domain/enums/donorType.enum';
-import { DonationType } from '@domain/enums/donationType.enum';
-import { DonationStatus } from '@domain/enums/donationStatus.enum';
+import { DonorType } from '@shared/core/enums/donorType.enum';
+import { DonationType } from '@shared/core/enums/donationType.enum';
+import { DonationStatus } from '@shared/core/enums/donationStatus.enum';
 
 @Entity('donation')
 export class DonationEntity {

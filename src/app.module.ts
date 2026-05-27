@@ -1,15 +1,32 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  Controller,
+  Get,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './presentation/controllers/app.controller';
-import { AppService } from './application/services/app.service';
-import { DatabaseModule } from './infrastructure/database/database.module';
-import { AuthModule } from './infrastructure/auth/auth.module';
-import { HealthModule } from './infrastructure/health/health.module';
-import { RescueTeamModule } from './infrastructure/rescue-team/rescue-team.module';
 import { APP_GUARD } from '@nestjs/core';
-import { AccessGuard } from './infrastructure/auth/guards/access.guard';
-import { PermissionGuard } from './infrastructure/auth/guards/permission.guard';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+
+import { LoggerMiddleware } from '@shared/common/middlewares/logger.middleware';
+import { DatabaseModule } from '@infrastructure/database/database.module';
+import { AuthModule } from '@modules/auth/auth.module';
+import { HealthModule } from '@modules/health/health.module';
+import { RescueTeamModule } from '@modules/rescue-team/rescue-team.module';
+import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
+import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
+import { Public } from '@modules/auth/infrastructure/auth/decorators/public.decorator';
+
+@ApiTags('Root')
+@Controller()
+export class AppController {
+  @Public()
+  @Get()
+  getHello(): string {
+    return 'Rescue System API is running!';
+  }
+}
 
 @Module({
   imports: [
@@ -23,8 +40,6 @@ import { PermissionGuard } from './infrastructure/auth/guards/permission.guard';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
-    // Guard Pipeline: AccessGuard chạy TRƯỚC (xác thực), PermissionGuard chạy SAU (phân quyền)
     {
       provide: APP_GUARD,
       useClass: AccessGuard,

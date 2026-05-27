@@ -1,7 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import * as Entities from './entities';
+
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -22,8 +25,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         database: configService
           .get<string>('DB_NAME', 'rescue_system')
           .replace(/"/g, ''),
-        entities: [__dirname + '/entities/*.entity{.ts,.js}'],
-        synchronize: true, // Auto-create tables (development only)
+        entities: Object.values(Entities),
+        synchronize: true,
       }),
     }),
   ],

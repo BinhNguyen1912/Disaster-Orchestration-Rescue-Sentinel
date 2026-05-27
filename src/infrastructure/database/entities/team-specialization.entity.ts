@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TeamType } from '@domain/enums/teamType.enum';
+import { TeamType } from '@shared/core/enums/teamType.enum';
 
 @Entity('team_specialization')
 export class TeamSpecializationEntity {

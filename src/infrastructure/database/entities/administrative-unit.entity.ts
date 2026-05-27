@@ -19,7 +19,7 @@ import { FloodReportEntity } from './flood-report.entity';
 import { CasualtyEntity } from './casualty.entity';
 import { FloodZoneEntity } from './flood-zone.entity';
 import { InfrastructureLayerEntity } from './infrastructure-layer.entity';
-import { AdministrativeUnitType } from '@domain/enums/administrativeUnitType.enum';
+import { AdministrativeUnitType } from '@shared/core/enums/administrativeUnitType.enum';
 
 @Entity('administrative_unit')
 export class AdministrativeUnitEntity {

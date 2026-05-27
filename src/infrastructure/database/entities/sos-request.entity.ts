@@ -15,11 +15,11 @@ import { UserEntity } from './user.entity';
 import { IotDeviceEntity } from './iot-device.entity';
 import { RescueTeamEntity } from './rescue-team.entity';
 import { CasualtyEntity } from './casualty.entity';
-import { SosType } from '@domain/enums/sosType.enum';
-import { SosStatus } from '@domain/enums/sosStatus.enum';
-import { Severity } from '@domain/enums/level.enum';
-import { SosSource } from '@domain/enums/sosSource.enum';
-import { DispatchMethod } from '@domain/enums/dispatchMethod.enum';
+import { SosType } from '@shared/core/enums/sosType.enum';
+import { SosStatus } from '@shared/core/enums/sosStatus.enum';
+import { Severity } from '@shared/core/enums/level.enum';
+import { SosSource } from '@shared/core/enums/sosSource.enum';
+import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
 
 @Entity('sos_request')
 export class SosRequestEntity {

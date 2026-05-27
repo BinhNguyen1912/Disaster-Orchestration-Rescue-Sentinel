@@ -12,8 +12,8 @@ import {
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserEntity } from './user.entity';
-import { InfraType } from '@domain/enums/infraType.enum';
-import { InfraStatus } from '@domain/enums/infraStatus.enum';
+import { InfraType } from '@shared/core/enums/infraType.enum';
+import { InfraStatus } from '@shared/core/enums/infraStatus.enum';
 
 @Entity('infrastructure_layer')
 export class InfrastructureLayerEntity {

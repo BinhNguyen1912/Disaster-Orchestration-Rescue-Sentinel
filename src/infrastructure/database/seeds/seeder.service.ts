@@ -6,7 +6,7 @@ import { RoleEntity } from '../entities/role.entity';
 import { UserEntity } from '../entities/user.entity';
 import { UserRoleEntity } from '../entities/user-role.entity';
 import { TeamSpecializationEntity } from '../entities/team-specialization.entity';
-import { TeamType } from '@domain/enums/teamType.enum';
+import { TeamType } from '@shared/core/enums/teamType.enum';
 import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
