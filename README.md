@@ -4,7 +4,7 @@
 
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/typescript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/nestjs-10.x-red.svg)](https://nestjs.com/)
+[![NestJS](https://img.shields.io/badge/nestjs-11.x-red.svg)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-15+-blue.svg)](https://www.postgresql.org/)
 [![PostGIS](https://img.shields.io/badge/postgis-3.x-green.svg)](https://postgis.net/)
 
@@ -61,34 +61,60 @@ Hệ thống hỗ trợ:
 
 ---
 
-## 🏗️ Kiến trúc
+## 🏗️ Kiến trúc (Feature-Based Modular)
 
 ```
 src/
-├── domain/                    # Business logic
-│   ├── entities/              # Domain entities
-│   ├── enums/                 # Business enums
-│   └── repositories/          # Repository interfaces
-├── application/               # Application services
-│   └── services/              # Business services
-├── infrastructure/            # External concerns
-│   ├── database/             # TypeORM entities & repositories
-│   ├── auth/                  # JWT strategies, guards
-│   ├── mail/                  # Email service
-│   └── rescue-team/          # Module registration
-└── presentation/             # API layer
-    ├── controllers/           # REST controllers
-    └── dtos/                  # Data transfer objects
+├── shared/                             ← SHARED kernel (cross-module)
+│   ├── common/constants/                # Messages, permissions
+│   ├── common/middlewares/              # Logger middleware
+│   └── core/enums/                      # 31 business enums
+│
+├── infrastructure/database/             ← SHARED infrastructure
+│   ├── database.module.ts              # @Global() TypeORM config
+│   ├── entities/                        # 28 TypeORM entities
+│   │   └── index.ts                    # Barrel export
+│   └── seeds/                           # DB seeding
+│
+├── modules/                             # FEATURE MODULES (microservices-ready)
+│   ├── auth/                            # Authentication & Authorization
+│   │   ├── domain/
+│   │   │   ├── entities/User.ts         # Pure domain class (has business logic)
+│   │   │   ├── interfaces/
+│   │   │   └── repositories/          # Repository interfaces
+│   │   ├── application/services/       # AuthService, AccessService
+│   │   ├── infrastructure/
+│   │   │   ├── auth/                   # Guards, strategies, decorators
+│   │   │   └── persistence/repositories/ # TypeORM implementations
+│   │   └── presentation/
+│   │       ├── controllers/
+│   │       └── dtos/
+│   │
+│   ├── rescue-team/                     # Rescue Team Management
+│   │   ├── domain/repositories/       # Repository interfaces
+│   │   ├── application/services/       # Business logic
+│   │   ├── infrastructure/persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── health/                          # Health check
+│   └── mail/                            # Email service
+│
+└── app.module.ts                        # Root module
 ```
 
-**Clean Architecture layers:**
+**Clean Architecture principles:**
 
-| Layer | Vai trò |
-|-------|---------|
-| **Domain** | Entities, Enums, Repository interfaces (không phụ thuộc gì) |
-| **Application** | Services chứa business logic |
-| **Infrastructure** | Database, Auth, Mail, External services |
-| **Presentation** | Controllers, DTOs, Swagger |
+| Layer | Vai trò | Ví dụ |
+|-------|--------|-------|
+| **Domain** | Pure business entities + interfaces | `User`, `IUserRepository` |
+| **Application** | Business logic, use cases | `AuthService`, `RescueTeamService` |
+| **Infrastructure** | External implementations | TypeORM repos, Mail service |
+| **Presentation** | API contracts | Controllers, DTOs, Swagger |
+
+**Microservices readiness:**
+- Each feature module in `modules/` is self-contained
+- Can be extracted to a separate microservice with its own database
+- Shared kernel (`shared/`, `infrastructure/database/`) is copied to each service
 
 ---
 
@@ -96,7 +122,7 @@ src/
 
 | Category | Tech |
 |----------|------|
-| Framework | NestJS 10 |
+| Framework | NestJS 11 |
 | Language | TypeScript 5 |
 | Database | PostgreSQL 15 + PostGIS 3 |
 | ORM | TypeORM |
@@ -115,36 +141,36 @@ src/
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/api/v1/auth/login` | Đăng nhập |
-| POST | `/api/v1/auth/register` | Đăng ký tài khoản công dân |
-| POST | `/api/v1/auth/admin/register` | Admin tạo tài khoản nhân viên |
-| POST | `/api/v1/auth/refresh` | Làm mới access token |
-| POST | `/api/v1/auth/logout` | Đăng xuất |
-| POST | `/api/v1/auth/forgot-password` | Yêu cầu OTP |
-| POST | `/api/v1/auth/reset-password` | Đặt lại mật khẩu |
+| POST | `/auth/login` | Đăng nhập |
+| POST | `/auth/register` | Đăng ký tài khoản công dân |
+| POST | `/auth/admin/register` | Admin tạo tài khoản nhân viên |
+| POST | `/auth/refresh` | Làm mới access token |
+| POST | `/auth/logout` | Đăng xuất |
+| POST | `/auth/forgot-password` | Yêu cầu OTP |
+| POST | `/auth/reset-password` | Đặt lại mật khẩu |
 
 ### Rescue Teams
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/v1/team-specializations` | Danh sách chuyên môn đội |
-| GET | `/api/v1/rescue-teams` | Danh sách đội cứu hộ (filter, search, phân trang) |
-| POST | `/api/v1/rescue-teams` | Tạo đội cứu hộ |
-| GET | `/api/v1/rescue-teams/:id` | Chi tiết đội |
-| PATCH | `/api/v1/rescue-teams/:id` | Cập nhật đội |
-| PATCH | `/api/v1/rescue-teams/:id/location` | Cập nhật vị trí GPS |
-| DELETE | `/api/v1/rescue-teams/:id` | Xóa đội |
-| POST | `/api/v1/rescue-teams/:id/members` | Thêm thành viên |
-| GET | `/api/v1/rescue-teams/:id/members` | Danh sách thành viên |
-| DELETE | `/api/v1/rescue-teams/:id/members/:memberId` | Xóa thành viên |
-| PATCH | `/api/v1/rescue-teams/:id/members/:memberId/role` | Thay đổi vai trò |
-| POST | `/api/v1/rescue-teams/leave` | Rời đội |
+| GET | `/team-specializations` | Danh sách chuyên môn đội |
+| GET | `/rescue-teams` | Danh sách đội cứu hộ (filter, search, phân trang) |
+| POST | `/rescue-teams` | Tạo đội cứu hộ |
+| GET | `/rescue-teams/:teamId` | Chi tiết đội |
+| PATCH | `/rescue-teams/:teamId` | Cập nhật đội |
+| PATCH | `/rescue-teams/:teamId/location` | Cập nhật vị trí GPS |
+| DELETE | `/rescue-teams/:teamId` | Xóa đội |
+| POST | `/rescue-teams/:teamId/members` | Thêm thành viên |
+| GET | `/rescue-teams/:teamId/members` | Danh sách thành viên |
+| DELETE | `/rescue-teams/:teamId/members/:memberId` | Xóa thành viên |
+| PATCH | `/rescue-teams/:teamId/members/:memberId/role` | Thay đổi vai trò |
+| POST | `/rescue-teams/leave` | Rời đội |
 
 ### Health
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/v1/health` | Health check (DB + Memory) |
+| GET | `/health` | Health check (DB + Memory) |
 
 ---
 
@@ -155,18 +181,19 @@ Phase 1: Infrastructure & Foundation    █████████████�
 Phase 2: Auth & Core Modules            ████████████████████ 100% ✅
 Phase 3: Business Modules
   ├── Rescue Team Module                ████████████████████ 100% ✅
-  ├── SOS Module                        ░░░░░░░░░░░░░░░░░░░  0%
+  ├── SOS Module                         ░░░░░░░░░░░░░░░░░░░  0%
   ├── Flood Report                      ░░░░░░░░░░░░░░░░░░░  0%
-  ├── Disaster Event                     ░░░░░░░░░░░░░░░░░░░  0%
-  └── Casualty                           ░░░░░░░░░░░░░░░░░░░  0%
+  ├── Disaster Event                    ░░░░░░░░░░░░░░░░░░░  0%
+  └── Casualty                          ░░░░░░░░░░░░░░░░░░░  0%
 Phase 4: Extensions                     ░░░░░░░░░░░░░░░░░░░  0%
   ├── Donation Campaign                  ░░░░░░░░░░░░░░░░░░░  0%
-  ├── Weather Alert                      ░░░░░░░░░░░░░░░░░░░  0%
-  └── Message System                     ░░░░░░░░░░░░░░░░░░░  0%
+  ├── Weather Alert                     ░░░░░░░░░░░░░░░░░░░  0%
+  └── Message System                    ░░░░░░░░░░░░░░░░░░░  0%
 ```
 
 **Stats:**
-- 30+ Domain entities
+- 28 TypeORM entities
+- 31 business enums
 - 80+ Permissions configured
 - 15 Unit tests (RescueTeamService)
 - 63 Tỉnh/Thành seed data
@@ -209,10 +236,8 @@ DB_PASSWORD=postgres
 DB_NAME=dors
 
 # JWT
-JWT_ACCESS_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret
-JWT_ACCESS_EXPIRY=15m
-JWT_REFRESH_EXPIRY=7d
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=15m
 
 # Mail (SMTP Gmail)
 MAIL_HOST=smtp.gmail.com

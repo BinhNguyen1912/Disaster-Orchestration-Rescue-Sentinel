@@ -49,6 +49,9 @@
       background: rgba(255,255,255,0.2);
       color: #fff;
     }
+    .status-badge.green { background: rgba(34,197,94,0.4); }
+    .status-badge.yellow { background: rgba(234,179,8,0.4); }
+    .status-badge.red { background: rgba(239,68,68,0.4); }
     .refresh-btn {
       margin-top: 8px;
       padding: 8px 16px;
@@ -97,10 +100,6 @@
       color: var(--text-muted);
       margin-top: 4px;
     }
-    .status-emoji {
-      font-size: 16px;
-      margin-right: 4px;
-    }
 
     /* Section */
     .section {
@@ -140,7 +139,21 @@
 
     .note { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
-    /* Auth Features */
+    /* Architecture diagram */
+    .arch-diagram {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre;
+      color: #a5f3fc;
+    }
+
+    /* Feature grid */
     .feature-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -165,7 +178,7 @@
       margin-top: 2px;
     }
 
-    /* Security section */
+    /* Security */
     .security-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -198,20 +211,6 @@
     }
     .history-content { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
 
-    /* Flow diagram */
-    .flow-diagram {
-      background: #0f172a;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      font-family: monospace;
-      font-size: 13px;
-      line-height: 1.8;
-      overflow-x: auto;
-      white-space: pre;
-      color: #a5f3fc;
-    }
-
     /* Last updated */
     .last-updated {
       text-align: center;
@@ -238,7 +237,7 @@
         <div class="meta">Disaster Rescue Management System — Backend</div>
       </div>
       <div class="header-right">
-        <div class="status-badge">🟡 Phase 2 ✅ & Phase 3 — Đã bắt đầu</div>
+        <div class="status-badge yellow">🟡 Phase 3 — Đang làm</div>
         <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
       </div>
     </div>
@@ -259,9 +258,9 @@
       </div>
       <div class="phase-card">
         <h3>Phase 3 — Nghiệp vụ chính</h3>
-        <div class="progress-bar"><div class="progress-fill yellow" style="width:15%"></div></div>
-        <div class="percent">15%</div>
-        <div class="status">🟡 Đang làm</div>
+        <div class="progress-bar"><div class="progress-fill yellow" style="width:25%"></div></div>
+        <div class="percent">25%</div>
+        <div class="status">🟡 Rescue Team ✅, còn lại 0%</div>
       </div>
       <div class="phase-card">
         <h3>Phase 4 — Mở rộng</h3>
@@ -271,192 +270,123 @@
       </div>
     </div>
 
-    <!-- Phase 1 Tasks -->
+    <!-- Architecture -->
     <div class="section">
-      <h2>✅ Phase 1: Hạ tầng & Foundation</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Task</th>
-            <th>Trạng thái</th>
-            <th>Ghi chú</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>1.1</td><td>Docker Compose (PostgreSQL + PostGIS)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">docker-compose.yml đã có</td></tr>
-          <tr><td>1.2</td><td>Cài dependencies (NestJS, TypeORM, pg...)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">package.json đầy đủ</td></tr>
-          <tr><td>1.3</td><td>Clean Architecture (4 layers)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">4 layer tách biệt rõ ràng</td></tr>
-          <tr><td>1.4</td><td>Config module (env validation, DB)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">ConfigModule.forRoot() global</td></tr>
-          <tr><td>1.5</td><td>Base Repository (CRUD chung)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">base.repository.ts + interface</td></tr>
-          <tr><td>1.6</td><td>Shared Enums</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">Tất cả enums đã có</td></tr>
-          <tr><td>1.7</td><td>Health check endpoint</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">@nestjs/terminus, GET /health</td></tr>
-          <tr><td>1.8</td><td>ESLint + Prettier + Husky + Commitlint</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">Lint-staged chạy trước mỗi commit</td></tr>
-          <tr><td>1.9</td><td>Swagger UI (/api/docs)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">Bearer Auth + full documentation</td></tr>
-          <tr><td>1.10</td><td>Seed data (63 tỉnh + Admin + Roles)</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">npm run seed</td></tr>
-        </tbody>
-      </table>
+      <h2>🏗️ Kiến trúc Feature-Based Modular (2026-05-27)</h2>
+      <div class="arch-diagram">src/
+├── shared/                              ← SHARED kernel
+│   ├── common/constants/
+│   ├── common/middlewares/
+│   └── core/enums/                      # 31 enums
+│
+├── infrastructure/database/              ← SHARED infrastructure
+│   ├── database.module.ts             # @Global() TypeORM
+│   ├── entities/                      # 28 TypeORM entities
+│   │   └── index.ts                   # Barrel export
+│   └── seeds/
+│
+├── modules/
+│   ├── auth/                           # AUTH MICROSERVICE
+│   │   ├── domain/
+│   │   │   ├── entities/User.ts        # Pure domain (has logic)
+│   │   │   └── repositories/          # Interfaces
+│   │   ├── application/services/       # AuthService
+│   │   ├── infrastructure/
+│   │   │   ├── auth/                  # Guards, strategies
+│   │   │   └── persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── rescue-team/                   # RESCUE TEAM MICROSERVICE
+│   │   ├── domain/repositories/
+│   │   ├── application/services/
+│   │   ├── infrastructure/persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── health/
+│   └── mail/
+│
+└── app.module.ts</div>
+      <p style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        ✅ <strong>Refactor thành công:</strong> Đã xóa duplicate domain entities, chuyển User entity vào <code>modules/auth/domain/entities/</code>, thống nhất enums vào <code>shared/core/enums/</code>, xóa unused repositories, sửa DatabaseModule explicit entities.
+      </p>
     </div>
 
     <!-- Auth Features -->
     <div class="section">
-      <h2>🟡 Phase 2: Auth Module — Tính năng đã hoàn thành</h2>
+      <h2>🟢 Phase 2: Auth Module — Đã hoàn thành</h2>
       <div class="feature-grid">
         <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng nhập</div><div class="endpoint">POST /auth/login</div></div></div>
-        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng ký tài khoản</div><div class="endpoint">POST /auth/register</div></div></div>
-        <div class="feature-item"><span class="check">✅</span><div><div class="name">Tạo tài khoản nhân viên</div><div class="endpoint">POST /auth/admin/register</div></div></div>
-        <div class="feature-item"><span class="check">✅</span><div><div class="name">Cấp lại Access Token</div><div class="endpoint">POST /auth/refresh</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng ký</div><div class="endpoint">POST /auth/register</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Tạo NV</div><div class="endpoint">POST /auth/admin/register</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Refresh token</div><div class="endpoint">POST /auth/refresh</div></div></div>
         <div class="feature-item"><span class="check">✅</span><div><div class="name">Đăng xuất</div><div class="endpoint">POST /auth/logout</div></div></div>
-        <div class="feature-item"><span class="check">✅</span><div><div class="name">Quên mật khẩu (OTP)</div><div class="endpoint">POST /auth/forgot-password</div></div></div>
-        <div class="feature-item"><span class="check">✅</span><div><div class="name">Đặt lại mật khẩu</div><div class="endpoint">POST /auth/reset-password</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Quên mk</div><div class="endpoint">POST /auth/forgot-password</div></div></div>
+        <div class="feature-item"><span class="check">✅</span><div><div class="name">Reset mk</div><div class="endpoint">POST /auth/reset-password</div></div></div>
       </div>
-    </div>
 
-    <!-- Security -->
-    <div class="section">
-      <h2>🔒 Cơ chế bảo mật</h2>
+      <h3 style="margin-top:16px">🔐 Bảo mật</h3>
       <div class="security-grid">
         <div class="security-item"><span class="check">✅</span> JWT Access Token (15 phút)</div>
         <div class="security-item"><span class="check">✅</span> Refresh Token UUID, lưu DB</div>
         <div class="security-item"><span class="check">✅</span> Rotate Refresh Token</div>
         <div class="security-item"><span class="check">✅</span> bcrypt mã hóa mật khẩu</div>
         <div class="security-item"><span class="check">✅</span> OTP 6 số, hết hạn 5 phút</div>
-        <div class="security-item"><span class="check">✅</span> Gửi Email thực qua SMTP</div>
-        <div class="security-item"><span class="check">✅</span> HTML email template Handlebars</div>
-        <div class="security-item"><span class="check">✅</span> Revoke toàn bộ phiên khi logout/reset</div>
-        <div class="security-item"><span class="check">✅</span> LocalStrategy xác thực SĐT/Email</div>
-      </div>
-
-      <h2 style="margin-top:20px">🔐 Bảo mật flow Quên mật khẩu (OTP + resetToken)</h2>
-      <div class="flow-diagram">User gửi request → Server tạo OTP (6 số, 5 phút) + resetToken (UUID) → Lưu DB → Gửi email cho user
-                                        ↓
-                        User gửi: resetToken + OTP + newPassword
-                                        ↓
-                          Server verify 3 điều kiện → Update password → Xóa OTP/resetToken</div>
-      <table style="margin-top:16px">
-        <thead><tr><th>Yếu tố</th><th>Mục đích</th></tr></thead>
-        <tbody>
-          <tr><td><code>resetToken</code></td><td>Là "key" — user truyền trong request reset password, không gửi qua email</td></tr>
-          <tr><td><code>OTP</code></td><td>Là "password" — gửi qua email/SMS, attacker không biết nếu không có quyền truy cập hòm thư</td></tr>
-        </tbody>
-      </table>
-      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
-        <strong>resetToken:</strong> UUID v4 ngẫu nhiên (~122 bit entropy, không đoán được). Dùng 1 lần — sau reset thành công, cả OTP và resetToken đều bị xóa khỏi DB.
+        <div class="security-item"><span class="check">✅</span> Gửi Email thực SMTP</div>
+        <div class="security-item"><span class="check">✅</span> Permission Guard + Sync</div>
+        <div class="security-item"><span class="check">✅</span> Multi-tenant RBAC</div>
       </div>
     </div>
 
-    <!-- RBAC -->
+    <!-- Phase 3 -->
     <div class="section">
-      <h2>👥 Phân quyền (RBAC)</h2>
+      <h2>🟡 Phase 3: Nghiệp vụ chính</h2>
       <table>
-        <thead><tr><th>Vai trò</th><th>Level</th><th>Mô tả</th></tr></thead>
+        <thead><tr><th>Module</th><th>Trạng thái</th><th>Ghi chú</th></tr></thead>
         <tbody>
-          <tr><td>SYSTEM_ADMIN</td><td>100</td><td>Quản trị viên toàn hệ thống</td></tr>
-          <tr><td>PROVINCE_ADMIN</td><td>80</td><td>Quản trị viên cấp Tỉnh/Thành phố</td></tr>
-          <tr><td>RESCUE_TEAM_LEADER</td><td>50</td><td>Đội trưởng đội cứu hộ</td></tr>
-          <tr><td>USER</td><td>10</td><td>Người dùng thường</td></tr>
+          <tr><td>✅ Rescue Team</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">11 endpoints + 15 unit tests</td></tr>
+          <tr><td>🔲 SOS Request</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Auto-dispatch, WebSocket</td></tr>
+          <tr><td>🔲 Flood Report</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Báo cáo lũ, xác minh</td></tr>
+          <tr><td>🔲 Disaster Event</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Sự kiện thiên tai</td></tr>
+          <tr><td>🔲 Casualty</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Thương vong</td></tr>
         </tbody>
       </table>
-      <div style="margin-top:16px;font-size:13px;color:var(--text-muted)">
-        ✅ JwtStrategy — giải mã token, inject userId/provinceId/roleId vào request<br>
-        ✅ JwtAuthGuard — bảo vệ các endpoint yêu cầu đăng nhập<br>
-        ✅ LocalAuthGuard — bảo vệ endpoint /auth/login<br>
-        ✅ AccessGuard & @Public() — custom guard toàn cục, bảo vệ toàn hệ thống với 3 chế độ: none (public), api-key, và access (JWT)<br>
-        ✅ @CurrentUser() — decorator lấy thông tin user/payload đã xác thực trong controller<br>
-        ✅ getActiveRoleId(provinceId?) — tự động lấy đúng roleId theo tỉnh thành<br>
-        ✅ Multi-tenant: Một user có thể giữ nhiều vai trò ở nhiều tỉnh (bảng user_role)<br>
-        ✅ PermissionGuard + @RequirePermissions() — Hoàn thành (2026-05-21)<br>
-        ✅ Permission Sync Script (npm run sync:permissions) — Idempotent, upsert<br>
-        ✅ Permission Constants (PermModule, PermAction, ActionSet, ROLE_PERMISSION_MATRIX)<br>
-        ✅ Province Scope — Explicit trong Service layer
-      </div>
-    </div>
 
-    <!-- Technical Debt -->
-    <div class="section">
-      <h2>📋 Technical Debt</h2>
+      <h3 style="margin-top:20px">🔲 Phase 4: Mở rộng</h3>
       <table>
-        <thead><tr><th>#</th><th>Vấn đề</th><th>Mức độ</th><th>Ghi chú</th></tr></thead>
+        <thead><tr><th>Module</th><th>Trạng thái</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td>OTP chỉ log ra console khi dùng SĐT (chưa có SMS)</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Cần tích hợp Twilio / ESMS</td></tr>
-          <tr><td>2</td><td>synchronize: true trong TypeORM (chỉ dùng dev)</td><td><span class="badge todo">🔴 Cao</span></td><td class="note">Phải chuyển sang migration trước khi production</td></tr>
-          <tr><td>3</td><td>Permission Guard chưa implement</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">PermissionGuard + @RequirePermissions() + Sync Script</td></tr>
-          <tr><td>4</td><td>Province Scope chưa implement</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">Explicit trong Service, không dùng Interceptor</td></tr>
-          <tr><td>5</td><td>Chưa có unit test</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">RescueTeamService: 15 unit tests passed</td></tr>
-          <tr><td>6</td><td>Health check endpoint chưa có</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">@nestjs/terminus, GET /health</td></tr>
-          <tr><td>7</td><td>Fix BaseRepository.update() — lọc undefined values tránh ghi đè null</td><td><span class="badge fixed">✅ Đã fix</span></td><td class="note">Bug gây lỗi provinceId khi update OTP</td></tr>
-          <tr><td>8</td><td>Admin users seed thiếu user_role mapping → JWT không có roleId</td><td><span class="badge done">✅ Đã hoàn thành</span></td><td class="note">Đã re-seed, tạo đủ user_role cho 36 admins</td></tr>
-          <tr><td>9</td><td>Permission check query DB mỗi request (chưa có Redis cache)</td><td><span class="badge progress">🟡 Trung bình</span></td><td class="note">Thêm Redis cache layer khi traffic tăng</td></tr>
+          <tr><td>Donation Campaign</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td></tr>
+          <tr><td>Weather Alert</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td></tr>
+          <tr><td>Message System</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td></tr>
+          <tr><td>Audit Log</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td></tr>
+          <tr><td>GIS Layers</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td></tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Phase 3 & 4 -->
-    <div class="section">
-      <h2>🔲 Phase 3 & 4 — Tiến độ</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <div>
-          <h3 style="font-size:14px;color:var(--text-muted);margin-bottom:12px">Phase 3: Nghiệp vụ chính</h3>
-          <ul style="font-size:13px;color:var(--text-muted);list-style:none">
-            <li>✅ Module Rescue Team — Hoàn thành 2026-05-22</li>
-            <li>🔲 Module SOS (gửi SOS, auto-dispatch, WebSocket)</li>
-            <li>🔲 Module Flood Report (báo cáo lũ, xác minh)</li>
-            <li>🔲 Module Casualty (thương vong)</li>
-            <li>🔲 Module Disaster Event (sự kiện thiên tai)</li>
-          </ul>
-        </div>
-        <div>
-          <h3 style="font-size:14px;color:var(--text-muted);margin-bottom:12px">Phase 4: Mở rộng</h3>
-          <ul style="font-size:13px;color:var(--text-muted);list-style:none">
-            <li>🔲 Module Donation (quyên góp, chiến dịch)</li>
-            <li>🔲 Module Weather Alert (cảnh báo thời tiết, IoT)</li>
-            <li>🔲 Module Message (nhắn tin nội bộ)</li>
-            <li>🔲 Module Audit Log (nhật ký hành động)</li>
-            <li>🔲 GIS Layers (vùng ngập, hạ tầng)</li>
-          </ul>
-        </div>
-      </div>
     </div>
 
     <!-- History -->
     <div class="section">
       <h2>📅 Lịch sử buổi code</h2>
       <div class="history-item">
+        <div class="history-date">2026-05-27</div>
+        <div class="history-content"><strong>Refactor Feature-Based Modular:</strong> Xóa duplicate domain entities (data-bags), chuyển User entity vào <code>modules/auth/domain/entities/</code> (có business logic), thống nhất 31 enums vào <code>shared/core/enums/</code>, xóa unused <code>infrastructure/database/repositories/</code>, sửa DatabaseModule dùng explicit <code>entities: Object.values(Entities)</code> thay vì autoLoadEntities để fix TypeORM metadata error. Build pass.</div>
+      </div>
+      <div class="history-item">
         <div class="history-date">2026-05-22</div>
-        <div class="history-content">Implement Rescue Team Module hoàn chỉnh: TeamSpecializationEntity, IRescueTeamRepository, IRescueTeamMemberRepository, ITeamSpecializationRepository + implementations, RescueTeamService (11 endpoints), RescueTeamController, TeamSpecializationController, RescueTeamModule, seed 13 team specializations. Bỏ code field khỏi RescueTeam, đổi specializations → specializationIds. Unit test 15 cases — tất cả passed.</div>
+        <div class="history-content">Implement <strong>Rescue Team Module</strong> hoàn chỉnh: TeamSpecializationEntity + 3 repos + 11 endpoints + 15 unit tests passed.</div>
       </div>
       <div class="history-item">
         <div class="history-date">2026-05-21</div>
-        <div class="history-content">Chạy lại seeder (xóa 34 admin cũ, tạo mới 36 admins), tạo file user-role.json seed data, phát hiện và giải thích lỗi PostgreSQL `user` là keyword reserved.</div>
-      </div>
-      <div class="history-item">
-        <div class="history-date">2026-05-21</div>
-        <div class="history-content">Xây dựng RBAC Permission Guard (PermissionGuard + @RequirePermissions()), IPermissionRepository, Permission Sync Script (npm run sync:permissions), Permission Constants (PermModule, PermAction, ActionSet, ROLE_PERMISSION_MATRIX), Province Scope (explicit trong Service), Health Check endpoint (GET /health với @nestjs/terminus).</div>
-      </div>
-      <div class="history-item">
-        <div class="history-date">2026-05-21</div>
-        <div class="history-content">Xây dựng Unified Access Guard (none, api-key, access), AccessService, @Public và @CurrentUser decorator. Áp dụng bảo vệ toàn cục ứng dụng (APP_GUARD), bổ sung cấu hình API_KEY và cấu hình các route public.</div>
+        <div class="history-content">RBAC Permission Guard + Sync Script + Health Check + Re-seed admin users.</div>
       </div>
       <div class="history-item">
         <div class="history-date">2026-05-20</div>
-        <div class="history-content">Thiết lập ESLint/Prettier/Husky, tạo AuthModule (Login + JWT), thiết kế kiến trúc Clean Architecture, implement đầy đủ Auth flow (Register, Refresh Token, Logout, Forgot/Reset Password), tạo bảng refresh_token, viết UserResponseDto.fromEntity()</div>
-      </div>
-      <div class="history-item">
-        <div class="history-date">2026-05-20</div>
-        <div class="history-content">Cài @nestjs-modules/mailer + handlebars, tạo MailModule + MailService, thiết kế template email OTP HTML đẹp, tích hợp gửi email thật qua SMTP Gmail khi quên mật khẩu, cập nhật nest-cli.json để copy .hbs sang dist</div>
-      </div>
-      <div class="history-item">
-        <div class="history-date">2026-05-20</div>
-        <div class="history-content">Fix lỗi HandlebarsAdapter import, bổ sung endpoint POST /auth/admin/register cho Admin tạo tài khoản nhân viên với roleId chỉ định, thêm assignRole() method trong IUserRepository</div>
-      </div>
-      <div class="history-item">
-        <div class="history-date">2026-05-20</div>
-        <div class="history-content">Ghi chú bảo mật flow Forgot Password (OTP + resetToken 2-yếu-tố), fix bug BaseRepository.update() ghi đè undefined thành null gây lỗi provinceId</div>
+        <div class="history-content">Auth Module hoàn chỉnh: JWT + Refresh Token + OTP email + SMTP Gmail integration.</div>
       </div>
     </div>
 
     <div class="last-updated">
-      Lần cập nhật: <span>2026-05-22</span> — AI Assistant tự động cập nhật cuối mỗi buổi code
+      Lần cập nhật: <span>2026-05-27</span> — AI Assistant
     </div>
 
   </div>
