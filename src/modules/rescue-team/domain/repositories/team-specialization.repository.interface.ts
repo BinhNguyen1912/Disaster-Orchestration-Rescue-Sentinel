@@ -1,8 +1,8 @@
-import { TeamSpecializationEntity } from '@infrastructure/database/entities/team-specialization.entity';
+import { TeamSpecialization } from '../entities/team-specialization';
 
 export interface ITeamSpecializationRepository {
-  findById(id: number): Promise<TeamSpecializationEntity | null>;
-  findByIds(ids: number[]): Promise<TeamSpecializationEntity[]>;
-  findByTeamType(teamType: string): Promise<TeamSpecializationEntity[]>;
-  findAll(): Promise<TeamSpecializationEntity[]>;
+  findById(id: number): Promise<TeamSpecialization | null>;
+  findByIds(ids: number[]): Promise<TeamSpecialization[]>;
+  findByTeamType(teamType: string): Promise<TeamSpecialization[]>;
+  findAll(): Promise<TeamSpecialization[]>;
 }

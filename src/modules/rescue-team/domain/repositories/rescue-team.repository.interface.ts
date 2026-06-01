@@ -1,4 +1,4 @@
-import { RescueTeamEntity } from '@infrastructure/database/entities/rescue-team.entity';
+import { RescueTeam } from '../entities/rescue-team';
 
 export interface PaginationOptions {
   page: number;
@@ -19,16 +19,13 @@ export interface RescueTeamFilters {
 }
 
 export interface IRescueTeamRepository {
-  findById(id: number): Promise<RescueTeamEntity | null>;
+  findById(id: number): Promise<RescueTeam | null>;
   findAll(
     filters: RescueTeamFilters,
     pagination: PaginationOptions,
-  ): Promise<PaginatedResult<RescueTeamEntity>>;
-  create(data: Partial<RescueTeamEntity>): Promise<RescueTeamEntity>;
-  update(
-    id: number,
-    data: Partial<RescueTeamEntity>,
-  ): Promise<RescueTeamEntity | null>;
+  ): Promise<PaginatedResult<RescueTeam>>;
+  create(data: Partial<RescueTeam>): Promise<RescueTeam>;
+  update(id: number, data: Partial<RescueTeam>): Promise<RescueTeam | null>;
   delete(id: number): Promise<boolean>;
   countActiveCases(teamId: number): Promise<number>;
 }

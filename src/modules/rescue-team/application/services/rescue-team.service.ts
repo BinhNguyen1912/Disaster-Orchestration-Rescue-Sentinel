@@ -5,15 +5,17 @@ import {
   ConflictException,
   Inject,
 } from '@nestjs/common';
-import type { CreateRescueTeamDto } from '../../presentation/dtos/rescue-team/create-rescue-team.dto';
-import type { UpdateRescueTeamDto } from '../../presentation/dtos/rescue-team/update-rescue-team.dto';
-import type { UpdateRescueTeamLocationDto } from '../../presentation/dtos/rescue-team/update-rescue-team-location.dto';
-import type { AddMemberDto } from '../../presentation/dtos/rescue-team/add-member.dto';
-import type { UpdateMemberRoleDto } from '../../presentation/dtos/rescue-team/update-member-role.dto';
 import { RoleInTeam } from '@shared/core/enums/roleInTeam.enum';
 import type { IRescueTeamRepository } from '../../domain/repositories/rescue-team.repository.interface';
 import type { IRescueTeamMemberRepository } from '../../domain/repositories/rescue-team-member.repository.interface';
 import type { ITeamSpecializationRepository } from '../../domain/repositories/team-specialization.repository.interface';
+import type {
+  AddMemberInput,
+  CreateRescueTeamInput,
+  UpdateMemberRoleInput,
+  UpdateRescueTeamInput,
+  UpdateRescueTeamLocationInput,
+} from '../contracts/rescue-team.contracts';
 
 @Injectable()
 export class RescueTeamService {
@@ -26,7 +28,7 @@ export class RescueTeamService {
     private readonly specRepo: ITeamSpecializationRepository,
   ) {}
 
-  async create(dto: CreateRescueTeamDto, userId: number) {
+  async create(dto: CreateRescueTeamInput, userId: number) {
     // Validate specializationIds belong to teamType
     if (dto.specializationIds && dto.specializationIds.length > 0) {
       const specs = await this.specRepo.findByIds(dto.specializationIds);
@@ -58,7 +60,7 @@ export class RescueTeamService {
     return team;
   }
 
-  async update(id: number, dto: UpdateRescueTeamDto) {
+  async update(id: number, dto: UpdateRescueTeamInput) {
     const team = await this.teamRepo.update(id, dto);
     if (!team) {
       throw new NotFoundException('RESCUE_TEAM_NOT_FOUND');
@@ -66,7 +68,7 @@ export class RescueTeamService {
     return team;
   }
 
-  async updateLocation(id: number, dto: UpdateRescueTeamLocationDto) {
+  async updateLocation(id: number, dto: UpdateRescueTeamLocationInput) {
     const team = await this.teamRepo.update(id, {
       currentLocation: dto.currentLocation,
       ...(dto.status && { status: dto.status }),
@@ -92,7 +94,7 @@ export class RescueTeamService {
     return { success: true };
   }
 
-  async addMember(teamId: number, dto: AddMemberDto) {
+  async addMember(teamId: number, dto: AddMemberInput) {
     // Check user not already in another active team
     const existing = await this.memberRepo.findByUserId(dto.userId);
     if (existing && existing.isActive) {
@@ -167,7 +169,7 @@ export class RescueTeamService {
   async updateMemberRole(
     teamId: number,
     memberId: number,
-    dto: UpdateMemberRoleDto,
+    dto: UpdateMemberRoleInput,
   ) {
     const member = await this.memberRepo.findById(memberId);
     if (!member || member.teamId !== teamId) {

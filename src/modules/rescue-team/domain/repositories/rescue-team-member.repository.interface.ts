@@ -1,4 +1,4 @@
-import { RescueTeamMemberEntity } from '@infrastructure/database/entities/rescue-team-member.entity';
+import { RescueTeamMember } from '../entities/rescue-team-member';
 
 export interface PaginationOptions {
   page: number;
@@ -11,21 +11,19 @@ export interface PaginatedResult<T> {
 }
 
 export interface IRescueTeamMemberRepository {
-  findById(id: number): Promise<RescueTeamMemberEntity | null>;
-  findByUserId(userId: number): Promise<RescueTeamMemberEntity | null>;
+  findById(id: number): Promise<RescueTeamMember | null>;
+  findByUserId(userId: number): Promise<RescueTeamMember | null>;
   findByTeamId(
     teamId: number,
     filters?: { isActive?: boolean },
     pagination?: PaginationOptions,
-  ): Promise<PaginatedResult<RescueTeamMemberEntity>>;
-  create(
-    data: Partial<RescueTeamMemberEntity>,
-  ): Promise<RescueTeamMemberEntity>;
+  ): Promise<PaginatedResult<RescueTeamMember>>;
+  create(data: Partial<RescueTeamMember>): Promise<RescueTeamMember>;
   update(
     id: number,
-    data: Partial<RescueTeamMemberEntity>,
-  ): Promise<RescueTeamMemberEntity | null>;
+    data: Partial<RescueTeamMember>,
+  ): Promise<RescueTeamMember | null>;
   softDelete(id: number): Promise<boolean>;
   countActiveMembers(teamId: number): Promise<number>;
-  findLeaderByTeamId(teamId: number): Promise<RescueTeamMemberEntity | null>;
+  findLeaderByTeamId(teamId: number): Promise<RescueTeamMember | null>;
 }

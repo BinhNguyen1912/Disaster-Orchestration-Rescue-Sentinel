@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { ITeamSpecializationRepository } from '../../domain/repositories/team-specialization.repository.interface';
-import { TeamSpecializationEntity } from '@infrastructure/database/entities/team-specialization.entity';
+import { TeamSpecialization } from '../../domain/entities/team-specialization';
 
 @Injectable()
 export class TeamSpecializationService {
@@ -9,14 +9,14 @@ export class TeamSpecializationService {
     private readonly specializationRepo: ITeamSpecializationRepository,
   ) {}
 
-  async findAll(teamType?: string): Promise<TeamSpecializationEntity[]> {
+  async findAll(teamType?: string): Promise<TeamSpecialization[]> {
     if (teamType) {
       return this.specializationRepo.findByTeamType(teamType);
     }
     return this.specializationRepo.findAll();
   }
 
-  async findByIds(ids: number[]): Promise<TeamSpecializationEntity[]> {
+  async findByIds(ids: number[]): Promise<TeamSpecialization[]> {
     return this.specializationRepo.findByIds(ids);
   }
 }
