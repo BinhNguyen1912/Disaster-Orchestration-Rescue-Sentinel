@@ -17,12 +17,15 @@ import {
 } from '../../domain/interfaces/jwt-payload.interface';
 import { User } from '@modules/auth/domain/entities/user';
 import { APP_MESSAGES } from '@shared/common/constants/messages.constant';
-import { BaseResponseDto } from '../../presentation/common/base-response.dto';
-import { LoginResponseDto } from '../../presentation/dtos/auth/login-response.dto';
-import { UserResponseDto } from '../../presentation/dtos/auth/user-response.dto';
-import { RegisterDto } from '../../presentation/dtos/auth/register.dto';
-import { AdminRegisterDto } from '../../presentation/dtos/auth/admin-register.dto';
 import { MailService } from '@modules/mail/infrastructure/mail.service';
+import {
+  AdminRegisterInput,
+  AuthLoginResponse,
+  AuthUserResponse,
+  BaseResponse,
+  RegisterInput,
+  toAuthUserResponse,
+} from '../contracts/auth.contracts';
 
 @Injectable()
 export class AuthService {
@@ -54,7 +57,7 @@ export class AuthService {
     user: User,
     ipAddress?: string,
     userAgent?: string,
-  ): Promise<BaseResponseDto<LoginResponseDto>> {
+  ): Promise<BaseResponse<AuthLoginResponse>> {
     const { accessToken, refreshToken } = await this.generateTokenPair(
       user,
       ipAddress,
@@ -67,12 +70,12 @@ export class AuthService {
       data: {
         accessToken,
         refreshToken,
-        user: UserResponseDto.fromEntity(user),
+        user: toAuthUserResponse(user),
       },
     };
   }
 
-  async register(dto: RegisterDto): Promise<BaseResponseDto<UserResponseDto>> {
+  async register(dto: RegisterInput): Promise<BaseResponse<AuthUserResponse>> {
     const existing = await this.userRepository.findByIdentifier(dto.phone);
     if (existing) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
@@ -108,14 +111,14 @@ export class AuthService {
     return {
       statusCode: 201,
       message: APP_MESSAGES.AUTH.REGISTER_SUCCESS,
-      data: UserResponseDto.fromEntity(newUser),
+      data: toAuthUserResponse(newUser),
     };
   }
 
   async adminRegister(
-    dto: AdminRegisterDto,
+    dto: AdminRegisterInput,
     createdBy: number,
-  ): Promise<BaseResponseDto<UserResponseDto>> {
+  ): Promise<BaseResponse<AuthUserResponse>> {
     const existing = await this.userRepository.findByIdentifier(dto.phone);
     if (existing) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
@@ -160,7 +163,7 @@ export class AuthService {
     return {
       statusCode: 201,
       message: APP_MESSAGES.AUTH.REGISTER_SUCCESS,
-      data: UserResponseDto.fromEntity(userWithRole!),
+      data: toAuthUserResponse(userWithRole!),
     };
   }
 
@@ -168,7 +171,7 @@ export class AuthService {
     token: string,
     ipAddress?: string,
     userAgent?: string,
-  ): Promise<BaseResponseDto<{ accessToken: string; refreshToken: string }>> {
+  ): Promise<BaseResponse<{ accessToken: string; refreshToken: string }>> {
     const storedToken = await this.refreshTokenRepository.findByToken(token);
 
     if (
@@ -202,7 +205,7 @@ export class AuthService {
     };
   }
 
-  async logout(token: string): Promise<BaseResponseDto<null>> {
+  async logout(token: string): Promise<BaseResponse<null>> {
     const storedToken = await this.refreshTokenRepository.findByToken(token);
     if (storedToken && !storedToken.isRevoked) {
       await this.refreshTokenRepository.update(storedToken.id, {
@@ -219,7 +222,7 @@ export class AuthService {
 
   async forgotPassword(
     identifier: string,
-  ): Promise<BaseResponseDto<{ resetToken: string }>> {
+  ): Promise<BaseResponse<{ resetToken: string }>> {
     const user = await this.userRepository.findByIdentifier(identifier);
     if (!user) {
       return {
@@ -264,7 +267,7 @@ export class AuthService {
     resetToken: string,
     otp: string,
     newPassword: string,
-  ): Promise<BaseResponseDto<null>> {
+  ): Promise<BaseResponse<null>> {
     const user = await this.userRepository.findByResetToken(resetToken);
 
     if (

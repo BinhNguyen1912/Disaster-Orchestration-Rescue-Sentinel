@@ -1,7 +1,7 @@
 import { IBaseRepository } from './base.repository.interface';
-import { RefreshTokenEntity } from '@infrastructure/database/entities/refresh-token.entity';
+import { RefreshToken } from '../entities/refresh-token';
 
-export interface IRefreshTokenRepository extends IBaseRepository<RefreshTokenEntity> {
-  findByToken(token: string): Promise<RefreshTokenEntity | null>;
+export interface IRefreshTokenRepository extends IBaseRepository<RefreshToken> {
+  findByToken(token: string): Promise<RefreshToken | null>;
   revokeAllByUserId(userId: number): Promise<void>;
 }
