@@ -1,13 +1,9 @@
+import { PaginatedResult } from '../../../../shared/common/dtos/pagination.dto';
 import { RescueTeamMember } from '../entities/rescue-team-member';
 
 export interface PaginationOptions {
   page: number;
   limit: number;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  total: number;
 }
 
 export interface IRescueTeamMemberRepository {

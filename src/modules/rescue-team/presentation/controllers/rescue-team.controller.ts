@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,15 +20,21 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { RescueTeamService } from '../../application/services/rescue-team.service';
-import { CreateRescueTeamDto } from '../dtos/rescue-team/create-rescue-team.dto';
-import { UpdateRescueTeamDto } from '../dtos/rescue-team/update-rescue-team.dto';
-import { UpdateRescueTeamLocationDto } from '../dtos/rescue-team/update-rescue-team-location.dto';
-import { AddMemberDto } from '../dtos/rescue-team/add-member.dto';
-import { UpdateMemberRoleDto } from '../dtos/rescue-team/update-member-role.dto';
-import { QueryRescueTeamDto } from '../dtos/rescue-team/query-rescue-team.dto';
+import type { CreateRescueTeamDto } from '../../application/dtos/create-rescue-team.dto';
+import type { UpdateRescueTeamDto } from '../../application/dtos/update-rescue-team.dto';
+import type { UpdateRescueTeamLocationDto } from '../../application/dtos/update-rescue-team-location.dto';
+import type { AddMemberDto } from '../../application/dtos/add-member.dto';
+import type { UpdateMemberRoleDto } from '../../application/dtos/update-member-role.dto';
+import type { QueryRescueTeamDto } from '../../application/dtos/query.dto';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/auth/guards/jwt-auth.guard';
 import { RequirePermissions } from '@modules/auth/infrastructure/auth/decorators/permissions.decorator';
 import { Permissions } from '@shared/common/constants/permissions.constant';
+import { CreateRescueTeamValidationDto } from '../dtos/rescue-team/create-rescue-team.dto';
+import { UpdateRescueTeamValidationDto } from '../dtos/rescue-team/update-rescue-team.dto';
+import { UpdateRescueTeamLocationValidationDto } from '../dtos/rescue-team/update-rescue-team-location.dto';
+import { AddMemberValidationDto } from '../dtos/rescue-team/add-member.dto';
+import { UpdateMemberRoleValidationDto } from '../dtos/rescue-team/update-member-role.dto';
+import { QueryRescueTeamValidationDto } from '../dtos/rescue-team/query-rescue-team.dto';
 
 @ApiTags('Rescue Teams')
 @Controller('rescue-teams')
@@ -41,7 +48,11 @@ export class RescueTeamController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions(Permissions.RESCUE_TEAM_CREATE)
-  async create(@Body() dto: CreateRescueTeamDto, @Request() req: any) {
+  async create(
+    @Body(new ValidationPipe({ transform: true }))
+    dto: CreateRescueTeamValidationDto,
+    @Request() req: any,
+  ) {
     return this.service.create(dto, req.user.userId ?? req.user.sub);
   }
 
@@ -50,7 +61,10 @@ export class RescueTeamController {
   @ApiResponse({ status: 200, description: 'Danh sách đội cứu hộ' })
   @Get()
   @RequirePermissions(Permissions.RESCUE_TEAM_READ)
-  async findAll(@Query() query: QueryRescueTeamDto) {
+  async findAll(
+    @Query(new ValidationPipe({ transform: true }))
+    query: QueryRescueTeamValidationDto,
+  ) {
     const { page = 1, limit = 20, ...filters } = query;
     return this.service.findAll(filters, { page, limit });
   }
@@ -71,7 +85,8 @@ export class RescueTeamController {
   @RequirePermissions(Permissions.RESCUE_TEAM_UPDATE)
   async update(
     @Param('teamId') teamId: string,
-    @Body() dto: UpdateRescueTeamDto,
+    @Body(new ValidationPipe({ transform: true }))
+    dto: UpdateRescueTeamValidationDto,
   ) {
     return this.service.update(parseInt(teamId, 10), dto);
   }
@@ -83,7 +98,8 @@ export class RescueTeamController {
   @RequirePermissions(Permissions.RESCUE_TEAM_UPDATE)
   async updateLocation(
     @Param('teamId') teamId: string,
-    @Body() dto: UpdateRescueTeamLocationDto,
+    @Body(new ValidationPipe({ transform: true }))
+    dto: UpdateRescueTeamLocationValidationDto,
   ) {
     return this.service.updateLocation(parseInt(teamId, 10), dto);
   }
@@ -94,7 +110,8 @@ export class RescueTeamController {
   @Delete(':teamId')
   @RequirePermissions(Permissions.RESCUE_TEAM_DELETE)
   async delete(@Param('teamId') teamId: string) {
-    return this.service.delete(parseInt(teamId, 10));
+    await this.service.delete(parseInt(teamId, 10));
+    return { success: true };
   }
 
   @ApiOperation({ summary: 'Thêm thành viên vào đội' })
@@ -103,7 +120,10 @@ export class RescueTeamController {
   @Post(':teamId/members')
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions(Permissions.RESCUE_TEAM_MANAGE_MEMBERS)
-  async addMember(@Param('teamId') teamId: string, @Body() dto: AddMemberDto) {
+  async addMember(
+    @Param('teamId') teamId: string,
+    @Body(new ValidationPipe({ transform: true })) dto: AddMemberValidationDto,
+  ) {
     return this.service.addMember(parseInt(teamId, 10), dto);
   }
 
@@ -131,10 +151,11 @@ export class RescueTeamController {
     @Param('teamId') teamId: string,
     @Param('memberId') memberId: string,
   ) {
-    return this.service.removeMember(
+    await this.service.removeMember(
       parseInt(teamId, 10),
       parseInt(memberId, 10),
     );
+    return { success: true };
   }
 
   @ApiOperation({ summary: 'Chuyển vai trò thành viên' })
@@ -145,7 +166,8 @@ export class RescueTeamController {
   async updateMemberRole(
     @Param('teamId') teamId: string,
     @Param('memberId') memberId: string,
-    @Body() dto: UpdateMemberRoleDto,
+    @Body(new ValidationPipe({ transform: true }))
+    dto: UpdateMemberRoleValidationDto,
   ) {
     return this.service.updateMemberRole(
       parseInt(teamId, 10),
@@ -159,9 +181,9 @@ export class RescueTeamController {
   @ApiResponse({ status: 200, description: 'Rời đội thành công' })
   @Post('leave')
   @HttpCode(HttpStatus.OK)
-  async leave(@Body() body: { userId: number }, @Request() req: any) {
-    // Allow self-leave or admin force-leave
+  async leave(@Body() body: { userId?: number }, @Request() req: any) {
     const userId = body.userId ?? req.user.userId ?? req.user.sub;
-    return this.service.leaveTeam(userId);
+    await this.service.leaveTeam(userId);
+    return { success: true };
   }
 }

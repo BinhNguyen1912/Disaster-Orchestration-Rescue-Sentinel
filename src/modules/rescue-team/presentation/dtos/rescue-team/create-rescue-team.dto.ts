@@ -8,9 +8,8 @@ import {
   IsArray,
 } from 'class-validator';
 import { TeamType } from '@shared/core/enums/teamType.enum';
-import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 
-export class CreateRescueTeamDto {
+export class CreateRescueTeamValidationDto {
   @IsInt()
   @IsNotEmpty()
   provinceId: number;

@@ -1,13 +1,13 @@
 import {
   IsInt,
-  IsNotEmpty,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsArray,
 } from 'class-validator';
 import { RoleInTeam } from '@shared/core/enums/roleInTeam.enum';
 
-export class AddMemberDto {
+export class AddMemberValidationDto {
   @IsInt()
   @IsNotEmpty()
   userId: number;

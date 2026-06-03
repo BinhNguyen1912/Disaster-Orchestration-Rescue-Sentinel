@@ -83,7 +83,12 @@
   "jest": {
     "preset": "ts-jest",
     "testRegex": ".*\\.spec\\.ts$",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@shared/(.*)$": "<rootDir>/src/shared/$1",
+      "^@modules/(.*)$": "<rootDir>/src/modules/$1",
+      "^@infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1"
+    }
   },
   "lint-staged": {
     "src/**/*.ts": [

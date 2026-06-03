@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Request,
   Headers,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -33,14 +34,9 @@ import { Permissions } from '@shared/common/constants/permissions.constant';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({
-    summary: 'Đăng nhập',
-    description:
-      'Đăng nhập bằng số điện thoại hoặc email, nhận Access Token và Refresh Token',
-  })
+  @ApiOperation({ summary: 'Đăng nhập' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Đăng nhập thành công' })
-  @ApiResponse({ status: 401, description: 'Thông tin đăng nhập không hợp lệ' })
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
@@ -53,103 +49,82 @@ export class AuthController {
     return this.authService.login(req.user, ip, userAgent);
   }
 
-  @ApiOperation({
-    summary: 'Đăng ký tài khoản',
-    description: 'Tạo tài khoản người dùng mới',
-  })
+  @ApiOperation({ summary: 'Đăng ký tài khoản' })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'Đăng ký thành công' })
-  @ApiResponse({
-    status: 400,
-    description: 'Dữ liệu không hợp lệ hoặc tài khoản đã tồn tại',
-  })
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() dto: RegisterDto) {
+  async register(
+    @Body(new ValidationPipe({ transform: true })) dto: RegisterDto,
+  ) {
     return this.authService.register(dto);
   }
 
-  @ApiOperation({
-    summary: 'Tạo tài khoản cho nhân viên (Admin)',
-    description:
-      'Admin/SysAdmin tạo tài khoản cho nhân viên với vai trò cụ thể (Admin tỉnh, Quản lý cứu hộ, Cứu hộ viên...)',
-  })
+  @ApiOperation({ summary: 'Tạo tài khoản cho nhân viên (Admin)' })
   @ApiBearerAuth()
   @ApiBody({ type: AdminRegisterDto })
   @ApiResponse({ status: 201, description: 'Tạo tài khoản thành công' })
-  @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ' })
-  @ApiResponse({ status: 401, description: 'Chưa xác thực' })
-  @ApiResponse({ status: 403, description: 'Không có quyền' })
   @UseGuards(JwtAuthGuard)
   @RequirePermissions(Permissions.USER_MANAGE)
   @Post('admin/register')
   @HttpCode(HttpStatus.CREATED)
-  async adminRegister(@Body() dto: AdminRegisterDto, @Request() req: any) {
+  async adminRegister(
+    @Body(new ValidationPipe({ transform: true })) dto: AdminRegisterDto,
+    @Request() req: any,
+  ) {
     const createdBy = req.user?.userId ?? req.user?.sub;
     return this.authService.adminRegister(dto, createdBy);
   }
 
-  @ApiOperation({
-    summary: 'Cấp lại Access Token',
-    description:
-      'Dùng Refresh Token để nhận cặp token mới (Rotate Refresh Token)',
-  })
+  @ApiOperation({ summary: 'Cấp lại Access Token' })
   @ApiBody({ type: RefreshTokenRequestDto })
   @ApiResponse({ status: 200, description: 'Cấp lại token thành công' })
-  @ApiResponse({
-    status: 401,
-    description: 'Refresh token không hợp lệ hoặc đã hết hạn',
-  })
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(
-    @Body() dto: RefreshTokenRequestDto,
+    @Body(new ValidationPipe({ transform: true })) dto: RefreshTokenRequestDto,
     @Headers('x-forwarded-for') ip: string,
     @Headers('user-agent') userAgent: string,
   ) {
     return this.authService.refresh(dto.refreshToken, ip, userAgent);
   }
 
-  @ApiOperation({
-    summary: 'Đăng xuất',
-    description: 'Thu hồi Refresh Token hiện tại để đăng xuất khỏi thiết bị',
-  })
+  @ApiOperation({ summary: 'Đăng xuất' })
   @ApiBearerAuth()
   @ApiBody({ type: RefreshTokenRequestDto })
   @ApiResponse({ status: 200, description: 'Đăng xuất thành công' })
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Body() dto: RefreshTokenRequestDto) {
+  async logout(
+    @Body(new ValidationPipe({ transform: true })) dto: RefreshTokenRequestDto,
+  ) {
     return this.authService.logout(dto.refreshToken);
   }
 
-  @ApiOperation({
-    summary: 'Quên mật khẩu',
-    description: 'Yêu cầu mã OTP khôi phục mật khẩu (gửi qua Email/SMS)',
-  })
+  @ApiOperation({ summary: 'Quên mật khẩu' })
   @ApiBody({ type: ForgotPasswordDto })
   @ApiResponse({ status: 200, description: 'Mã OTP đã được gửi' })
   @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+  async forgotPassword(
+    @Body(new ValidationPipe({ transform: true })) dto: ForgotPasswordDto,
+  ) {
     return this.authService.forgotPassword(dto.identifier);
   }
 
-  @ApiOperation({
-    summary: 'Đặt lại mật khẩu',
-    description: 'Xác nhận OTP và đặt lại mật khẩu mới',
-  })
+  @ApiOperation({ summary: 'Đặt lại mật khẩu' })
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({ status: 200, description: 'Đặt lại mật khẩu thành công' })
-  @ApiResponse({ status: 400, description: 'OTP không hợp lệ hoặc đã hết hạn' })
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() dto: ResetPasswordDto) {
+  async resetPassword(
+    @Body(new ValidationPipe({ transform: true })) dto: ResetPasswordDto,
+  ) {
     return this.authService.resetPassword(
       dto.resetToken,
       dto.otp,

@@ -1,34 +1,38 @@
 import {
-  IsOptional,
   IsString,
+  IsOptional,
   IsEnum,
   IsNumber,
   IsArray,
-  IsInt,
 } from 'class-validator';
+import { TeamType } from '@shared/core/enums/teamType.enum';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 
-export class UpdateRescueTeamDto {
+export class UpdateRescueTeamValidationDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsEnum(TeamType)
+  teamType?: TeamType;
 
   @IsOptional()
   @IsEnum(TeamStatus)
   status?: TeamStatus;
 
   @IsOptional()
-  currentLocation?: { type: 'Point'; coordinates: [number, number] };
+  @IsNumber()
+  activeCasesCount?: number;
 
   @IsOptional()
   @IsNumber()
   maxCapacity?: number;
 
   @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  specializationIds?: number[];
+  equipment?: Record<string, any>;
 
   @IsOptional()
-  equipment?: Record<string, any>;
+  @IsArray()
+  coverageArea?: { type: 'Polygon'; coordinates: number[][][] };
 }

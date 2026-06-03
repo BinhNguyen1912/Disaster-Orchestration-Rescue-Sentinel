@@ -5,8 +5,8 @@ import {
   IRescueTeamRepository,
   RescueTeamFilters,
   PaginationOptions,
-  PaginatedResult,
 } from '../../../domain/repositories/rescue-team.repository.interface';
+import { PaginatedResult } from '../../../../../shared/common/dtos/pagination.dto';
 import { RescueTeamEntity } from '@infrastructure/database/entities/rescue-team.entity';
 
 @Injectable()

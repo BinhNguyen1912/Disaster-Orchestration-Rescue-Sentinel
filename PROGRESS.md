@@ -1,6 +1,6 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-05-27
+> **Lần cập nhật gần nhất:** 2026-06-01
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
 > **Trạng thái tổng:** 🟡 **Phase 3 — Rescue Team hoàn thành**
 
@@ -73,6 +73,9 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 ### 2.2 Module Xác thực (AuthModule) ✅
 
+**Auth Contracts** (2026-05-28):
+- ✅ `auth.contracts.ts`: `BaseResponse<T>`, `AuthLoginResponse`, `AuthUserResponse`, `RegisterInput`, `AdminRegisterInput`, `toAuthUserResponse(user)`
+
 Đây là module đã hoàn thiện nhất trong hệ thống.
 
 | Tính năng | Endpoint | Trạng thái |
@@ -123,10 +126,11 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 ## 🟢 Phase 3: Nghiệp vụ chính (Đang làm)
 
-### ✅ Rescue Team Module — Hoàn thành 2026-05-22
+### ✅ Rescue Team Module — Hoàn thành 2026-05-22, cập nhật domain entities 2026-05-28
 
 - ✅ `TeamSpecializationEntity` + `ITeamSpecializationRepository`
 - ✅ `RescueTeamRepository` + `RescueTeamMemberRepository`
+- ✅ Domain Entities: `RescueTeam`, `RescueTeamMember`, `TeamSpecialization` (`modules/rescue-team/domain/entities/`)
 - ✅ `RescueTeamService` (11 endpoints, business logic đầy đủ)
 - ✅ `RescueTeamController` + `TeamSpecializationController`
 - ✅ `RescueTeamModule` đăng ký vào `AppModule`
@@ -205,6 +209,8 @@ src/
 
 | Ngày | Nội dung công việc |
 |------|--------------------|
+| 2026-05-28 | **Refactor Rescue Team sang Domain Entities**: Tách `RescueTeam`, `RescueTeamMember` thành domain entities trong `modules/rescue-team/domain/entities/`, cập nhật `IRescueTeamService` interface dùng domain types thay vì `RescueTeamEntity`, resolve TypeScript type conflicts. |
+| 2026-05-28 | **Auth Contracts & Shared Base Repository**: Thêm `auth.contracts.ts` (BaseResponse, AuthLoginResponse, RegisterInput, AdminRegisterInput, toAuthUserResponse), thêm `shared/domain/repositories/base.repository.interface.ts` và `shared/infrastructure/persistence/base.repository.ts`. |
 | 2026-05-27 | **Refactor to Feature-Based Modular Architecture**: Xóa duplicate domain entities, chuyển User entity vào `modules/auth/domain/entities/`, thống nhất enums vào `shared/core/enums/`, xóa unused `infrastructure/database/repositories/`, sửa DatabaseModule dùng explicit entities array thay vì autoLoadEntities, đảm bảo app chạy và build pass. |
 | 2026-05-22 | Implement **Rescue Team Module** hoàn chỉnh: `TeamSpecializationEntity`, `IRescueTeamRepository`, `IRescueTeamMemberRepository`, `ITeamSpecializationRepository` + implementations, `RescueTeamService` (11 endpoints), `RescueTeamController`, `TeamSpecializationController`, `RescueTeamModule`, seed 13 team specializations. Bỏ `code` field, đổi `specializations` → `specializationIds`. Unit test 15 cases — tất cả passed. |
 | 2026-05-21 | Chạy lại seeder (xóa 34 admin cũ, tạo mới 36 admins), tạo file `user-role.json` seed data, phát hiện và giải thích lỗi PostgreSQL `user` là keyword reserved. |
