@@ -55,23 +55,25 @@ function fetchNominatim(query: string): Promise<{ lat: string; lon: string }> {
       },
     };
 
-    https.get(url, options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => (data += chunk));
-      res.on('end', () => {
-        try {
-          const results = JSON.parse(data);
-          if (results && results.length > 0) {
-            resolve({ lat: results[0].lat, lon: results[0].lon });
-          } else {
-            reject(new Error(`No results for: ${query}`));
+    https
+      .get(url, options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            const results = JSON.parse(data);
+            if (results && results.length > 0) {
+              resolve({ lat: results[0].lat, lon: results[0].lon });
+            } else {
+              reject(new Error(`No results for: ${query}`));
+            }
+          } catch (e) {
+            reject(e instanceof Error ? e : new Error(String(e)));
           }
-        } catch (e) {
-          reject(e);
-        }
-      });
-      res.on('error', reject);
-    }).on('error', reject);
+        });
+        res.on('error', reject);
+      })
+      .on('error', reject);
   });
 }
 
@@ -99,9 +101,13 @@ async function main() {
         lng: parseFloat(result.lon),
       });
 
-      console.log(`[${i + 1}/${PROVINCES.length}] ${province.name}: ${result.lat}, ${result.lon}`);
+      console.log(
+        `[${i + 1}/${PROVINCES.length}] ${province.name}: ${result.lat}, ${result.lon}`,
+      );
     } catch (e) {
-      console.error(`[${i + 1}/${PROVINCES.length}] Failed: ${province.name} - ${e.message}`);
+      console.error(
+        `[${i + 1}/${PROVINCES.length}] Failed: ${province.name} - ${e.message}`,
+      );
       // Use fallback coordinates for Hanoi
       if (province.code === 1) {
         centers.push({ provinceCode: 1, lat: 21.0285, lng: 105.8542 });
@@ -120,7 +126,9 @@ async function main() {
     'utf-8',
   );
 
-  console.log(`\nSaved ${centers.length} province centers to province-centers.json`);
+  console.log(
+    `\nSaved ${centers.length} province centers to province-centers.json`,
+  );
 }
 
 main().catch(console.error);

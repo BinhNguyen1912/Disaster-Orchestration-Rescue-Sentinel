@@ -1,17 +1,15 @@
 import {
+  RescueTeamEntity,
+  UserEntity,
+} from '@infrastructure/database/entities';
+import { RoleInTeam } from '@shared/index';
+import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  PrimaryColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
-  OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { RescueTeamEntity } from './rescue-team.entity';
-import { UserEntity } from './user.entity';
-import { RoleInTeam } from '@shared/core/enums/roleInTeam.enum';
 
 @Entity('rescue_team_member')
 export class RescueTeamMemberEntity {
@@ -21,8 +19,14 @@ export class RescueTeamMemberEntity {
   @Column({ type: 'int' })
   teamId: number;
 
-  @Column({ type: 'int', unique: true })
-  userId: number;
+  @Column({ type: 'int', nullable: true })
+  userId: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  citizenName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  citizenPhone: string | null;
 
   @Column({ type: 'enum', enum: RoleInTeam })
   roleInTeam: RoleInTeam;
@@ -36,8 +40,8 @@ export class RescueTeamMemberEntity {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @Column({ type: 'varchar', array: true })
-  specializations: string;
+  @Column({ type: 'int', array: true, nullable: true })
+  specializationIds: number[];
 
   @Column({ type: 'int', default: 0 })
   missionsCount: number;
@@ -52,7 +56,7 @@ export class RescueTeamMemberEntity {
   @JoinColumn({ name: 'teamId' })
   team: RescueTeamEntity;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { nullable: true })
   @JoinColumn({ name: 'userId' })
-  user: UserEntity;
+  user: UserEntity | null;
 }

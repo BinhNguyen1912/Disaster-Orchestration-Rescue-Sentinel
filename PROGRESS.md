@@ -1,8 +1,8 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-06-01
+> **Lần cập nhật gần nhất:** 2026-06-05
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
-> **Trạng thái tổng:** 🟡 **Phase 3 — Rescue Team hoàn thành**
+> **Trạng thái tổng:** 🟡 **Phase 3 — Team Specialization Module mới**
 
 ---
 
@@ -12,7 +12,7 @@
 |-------|-----|---------|-----------|
 | 1 | Hạ tầng & Foundation | ██████████ 100% | ✅ Hoàn thành |
 | 2 | Auth & Core Modules | ██████████ 100% | ✅ Hoàn thành |
-| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ███░░░░░░░ 25% | 🟡 Đang làm |
+| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ██████░░░░ 55% | 🟡 Đang làm |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
 ---
@@ -111,10 +111,9 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 **Cơ chế RBAC:**
 - ✅ `JwtStrategy` — giải mã token, inject `userId`, `provinceId`, `roleId` vào request
-- ✅ `JwtAuthGuard` — bảo vệ các endpoint yêu cầu đăng nhập
-- ✅ `LocalAuthGuard` — bảo vệ endpoint `/auth/login`
+- ✅ `JwtAuthGuard` — bảo vệ các endpoint yêu cầu đăng.
 - ✅ `AccessGuard` & `@Public()` — custom guard toàn cục
-- ✅ `@CurrentUser()` — decorator lấy thông tin user/payload đã xác thực trong controller.
+- ✅ `@CurrentUser()` — decorator lấy thông tin user/payload đã xác thực tring controller.
 - ✅ **JWT Payload** chứa: `sub` (userId), `provinceId`, `roleId`, `email`
 - ✅ `getActiveRoleId(provinceId?)` — hàm nghiệp vụ trong Domain Entity `User`, tự động lấy đúng roleId theo tỉnh thành
 - ✅ **Multi-tenant**: Một user có thể giữ nhiều vai trò ở nhiều tỉnh khác nhau (bảng `user_role` làm cầu nối)
@@ -126,16 +125,56 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 ## 🟢 Phase 3: Nghiệp vụ chính (Đang làm)
 
-### ✅ Rescue Team Module — Hoàn thành 2026-05-22, cập nhật domain entities 2026-05-28
+### ✅ Rescue Team Module — Hoàn thành 2026-05-22, cập nhật 2026-06-05
 
-- ✅ `TeamSpecializationEntity` + `ITeamSpecializationRepository`
+- ✅ `RescueTeamEntity`, `RescueTeamMemberEntity` + `ITeamSpecializationRepository`
 - ✅ `RescueTeamRepository` + `RescueTeamMemberRepository`
-- ✅ Domain Entities: `RescueTeam`, `RescueTeamMember`, `TeamSpecialization` (`modules/rescue-team/domain/entities/`)
+- ✅ Domain Entities: `RescueTeam`, `RescueTeamMember` (`modules/rescue-team/domain/entities/`)
 - ✅ `RescueTeamService` (11 endpoints, business logic đầy đủ)
-- ✅ `RescueTeamController` + `TeamSpecializationController`
-- ✅ `RescueTeamModule` đăng ký vào `AppModule`
+- ✅ `RescueTeamController` (11 endpoints)
+- ✅ `RescueTeamModule` import `TeamSpecializationModule`
 - ✅ `TeamSpecialization` seed data (13 specs)
-- ✅ Unit test 15 cases — tất cả passed
+- ✅ Unit test **47 cases** — tất cả passed (2026-06-05)
+- ✅ Refactor DTOs (`CreateRescueTeamDto`, `UpdateRescueTeamDto`, `AddMemberDto`)
+- ✅ `RescueTeamContracts` interface
+- ✅ ManyToMany bidirectional relationship với `TeamSpecializationEntity`
+- ✅ **Flexible Member Support (2026-06-05)**:
+  - `RescueTeamMemberEntity.userId` nullable (1 user có thể thuộc nhiều đội)
+  - Hỗ trợ thêm thành viên chỉ với `citizenName` + `citizenPhone` (không cần user account)
+  - Thêm trường `leaderCitizenName`, `leaderPhone` trong `RescueTeamEntity`
+  - Bỏ validation chuyên nghiệp cho đội tự phát (VOLUNTEER_SPONTANEOUS)
+  - **`teamType` now optional** - chỉ required khi dùng với specialization validation
+  - Triết lý "Mở trước, Siết sau" - ưu tiên tốc độ trong tình huống khẩn cấp
+
+### ✅ Location Module — Hoàn thành 2026-06-05
+
+- ✅ `LocationService` with location-related business logic
+- ✅ `LocationRepositoryInterface` + `LocationRepositoryImpl`
+- ✅ `LocationController` for location endpoints
+- ✅ Seed data: provinces, province-centers, administrative-units
+
+### ✅ Role Module — Hoàn thành 2026-06-05
+
+- ✅ `RoleService` with full CRUD operations
+- ✅ `RoleRepositoryInterface` + `RoleRepositoryImpl`
+- ✅ `RoleController` for role management endpoints
+- ✅ `RoleEntity` domain entity
+- ✅ Role DTOs (role.dto.ts, role-response.dto.ts)
+
+### ✅ Team Specialization Module — Hoàn thành 2026-06-05 (Tách riêng, consolidate vào shared)
+
+- ✅ Tách `TeamSpecialization` thành module độc lập (`modules/team-specialization/`)
+- ✅ `ITeamSpecializationRepository` interface + `TeamSpecializationRepositoryImpl`
+- ✅ `TeamSpecializationService` implements `ITeamSpecializationService` interface
+- ✅ `TeamSpecializationController` với CRUD endpoints:
+  - `GET /team-specializations` (filter: teamType, isActive)
+  - `GET /team-specializations/:id`
+  - `POST /team-specializations`
+  - `PATCH /team-specializations/:id`
+  - `DELETE /team-specializations/:id` (soft delete)
+- ✅ `TeamSpecializationEntity` có `@ManyToMany` inverse side (`rescueTeams`)
+- ✅ Export `ITeamSpecializationRepository` để `RescueTeamModule` có thể inject
+- ✅ **Consolidate Entity (2026-06-05)**: `TeamSpecialization` entity chuyển vào `shared/domain/entities/team-specialization.entity.ts` để tránh duplicate giữa các modules
 
 ### 🔲 Các module khác
 
@@ -163,7 +202,7 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 ```
 src/
 ├── shared/                             ← SHARED kernel
-│   ├── common/constants/              # Messages, permissions
+│   ├── common/constants/              # Messages, permissions, inject names
 │   ├── common/middlewares/           # Logger middleware
 │   └── core/enums/                   # 31 business enums
 │
@@ -187,7 +226,23 @@ src/
 │   │
 │   ├── rescue-team/                   # RESCUE TEAM MICROSERVICE
 │   │   ├── domain/repositories/      # Repository interfaces
+│   │   ├── domain/entities/         # Domain entities (RescueTeam, RescueTeamMember)
 │   │   ├── application/services/     # Business logic
+│   │   ├── application/dtos/         # DTOs, contracts
+│   │   ├── infrastructure/persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── location/                      # LOCATION MICROSERVICE (2026-06-05)
+│   │   ├── domain/repositories/      # Location repository interface
+│   │   ├── application/services/     # LocationService
+│   │   ├── infrastructure/persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── role/                          # ROLE MICROSERVICE (2026-06-05)
+│   │   ├── domain/entities/          # RoleEntity
+│   │   ├── domain/repositories/      # Repository interfaces
+│   │   ├── application/services/     # RoleService
+│   │   ├── application/dtos/         # Role DTOs
 │   │   ├── infrastructure/persistence/repositories/
 │   │   └── presentation/
 │   │
@@ -209,6 +264,9 @@ src/
 
 | Ngày | Nội dung công việc |
 |------|--------------------|
+| 2026-06-05 | **Make teamType optional**: 1) Update `CreateRescueTeamDto.teamType` thành optional. 2) Update service validation chỉ check specialization-teamType match khi teamType được cung cấp. 3) Update `RescueTeamEntity.teamType` nullable. 4) Thêm test case mới (47 total). 5) Update Postman với endpoint tạo team không cần teamType (VOLUNTEER_SPONTANEOUS). |
+| 2026-06-05 | **Flexible Member System + Unit Tests (46 cases)**: 1) Fix TypeScript errors sau khi consolidate TeamSpecialization. 2) Update `RescueTeamMemberEntity` - `userId` nullable, thêm `citizenName`, `citizenPhone`. 3) Update `RescueTeamEntity` thêm `leaderCitizenName`, `leaderPhone`. 4) Update `RescueTeamService.addMember()` hỗ trợ thêm thành viên chỉ với citizenName (không cần userId). 5) Fix logic `removeMember`, `updateMemberRole`, `leaveTeam` để hỗ trợ citizen leader. 6) Viết lại unit test đầy đủ 46 cases - tất cả passed. |
+| 2026-06-05 | **Add Team Specialization Module (standalone)**: Tách TeamSpecialization thành module riêng theo feature-based modular structure. Thêm @ManyToMany inverse side vào TeamSpecializationEntity. CRUD endpoints đầy đủ (GET list, GET by id, POST, PATCH, DELETE soft). Export ITeamSpecializationRepository để RescueTeamModule có thể inject. Cập nhật Postman collection. |
 | 2026-05-28 | **Refactor Rescue Team sang Domain Entities**: Tách `RescueTeam`, `RescueTeamMember` thành domain entities trong `modules/rescue-team/domain/entities/`, cập nhật `IRescueTeamService` interface dùng domain types thay vì `RescueTeamEntity`, resolve TypeScript type conflicts. |
 | 2026-05-28 | **Auth Contracts & Shared Base Repository**: Thêm `auth.contracts.ts` (BaseResponse, AuthLoginResponse, RegisterInput, AdminRegisterInput, toAuthUserResponse), thêm `shared/domain/repositories/base.repository.interface.ts` và `shared/infrastructure/persistence/base.repository.ts`. |
 | 2026-05-27 | **Refactor to Feature-Based Modular Architecture**: Xóa duplicate domain entities, chuyển User entity vào `modules/auth/domain/entities/`, thống nhất enums vào `shared/core/enums/`, xóa unused `infrastructure/database/repositories/`, sửa DatabaseModule dùng explicit entities array thay vì autoLoadEntities, đảm bảo app chạy và build pass. |
@@ -218,7 +276,7 @@ src/
 | 2026-05-21 | Tạo Permission Sync Script (`npm run sync:permissions`) — đồng bộ permissions + role-permission mappings từ config vào DB. |
 | 2026-05-21 | Redesign Permission Constants: `PermModule` enum, `PermAction` enum, `HTTP_METHOD_ACTION` mapping, `ActionSet` const, `ROLE_PERMISSION_MATRIX`. |
 | 2026-05-21 | Xây dựng Health Check endpoint (`GET /health`) dùng `@nestjs/terminus`. Kiểm tra DB (TypeORM ping), Memory Heap, Memory RSS. |
-| 2026-05-20 | Thiết lập ESLint/Prettier/Husky, tạo `AuthModule` (Login + JWT), thiết kế kiến trúc Clean Architecture, implement đầy đủ Auth flow (Register, Refresh Token, Logout, Forgot/Reset Password), tạo bảng `refresh_token`. |
+| 2026-05-20 | Thiết lập ESLint/Prettier/Husky, tạo `AuthModule` (Login + JWT), encapsulated design Clean Architecture principles, implement fully Auth flow (Register, Refresh Token, Logout, Forgot/Reset Password), tạo bảng `refresh_token`. |
 | 2026-05-20 | Cài `@nestjs-modules/mailer` + `handlebars`, tạo `MailModule` + `MailService`, thiết kế template email OTP HTML, tích hợp gửi email thật qua SMTP Gmail. |
 | 2026-05-20 | Bổ sung endpoint `POST /auth/admin/register` cho Admin tạo tài khoản nhân viên. |
 

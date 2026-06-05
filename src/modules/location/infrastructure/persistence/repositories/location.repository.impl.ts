@@ -37,7 +37,9 @@ export class WardRepositoryImpl implements IWardRepository {
     private readonly repo: Repository<AdministrativeUnitEntity>,
   ) {}
 
-  async findByProvinceId(provinceId: number): Promise<AdministrativeUnitEntity[]> {
+  async findByProvinceId(
+    provinceId: number,
+  ): Promise<AdministrativeUnitEntity[]> {
     return this.repo.find({
       where: { provinceId },
       order: { name: 'ASC' },

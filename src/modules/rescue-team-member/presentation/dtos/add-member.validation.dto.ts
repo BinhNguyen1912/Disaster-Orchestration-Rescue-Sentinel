@@ -1,19 +1,20 @@
-import {
-  IsInt,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsArray,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, IsEnum, IsArray } from 'class-validator';
 import { RoleInTeam } from '@shared/core/enums/roleInTeam.enum';
 
 export class AddMemberValidationDto {
+  @IsOptional()
   @IsInt()
-  @IsNotEmpty()
-  userId: number;
+  userId?: number;
+
+  @IsOptional()
+  @IsString()
+  citizenName?: string;
+
+  @IsOptional()
+  @IsString()
+  citizenPhone?: string;
 
   @IsEnum(RoleInTeam)
-  @IsNotEmpty()
   roleInTeam: RoleInTeam;
 
   @IsOptional()

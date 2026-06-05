@@ -31,6 +31,9 @@ export * from './core/enums/teamType.enum';
 export * from './core/enums/weatherAlertType.enum';
 export * from './core/enums/weatherSource.enum';
 
+// Domain entities
+export * from './domain/entities/team-specialization.entity';
+
 // Constants
 export * from './common/constants/messages.constant';
 export * from './common/constants/permissions.constant';

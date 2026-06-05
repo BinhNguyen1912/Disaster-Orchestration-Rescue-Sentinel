@@ -1,7 +1,7 @@
 # ROADMAP — Backend Disaster Rescue System
 
-> Cập nhật: 2026-05-28
-> Trạng thái tổng: **Phase 2 — Auth & Core Modules (đang tiến hành)**
+> Cập nhật: 2026-06-05
+> Trạng thái tổng: **Phase 3 — Rescue Team hoàn thành Flexible Member System**
 
 ---
 
@@ -10,8 +10,8 @@
 | Phase | Tên | Trạng thái | Ghi chú |
 |-------|-----|-----------|-----------------|
 | 1 | Hạ tầng & Foundation | ✅ Hoàn thành | Đã setup Docker, TypeORM, modular structure |
-| 2 | Auth & Core Modules | 🟡 Đang làm | Auth hoàn thành, Province + Rescue đang tiến |
-| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | 🔲 Chưa bắt đầu | |
+| 2 | Auth & Core Modules | ✅ Hoàn thành | Auth, Province, Role, Team Specialization |
+| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | 🟡 Đang làm | Rescue Team ✅ (flexible member + 46 unit tests) |
 | 4 | Mở rộng (Donation, Alert, Message) | 🔲 Chưa bắt đầu | |
 
 > **Ký hiệu:** 🔲 Chưa bắt đầu · 🟡 Đang làm · ✅ Hoàn thành · ⏸️ Tạm dừng
@@ -101,6 +101,8 @@
 | 3.1.1 | Module Rescue — `rescue_teams` + `rescue_team_members` entity + migration | ✅ | rescue-team.entity.ts, rescue-team-member.entity.ts |
 | 3.1.2 | Module Rescue — CRUD đội cứu hộ + quản lý thành viên | ✅ | RescueTeamService + Controller |
 | 3.1.3 | Module Rescue — Team Specializations | ✅ | TeamSpecializationService |
+| 3.1.4 | Module Rescue — Flexible Member (citizen without account) | ✅ | 2026-06-05: userId nullable, citizenName/citizenPhone support |
+| 3.1.5 | Module Rescue — Unit Tests (46 cases) | ✅ | 2026-06-05: All passing |
 
 ### 3.2 Module SOS
 | # | Task | Trạng thái | Ghi chú |
@@ -159,6 +161,7 @@
 
 | Ngày | Thay đổi |
 |------|----------|
+| 2026-06-05 | Rescue Team: Flexible Member System (userId nullable, citizen support), Unit Tests 46 cases, TeamSpecialization consolidate vào shared |
 | 2026-05-28 | Update tiến độ: Phase 1 ✅, Phase 2 auth ✅, rescue-team ✅, Clean Architecture refactor |
 | 2026-05-04 | Khởi tạo roadmap, tạo RULES_VI.md + RULES_EN.md, setup OpenSpec |
 

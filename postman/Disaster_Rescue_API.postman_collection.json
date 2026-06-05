@@ -60,7 +60,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"identifier\": \"dmin.hcm@rescue.gov.vn\",\n    \"password\": \"Admin@123\"\n}",
+              "raw": "{\n    \"identifier\": \"admin.hcm@rescue.gov.vn\",\n    \"password\": \"Admin@123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -201,19 +201,13 @@
     },
     {
       "name": "3. Team Specializations",
+      "description": "Team specialization management (CRUD operations)",
       "item": [
         {
           "name": "GET /team-specializations",
           "request": {
             "url": "{{baseUrl}}/team-specializations",
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
             "description": "Get all team specializations (public)"
           }
         },
@@ -222,6 +216,88 @@
           "request": {
             "url": "{{baseUrl}}/team-specializations?teamType=Y_TE",
             "method": "GET",
+            "description": "Get specializations filtered by team type"
+          }
+        },
+        {
+          "name": "GET /team-specializations?isActive=true",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations?isActive=true",
+            "method": "GET",
+            "description": "Get only active specializations"
+          }
+        },
+        {
+          "name": "GET /team-specializations/:id",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations/1",
+            "method": "GET",
+            "description": "Get team specialization details by ID"
+          }
+        },
+        {
+          "name": "POST /team-specializations",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Phòng cháy chữa cháy\",\n    \"teamType\": \"PCCC\",\n    \"description\": \"Chuyên môn phòng cháy chữa cháy\",\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a new team specialization"
+          }
+        },
+        {
+          "name": "PATCH /team-specializations/:id",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations/1",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Phòng cháy chữa cháy - Updated\",\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update team specialization"
+          }
+        },
+        {
+          "name": "DELETE /team-specializations/:id",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations/5",
+            "method": "DELETE",
             "header": [
               {
                 "key": "Authorization",
@@ -229,292 +305,311 @@
                 "type": "text"
               }
             ],
-            "description": "Get specializations filtered by team type"
+            "description": "Delete team specialization (soft delete)"
           }
         }
       ]
     },
     {
       "name": "4. Rescue Teams",
+      "description": "Rescue Team Management - Hỗ trợ cả đội chuyên nghiệp (PROFESSIONAL) và đội tự phát (VOLUNTEER_SPONTANEOUS)",
       "item": [
         {
-          "name": "POST /rescue-teams",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams",
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"provinceId\": 1,\n    \"name\": \"Đội PCCC Quận 1\",\n    \"teamType\": \"PCCC\",\n    \"adminUnitId\": 1,\n    \"maxCapacity\": 20,\n    \"specializationIds\": [1, 2]\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+          "name": "4.1 QUICK FLOW - VOLUNTEER_SPONTANEOUS (Khẩn cấp)",
+          "description": "Flow nhanh cho tình huống khẩn cấp - không cần teamType, chỉ cần tên + vị trí + leader",
+          "item": [
+            {
+              "name": "4.1.1 Tạo đội tự phát (không cần teamType)",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"provinceId\": 1,\n    \"name\": \"Đội cứu hộ tự phát quận 5\",\n    \"adminUnitId\": 1,\n    \"maxCapacity\": 15\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Tạo đội tự phát - chỉ cần name, provinceId, adminUnitId. Không bắt buộc teamType, specializationIds."
               }
             },
-            "description": "Create a new rescue team (requires rescue_team:create permission)"
-          }
-        },
-        {
-          "name": "GET /rescue-teams",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams?page=1&limit=20",
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Get paginated list of rescue teams"
-          }
-        },
-        {
-          "name": "GET /rescue-teams?provinceId=1&status=AVAILABLE",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams?provinceId=1&status=AVAILABLE",
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Get available rescue teams in a province"
-          }
-        },
-        {
-          "name": "GET /rescue-teams?search=PCCC",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams?search=PCCC",
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Search rescue teams by name"
-          }
-        },
-        {
-          "name": "GET /rescue-teams/:teamId",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1",
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Get rescue team details by ID"
-          }
-        },
-        {
-          "name": "PATCH /rescue-teams/:teamId",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1",
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Đội PCCC Quận 1 - Cập nhật\",\n    \"status\": \"STANDBY\",\n    \"maxCapacity\": 25\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+            {
+              "name": "4.1.2 Thêm LEADER là công dân (citizen - không cần userId)",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"citizenName\": \"Trần Văn Lớn\",\n    \"citizenPhone\": \"0987654321\",\n    \"roleInTeam\": \"LEADER\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Thêm leader là công dân bình thường - hệ thống tự lưu leaderCitizenName + leaderPhone"
               }
             },
-            "description": "Update rescue team info"
-          }
-        },
-        {
-          "name": "PATCH /rescue-teams/:teamId/location",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1/location",
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"currentLocation\": {\n        \"type\": \"Point\",\n        \"coordinates\": [106.7004, 10.7589]\n    },\n    \"status\": \"AVAILABLE\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+            {
+              "name": "4.1.3 Thêm thành viên là công dân",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"citizenName\": \"Nguyễn Thị Một\",\n    \"citizenPhone\": \"0912345001\",\n    \"roleInTeam\": \"MEMBER\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Thêm thành viên là công dân - chỉ cần citizenName + citizenPhone"
               }
             },
-            "description": "Update rescue team current location"
-          }
-        },
-        {
-          "name": "DELETE /rescue-teams/:teamId",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1",
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Delete rescue team (only if no active members)"
-          }
-        },
-        {
-          "name": "POST /rescue-teams/:teamId/members",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1/members",
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"userId\": 5,\n    \"roleInTeam\": \"LEADER\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+            {
+              "name": "4.1.4 Cập nhật vị trí đội (GPS)",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams/1/location",
+                "method": "PATCH",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"currentLocation\": {\n        \"type\": \"Point\",\n        \"coordinates\": [106.7004, 10.7589]\n    },\n    \"status\": \"AVAILABLE\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Cập nhật vị trí hiện tại của đội để hệ thống theo dõi"
               }
             },
-            "description": "Add member to rescue team"
-          }
+            {
+              "name": "4.1.5 Xem danh sách thành viên",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members?isActive=true",
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Xem danh sách thành viên đang hoạt động trong đội"
+              }
+            }
+          ]
         },
         {
-          "name": "GET /rescue-teams/:teamId/members",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1/members?isActive=true",
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Get members of a rescue team"
-          }
-        },
-        {
-          "name": "DELETE /rescue-teams/:teamId/members/:memberId",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1/members/5",
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              }
-            ],
-            "description": "Remove member from rescue team (soft delete)"
-          }
-        },
-        {
-          "name": "PATCH /rescue-teams/:teamId/members/:memberId/role",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/1/members/5/role",
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"roleInTeam\": \"DEPUTY_LEADER\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+          "name": "4.2 PROFESSIONAL - Đội chuyên nghiệp (PCCC, Y_TE...)",
+          "description": "Flow cho đội chuyên nghiệp - cần teamType + specializationIds",
+          "item": [
+            {
+              "name": "4.2.1 Tạo đội PCCC với chuyên môn",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"provinceId\": 1,\n    \"name\": \"Đội PCCC Quận 1\",\n    \"teamType\": \"PCCC\",\n    \"adminUnitId\": 1,\n    \"maxCapacity\": 20,\n    \"specializationIds\": [1, 2]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Tạo đội PCCC chuyên nghiệp - bắt buộc teamType + specializationIds (validate teamType match)"
               }
             },
-            "description": "Change member role in team"
-          }
-        },
-        {
-          "name": "POST /rescue-teams/leave",
-          "request": {
-            "url": "{{baseUrl}}/rescue-teams/leave",
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"userId\": 5\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+            {
+              "name": "4.2.2 Thêm LEADER là user đã đăng ký",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"userId\": 5,\n    \"roleInTeam\": \"LEADER\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Thêm leader là user đã có tài khoản trong hệ thống"
               }
             },
-            "description": "User leaves their current rescue team"
-          }
+            {
+              "name": "4.2.3 Thêm thành viên là user",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"userId\": 6,\n    \"roleInTeam\": \"MEMBER\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Thêm thành viên đã có tài khoản"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Team CRUD (Common)",
+          "item": [
+            {
+              "name": "GET /rescue-teams - List all",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams?page=1&limit=20",
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Lấy danh sách tất cả đội cứu hộ (phân trang)"
+              }
+            },
+            {
+              "name": "GET /rescue-teams?provinceId=1&status=AVAILABLE",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams?provinceId=1&status=AVAILABLE",
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Lọc đội theo tỉnh + trạng thái sẵn sàng"
+              }
+            },
+            {
+              "name": "GET /rescue-teams?search=PCCC",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams?search=PCCC",
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Tìm kiếm đội theo tên"
+              }
+            },
+            {
+              "name": "GET /rescue-teams/:teamId",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams/1",
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Xem chi tiết một đội"
+              }
+            },
+            {
+              "name": "PATCH /rescue-teams/:teamId",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams/1",
+                "method": "PATCH",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Đội PCCC Quận 1 - Cập nhật\",\n    \"status\": \"STANDBY\",\n    \"maxCapacity\": 25\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Cập nhật thông tin đội"
+              }
+            },
+            {
+              "name": "PATCH /rescue-teams/:teamId/location",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams/1/location",
+                "method": "PATCH",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"currentLocation\": {\n        \"type\": \"Point\",\n        \"coordinates\": [106.7004, 10.7589]\n    },\n    \"status\": \"AVAILABLE\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Cập nhật vị trí GPS + trạng thái"
+              }
+            },
+            {
+              "name": "DELETE /rescue-teams/:teamId",
+              "request": {
+                "url": "{{baseUrl}}/rescue-teams/1",
+                "method": "DELETE",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Xóa đội (chỉ khi không còn thành viên active)"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Member Management",
+          "item": [
+            {
+              "name": "GET /rescue-teams/:teamId/members",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members?isActive=true",
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Lấy danh sách thành viên (lọc theo isActive)"
+              }
+            },
+            {
+              "name": "PATCH /rescue-teams/:teamId/members/:memberId/role",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members/5/role",
+                "method": "PATCH",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"roleInTeam\": \"DEPUTY_LEADER\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "Thăng/hạ chức thành viên (MEMBER -> DEPUTY_LEADER -> LEADER)"
+              }
+            },
+            {
+              "name": "DELETE /rescue-teams/:teamId/members/:memberId",
+              "request": {
+                "url": "{{baseUrl}}/teams/1/members/5",
+                "method": "DELETE",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+                ],
+                "description": "Xóa thành viên khỏi đội (soft delete)"
+              }
+            },
+            {
+              "name": "POST /rescue-teams/leave",
+              "request": {
+                "url": "{{baseUrl}}/teams/leave",
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+                  { "key": "Content-Type", "value": "application/json", "type": "text" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "description": "User tự rời đội (dùng userId từ JWT)"
+              }
+            }
+          ]
         }
       ]
     },
@@ -557,7 +652,110 @@
       ]
     },
     {
-      "name": "6. Roles",
+      "name": "6. Team Specializations",
+      "description": "Team specialization management for rescue teams",
+      "item": [
+        {
+          "name": "GET /team-specializations",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations",
+            "method": "GET",
+            "description": "Get all team specializations (filter by teamType, isActive)"
+          }
+        },
+        {
+          "name": "GET /team-specializations?teamType=PCCC&isActive=true",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations?teamType=PCCC&isActive=true",
+            "method": "GET",
+            "description": "Get active PCCC specializations"
+          }
+        },
+        {
+          "name": "GET /team-specializations/:id",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations/1",
+            "method": "GET",
+            "description": "Get specialization by ID"
+          }
+        },
+        {
+          "name": "POST /team-specializations",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Cứu hộ bùn lầy\",\n    \"teamType\": \"DAN_PHONG\",\n    \"description\": \"Chuyên môn cứu hộ trong bùn lầy\",\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create new team specialization"
+          }
+        },
+        {
+          "name": "PATCH /team-specializations/:id",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations/1",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Cứu hộ bùn lầy - Updated\",\n    \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update team specialization"
+          }
+        },
+        {
+          "name": "DELETE /team-specializations/:id",
+          "request": {
+            "url": "{{baseUrl}}/team-specializations/1",
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Soft delete team specialization"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Roles",
       "description": "Role management endpoints (System Admin only)",
       "item": [
         {

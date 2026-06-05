@@ -72,7 +72,9 @@ describe('LocationService', () => {
       const result = await service.getProvinceById(1);
 
       expect(result).toEqual(mockProvince);
-      expect(mockProvinceRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockProvinceRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
     });
 
     it('should return null when province not found', async () => {

@@ -258,9 +258,9 @@
       </div>
       <div class="phase-card">
         <h3>Phase 3 — Nghiệp vụ chính</h3>
-        <div class="progress-bar"><div class="progress-fill yellow" style="width:25%"></div></div>
-        <div class="percent">25%</div>
-        <div class="status">🟡 Rescue Team ✅, còn lại 0%</div>
+        <div class="progress-bar"><div class="progress-fill yellow" style="width:55%"></div></div>
+        <div class="percent">55%</div>
+        <div class="status">🟡 Rescue Team ✅, Location ✅, Role ✅, Team Spec ✅</div>
       </div>
       <div class="phase-card">
         <h3>Phase 4 — Mở rộng</h3>
@@ -272,33 +272,49 @@
 
     <!-- Architecture -->
     <div class="section">
-      <h2>🏗️ Kiến trúc Feature-Based Modular (2026-05-27)</h2>
+      <h2>🏗️ Kiến trúc Feature-Based Modular (2026-06-05)</h2>
       <div class="arch-diagram">src/
 ├── shared/                              ← SHARED kernel
-│   ├── common/constants/
+│   ├── common/constants/               # Messages, permissions, inject names
 │   ├── common/middlewares/
-│   └── core/enums/                      # 31 enums
+│   └── core/enums/                     # 31 enums
 │
-├── infrastructure/database/              ← SHARED infrastructure
-│   ├── database.module.ts             # @Global() TypeORM
-│   ├── entities/                      # 28 TypeORM entities
-│   │   └── index.ts                   # Barrel export
+├── infrastructure/database/             ← SHARED infrastructure
+│   ├── database.module.ts            # @Global() TypeORM
+│   ├── entities/                     # 28 TypeORM entities
+│   │   └── index.ts                 # Barrel export
 │   └── seeds/
 │
 ├── modules/
-│   ├── auth/                           # AUTH MICROSERVICE
+│   ├── auth/                          # AUTH MICROSERVICE
 │   │   ├── domain/
-│   │   │   ├── entities/User.ts        # Pure domain (has logic)
-│   │   │   └── repositories/          # Interfaces
-│   │   ├── application/services/       # AuthService
+│   │   │   ├── entities/User.ts       # Pure domain (has logic)
+│   │   │   └── repositories/
+│   │   ├── application/services/      # AuthService
 │   │   ├── infrastructure/
-│   │   │   ├── auth/                  # Guards, strategies
+│   │   │   ├── auth/                 # Guards, strategies
 │   │   │   └── persistence/repositories/
 │   │   └── presentation/
 │   │
-│   ├── rescue-team/                   # RESCUE TEAM MICROSERVICE
+│   ├── rescue-team/                    # RESCUE TEAM MICROSERVICE
 │   │   ├── domain/repositories/
+│   │   ├── domain/entities/          # RescueTeam, RescueTeamMember
 │   │   ├── application/services/
+│   │   ├── application/dtos/         # DTOs, contracts
+│   │   ├── infrastructure/persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── location/                       # LOCATION MICROSERVICE (2026-06-05)
+│   │   ├── domain/repositories/
+│   │   ├── application/services/     # LocationService
+│   │   ├── infrastructure/persistence/repositories/
+│   │   └── presentation/
+│   │
+│   ├── role/                           # ROLE MICROSERVICE (2026-06-05)
+│   │   ├── domain/entities/
+│   │   ├── domain/repositories/
+│   │   ├── application/services/     # RoleService
+│   │   ├── application/dtos/
 │   │   ├── infrastructure/persistence/repositories/
 │   │   └── presentation/
 │   │
@@ -307,7 +323,7 @@
 │
 └── app.module.ts</div>
       <p style="margin-top:12px;font-size:13px;color:var(--text-muted)">
-        ✅ <strong>Refactor thành công:</strong> Đã xóa duplicate domain entities, chuyển User entity vào <code>modules/auth/domain/entities/</code>, thống nhất enums vào <code>shared/core/enums/</code>, xóa unused repositories, sửa DatabaseModule explicit entities.
+        ✅ <strong>Modules mới thêm 2026-06-05:</strong> Location module (service, repo, controller), Role module (full CRUD). Refactor rescue-team với enhanced DTOs và contracts.
       </p>
     </div>
 
@@ -343,7 +359,10 @@
       <table>
         <thead><tr><th>Module</th><th>Trạng thái</th><th>Ghi chú</th></tr></thead>
         <tbody>
-          <tr><td>✅ Rescue Team</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">11 endpoints + 15 unit tests</td></tr>
+          <tr><td>✅ Rescue Team</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">11 endpoints + 15 unit tests + refactored DTOs</td></tr>
+          <tr><td>✅ Location</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">2026-06-05: service, repo interface/impl, controller</td></tr>
+          <tr><td>✅ Role</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">2026-06-05: full CRUD service, repo, controller, DTOs</td></tr>
+          <tr><td>✅ Team Specialization</td><td><span class="badge done">✅ Hoàn thành</span></td><td class="note">2026-06-05: standalone module, CRUD, ManyToMany</td></tr>
           <tr><td>🔲 SOS Request</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Auto-dispatch, WebSocket</td></tr>
           <tr><td>🔲 Flood Report</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Báo cáo lũ, xác minh</td></tr>
           <tr><td>🔲 Disaster Event</td><td><span class="badge todo">🔲 Chưa bắt đầu</span></td><td class="note">Sự kiện thiên tai</td></tr>
@@ -368,8 +387,16 @@
     <div class="section">
       <h2>📅 Lịch sử buổi code</h2>
       <div class="history-item">
+        <div class="history-date">2026-06-05</div>
+        <div class="history-content"><strong>Add Team Specialization Module (standalone):</strong> Tách TeamSpecialization thành module riêng theo feature-based modular. Thêm @ManyToMany inverse side vào TeamSpecializationEntity. CRUD endpoints đầy đủ. Export ITeamSpecializationRepository để RescueTeamModule có thể inject. Cập nhật Postman collection.</div>
+      </div>
+      <div class="history-item">
+        <div class="history-date">2026-05-28</div>
+        <div class="history-content"><strong>Refactor Rescue Team Domain Entities:</strong> Tách `RescueTeam`, `RescueTeamMember` thành domain entities, cập nhật `IRescueTeamService` interface dùng domain types thay vì `RescueTeamEntity`.</div>
+      </div>
+      <div class="history-item">
         <div class="history-date">2026-05-27</div>
-        <div class="history-content"><strong>Refactor Feature-Based Modular:</strong> Xóa duplicate domain entities (data-bags), chuyển User entity vào <code>modules/auth/domain/entities/</code> (có business logic), thống nhất 31 enums vào <code>shared/core/enums/</code>, xóa unused <code>infrastructure/database/repositories/</code>, sửa DatabaseModule dùng explicit <code>entities: Object.values(Entities)</code> thay vì autoLoadEntities để fix TypeORM metadata error. Build pass.</div>
+        <div class="history-content"><strong>Refactor Feature-Based Modular:</strong> Xóa duplicate domain entities, chuyển User entity vào <code>modules/auth/domain/entities/</code>, thống nhất 31 enums vào <code>shared/core/enums/</code>, xóa unused <code>infrastructure/database/repositories/</code>, sửa DatabaseModule dùng explicit <code>entities: Object.values(Entities)</code>.</div>
       </div>
       <div class="history-item">
         <div class="history-date">2026-05-22</div>
@@ -386,7 +413,7 @@
     </div>
 
     <div class="last-updated">
-      Lần cập nhật: <span>2026-05-27</span> — AI Assistant
+      Lần cập nhật: <span>2026-06-05</span> — AI Assistant
     </div>
 
   </div>

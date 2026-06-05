@@ -26,7 +26,7 @@ async function removeDuplicateProvinces() {
     SELECT id, code, name, "shortName", "createdAt"
     FROM province
     ORDER BY "createdAt" ASC
-  `) as Province[];
+  `);
 
   console.log(`Tổng record: ${provinces.length}`);
 
@@ -56,25 +56,28 @@ async function removeDuplicateProvinces() {
         // Update user_role set provinceId = original.id where provinceId = dup.id
         await AppDataSource.query(
           `UPDATE user_role SET "provinceId" = $1 WHERE "provinceId" = $2`,
-          [original.id, dup.id]
+          [original.id, dup.id],
         );
-        console.log(`Updated user_role: provinceId ${dup.id} -> ${original.id} for ${dup.name}`);
+        console.log(
+          `Updated user_role: provinceId ${dup.id} -> ${original.id} for ${dup.name}`,
+        );
 
         // Update user set provinceId = original.id where provinceId = dup.id
         await AppDataSource.query(
           `UPDATE "user" SET "provinceId" = $1 WHERE "provinceId" = $2`,
-          [original.id, dup.id]
+          [original.id, dup.id],
         );
-        console.log(`Updated user: provinceId ${dup.id} -> ${original.id} for ${dup.name}`);
+        console.log(
+          `Updated user: provinceId ${dup.id} -> ${original.id} for ${dup.name}`,
+        );
       }
     }
 
     // Xóa duplicate
     const duplicateIds = duplicates.map((d) => d.id);
-    await AppDataSource.query(
-      `DELETE FROM province WHERE id = ANY($1)`,
-      [duplicateIds]
-    );
+    await AppDataSource.query(`DELETE FROM province WHERE id = ANY($1)`, [
+      duplicateIds,
+    ]);
     console.log(`\nĐã xóa ${duplicates.length} records duplicate`);
   }
 

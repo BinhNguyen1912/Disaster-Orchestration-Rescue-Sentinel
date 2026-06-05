@@ -1,13 +1,13 @@
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { TeamType } from '@shared/core/enums/teamType.enum';
-import { TeamSpecialization } from './team-specialization';
+import { TeamSpecialization } from '@shared/domain/entities/team-specialization.entity';
 
 export interface RescueTeam {
   id: number;
   provinceId: number;
   adminUnitId: number; // Đơn vị hành chính cấp xã/phường
   name: string;
-  teamType: TeamType;
+  teamType?: TeamType; // Optional - for VOLUNTEER_SPONTANEOUS teams
   status: TeamStatus;
   currentLocation?: unknown;
   baseLocation?: unknown;
@@ -16,6 +16,8 @@ export interface RescueTeam {
   activeCasesCount: number;
   specializations?: TeamSpecialization[];
   leaderId?: number;
+  leaderCitizenName?: string;
+  leaderPhone?: string;
   totalMissions: number;
   totalRescued: number;
   totalHoursActive: number;
