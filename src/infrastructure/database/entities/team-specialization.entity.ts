@@ -4,8 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
 import { TeamType } from '@shared/core/enums/teamType.enum';
+import { RescueTeamEntity } from './rescue-team.entity';
 
 @Entity('team_specialization')
 export class TeamSpecializationEntity {
@@ -29,4 +31,7 @@ export class TeamSpecializationEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToMany(() => RescueTeamEntity, (team) => team.specializations)
+  rescueTeams: RescueTeamEntity[];
 }

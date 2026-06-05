@@ -18,9 +18,9 @@ export class CreateRescueTeamValidationDto {
   @IsNotEmpty()
   name: string;
 
+  @IsOptional()
   @IsEnum(TeamType)
-  @IsNotEmpty()
-  teamType: TeamType;
+  teamType?: TeamType;
 
   @IsInt()
   @IsNotEmpty()

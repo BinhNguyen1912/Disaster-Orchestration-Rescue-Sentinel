@@ -29,7 +29,11 @@ async function removeDuplicateProvince() {
   }
 
   const outputPath = path.join(dataDir, 'provinces-clean.json');
-  await fs.writeFile(outputPath, JSON.stringify(uniqueProvinces, null, 2), 'utf-8');
+  await fs.writeFile(
+    outputPath,
+    JSON.stringify(uniqueProvinces, null, 2),
+    'utf-8',
+  );
 
   console.log(`Tổng record gốc: ${provinces.length}`);
   console.log(`Sau khi lọc: ${uniqueProvinces.length}`);

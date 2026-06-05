@@ -16,6 +16,9 @@ import { HealthModule } from '@modules/health/health.module';
 import { RescueTeamModule } from '@modules/rescue-team/rescue-team.module';
 import { LocationModule } from '@modules/location/location.module';
 import { RoleModule } from './modules/role/role.module';
+import { TeamSpecializationModule } from './modules/team-specialization/team-specialization.module';
+import { RescueTeamMemberModule } from './modules/rescue-team-member/rescue-team-member.module';
+import { UserModule } from './modules/user/user.module';
 import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
 import { Public } from '@modules/auth/infrastructure/auth/decorators/public.decorator';
@@ -41,6 +44,9 @@ export class AppController {
     RescueTeamModule,
     LocationModule,
     RoleModule,
+    TeamSpecializationModule,
+    RescueTeamMemberModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

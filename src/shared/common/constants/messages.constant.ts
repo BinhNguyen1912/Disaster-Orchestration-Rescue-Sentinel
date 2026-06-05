@@ -14,6 +14,14 @@ export const APP_MESSAGES = {
     INVALID_OTP: 'Mã OTP không hợp lệ hoặc đã hết hạn',
     RESET_PASSWORD_SUCCESS: 'Đặt lại mật khẩu thành công',
   },
+  USER: {
+    USER_NOT_FOUND: 'Không tìm thấy người dùng',
+    PHONE_ALREADY_EXISTS: 'Số điện thoại đã được sử dụng',
+    EMAIL_ALREADY_EXISTS: 'Email đã được sử dụng',
+    NATIONAL_ID_ALREADY_EXISTS: 'Số CCCD đã được sử dụng',
+    USER_DELETED: 'Người dùng đã bị xóa',
+    PASSWORD_CHANGED: 'Mật khẩu đã được thay đổi',
+  },
   VALIDATION: {
     INVALID_STRING: 'Trường này phải là một chuỗi',
     PASSWORD_MIN_LENGTH: 'Mật khẩu phải chứa ít nhất 6 ký tự',

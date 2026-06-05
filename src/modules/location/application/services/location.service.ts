@@ -41,7 +41,15 @@ export class LocationService {
   }
 
   getProvinceCenters(): { provinceCode: number; lat: number; lng: number }[] {
-    const filePath = path.join(process.cwd(), 'src', 'infrastructure', 'database', 'seeds', 'data', 'province-centers.json');
+    const filePath = path.join(
+      process.cwd(),
+      'src',
+      'infrastructure',
+      'database',
+      'seeds',
+      'data',
+      'province-centers.json',
+    );
     const data = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(data);
   }

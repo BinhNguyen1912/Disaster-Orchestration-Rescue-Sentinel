@@ -84,18 +84,20 @@ function getType(fullName: string): AdministrativeUnitType {
 
 function fetchJson(url: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      let data = '';
-      res.on('data', (chunk) => (data += chunk));
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch (e) {
-          reject(e);
-        }
-      });
-      res.on('error', reject);
-    }).on('error', reject);
+    https
+      .get(url, (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e instanceof Error ? e : new Error(String(e)));
+          }
+        });
+        res.on('error', reject);
+      })
+      .on('error', reject);
   });
 }
 
@@ -124,7 +126,7 @@ async function main() {
 
   const dbProvinces = await AppDataSource.query(
     'SELECT id, code FROM province ORDER BY id',
-  ) as ProvinceWithId[];
+  );
 
   // Build map: province.code (number) -> province.id (number)
   const provinceCodeToId = new Map<number, number>();
@@ -143,7 +145,9 @@ async function main() {
     const provinceId = provinceCodeToId.get(provinceCodeNum);
 
     if (!provinceId) {
-      console.warn(`Province not found in DB: ${province.Code} (${province.Name})`);
+      console.warn(
+        `Province not found in DB: ${province.Code} (${province.Name})`,
+      );
       continue;
     }
 

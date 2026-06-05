@@ -156,7 +156,7 @@ export class SeederService {
 
     for (const spec of specs) {
       const exists = await this.specRepo.findOne({
-        where: { name: spec.name, teamType: spec.teamType as any },
+        where: { name: spec.name, teamType: spec.teamType },
       });
       if (!exists) {
         await this.specRepo.save(

@@ -36,8 +36,8 @@ export class RescueTeamEntity {
   @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ type: 'enum', enum: TeamType })
-  teamType: TeamType;
+  @Column({ type: 'enum', enum: TeamType, nullable: true })
+  teamType?: TeamType;
 
   @Column({ type: 'enum', enum: TeamStatus, default: TeamStatus.AVAILABLE })
   status: TeamStatus;
@@ -82,6 +82,12 @@ export class RescueTeamEntity {
 
   @Column({ type: 'int', nullable: true })
   leaderId?: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  leaderCitizenName?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  leaderPhone?: string;
 
   @Column({ type: 'int', default: 0 })
   totalMissions: number;

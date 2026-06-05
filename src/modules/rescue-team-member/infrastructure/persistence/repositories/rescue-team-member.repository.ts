@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import {
-  IRescueTeamMemberRepository,
-  PaginationOptions,
-} from '../../../domain/repositories/rescue-team-member.repository.interface';
+import { Repository } from 'typeorm';
+import { IRescueTeamMemberRepository } from '../../../domain/repositories/rescue-team-member.repository.interface';
 import { RescueTeamMemberEntity } from '@infrastructure/database/entities/rescue-team-member.entity';
 import { RoleInTeam } from '@shared/core/enums/roleInTeam.enum';
 
@@ -19,11 +16,8 @@ export class RescueTeamMemberRepositoryImpl implements IRescueTeamMemberReposito
     return this.repo.findOne({ where: { id } });
   }
 
-  async findAll(): Promise<RescueTeamMemberEntity[]> {
-    return this.repo.find();
-  }
-
   async findByUserId(userId: number): Promise<RescueTeamMemberEntity | null> {
+    if (!userId) return null;
     return this.repo.findOne({
       where: { userId, isActive: true },
       relations: ['team', 'team.province'],
@@ -33,7 +27,7 @@ export class RescueTeamMemberRepositoryImpl implements IRescueTeamMemberReposito
   async findByTeamId(
     teamId: number,
     filters?: { isActive?: boolean },
-    pagination?: PaginationOptions,
+    pagination?: { page: number; limit: number },
   ): Promise<{ items: RescueTeamMemberEntity[]; total: number }> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
@@ -54,6 +48,26 @@ export class RescueTeamMemberRepositoryImpl implements IRescueTeamMemberReposito
       .getManyAndCount();
 
     return { items, total };
+  }
+
+  async findByCitizenInfo(
+    teamId: number,
+    citizenName: string,
+    citizenPhone?: string,
+  ): Promise<RescueTeamMemberEntity | null> {
+    const queryBuilder = this.repo
+      .createQueryBuilder('rtm')
+      .where('rtm.teamId = :teamId', { teamId })
+      .andWhere('rtm.citizenName = :citizenName', { citizenName })
+      .andWhere('rtm.isActive = :isActive', { isActive: true });
+
+    if (citizenPhone) {
+      queryBuilder.andWhere('rtm.citizenPhone = :citizenPhone', {
+        citizenPhone,
+      });
+    }
+
+    return queryBuilder.getOne();
   }
 
   async create(
