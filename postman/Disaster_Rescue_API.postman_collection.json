@@ -200,7 +200,136 @@
       ]
     },
     {
-      "name": "3. Rescue Teams",
+      "name": "3. Users",
+      "description": "User management endpoints",
+      "item": [
+        {
+          "name": "GET /users - Danh sách người dùng",
+          "request": {
+            "url": "{{baseUrl}}/users?page=1&limit=20",
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "description": "Lấy danh sách người dùng (phân trang)"
+          }
+        },
+        {
+          "name": "GET /users/search?q=",
+          "request": {
+            "url": "{{baseUrl}}/users/search?q=nguyen",
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "description": "Tìm kiếm người dùng theo tên, số điện thoại, email"
+          }
+        },
+        {
+          "name": "GET /users/profile",
+          "request": {
+            "url": "{{baseUrl}}/users/profile",
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "description": "Lấy thông tin cá nhân của user đang đăng nhập"
+          }
+        },
+        {
+          "name": "PATCH /users/profile - Cập nhật thông tin cá nhân",
+          "request": {
+            "url": "{{baseUrl}}/users/profile",
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Nguyễn Văn A - Updated\",\n    \"avatarUrl\": \"https://example.com/avatar.jpg\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Cập nhật thông tin cá nhân"
+          }
+        },
+        {
+          "name": "GET /users/:id",
+          "request": {
+            "url": "{{baseUrl}}/users/1",
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "description": "Lấy thông tin người dùng theo ID"
+          }
+        },
+        {
+          "name": "PATCH /users/:id - Cập nhật người dùng",
+          "request": {
+            "url": "{{baseUrl}}/users/1",
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Nguyễn Văn B\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Cập nhật thông tin người dùng"
+          }
+        },
+        {
+          "name": "PATCH /users/:id/status - Kích hoạt/Vô hiệu hóa",
+          "request": {
+            "url": "{{baseUrl}}/users/1/status",
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isActive\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kích hoạt hoặc vô hiệu hóa tài khoản người dùng"
+          }
+        },
+        {
+          "name": "PATCH /users/:id/password - Đổi mật khẩu",
+          "request": {
+            "url": "{{baseUrl}}/users/1/password",
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"newPassword\": \"NewPassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Admin đổi mật khẩu người dùng"
+          }
+        },
+        {
+          "name": "DELETE /users/:id - Xóa người dùng",
+          "request": {
+            "url": "{{baseUrl}}/users/1",
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "description": "Xóa người dùng (soft delete)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Rescue Teams",
       "description": "Rescue Team CRUD at /rescue-teams",
       "item": [
         {
@@ -329,7 +458,7 @@
       ]
     },
     {
-      "name": "4. Team Members",
+      "name": "5. Team Members",
       "description": "Member management - /teams/:teamId/members",
       "item": [
         {
@@ -419,7 +548,7 @@
       ]
     },
     {
-      "name": "5. Location",
+      "name": "6. Location",
       "description": "Province and Ward/Commune endpoints for dropdown selections and map",
       "item": [
         {
@@ -457,7 +586,7 @@
       ]
     },
     {
-      "name": "6. Team Specializations",
+      "name": "7. Team Specializations",
       "description": "Team specialization management for rescue teams",
       "item": [
         {
@@ -560,7 +689,7 @@
       ]
     },
     {
-      "name": "7. Roles",
+      "name": "8. Roles",
       "description": "Role management endpoints (System Admin only)",
       "item": [
         {
