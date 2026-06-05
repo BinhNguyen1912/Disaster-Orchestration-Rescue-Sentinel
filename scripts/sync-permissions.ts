@@ -34,7 +34,10 @@ function loadEnv(): void {
     const eqIndex = trimmed.indexOf('=');
     if (eqIndex === -1) continue;
     const key = trimmed.slice(0, eqIndex).trim();
-    const value = trimmed.slice(eqIndex + 1).trim().replace(/^"|"$/g, '');
+    const value = trimmed
+      .slice(eqIndex + 1)
+      .trim()
+      .replace(/^"|"$/g, '');
     if (!process.env[key]) {
       process.env[key] = value;
     }
@@ -83,71 +86,69 @@ async function syncPermissions(): Promise<void> {
         ACTION_DESCRIPTIONS,
         buildPermission,
       )) {
-          // 1. Check if permission exists
-          const existing = await queryRunner.query(
-            'SELECT id, name, module, description FROM permission WHERE name = $1',
-            [permConfig.name],
-          );
+        // 1. Check if permission exists
+        const existing = await queryRunner.query(
+          'SELECT id, name, module, description FROM permission WHERE name = $1',
+          [permConfig.name],
+        );
 
-          let permissionId: number;
+        let permissionId: number;
 
-          if (existing.length === 0) {
-            // INSERT new permission
-            const result = await queryRunner.query(
-              `INSERT INTO permission (name, module, description, "isSystem", "createdAt", "updatedAt")
+        if (existing.length === 0) {
+          // INSERT new permission
+          const result = await queryRunner.query(
+            `INSERT INTO permission (name, module, description, "isSystem", "createdAt", "updatedAt")
                VALUES ($1, $2, $3, true, NOW(), NOW())
                RETURNING id`,
-              [permConfig.name, permConfig.module, permConfig.description],
+            [permConfig.name, permConfig.module, permConfig.description],
+          );
+          permissionId = result[0].id;
+          stats.permissionsAdded++;
+          console.log(
+            `  ✅ Added: ${permConfig.name} (module: ${permConfig.module})`,
+          );
+        } else {
+          permissionId = existing[0].id;
+
+          // UPDATE if description or module changed
+          if (
+            existing[0].description !== permConfig.description ||
+            existing[0].module !== permConfig.module
+          ) {
+            await queryRunner.query(
+              `UPDATE permission SET description = $1, module = $2, "updatedAt" = NOW()
+                 WHERE id = $3`,
+              [permConfig.description, permConfig.module, permissionId],
             );
-            permissionId = result[0].id;
-            stats.permissionsAdded++;
+            stats.permissionsUpdated++;
             console.log(
-              `  ✅ Added: ${permConfig.name} (module: ${permConfig.module})`,
+              `  📝 Updated: ${permConfig.name} (module: ${permConfig.module})`,
             );
           } else {
-            permissionId = existing[0].id;
-
-            // UPDATE if description or module changed
-            if (
-              existing[0].description !== permConfig.description ||
-              existing[0].module !== permConfig.module
-            ) {
-              await queryRunner.query(
-                `UPDATE permission SET description = $1, module = $2, "updatedAt" = NOW()
-                 WHERE id = $3`,
-                [permConfig.description, permConfig.module, permissionId],
-              );
-              stats.permissionsUpdated++;
-              console.log(
-                `  📝 Updated: ${permConfig.name} (module: ${permConfig.module})`,
-              );
-            } else {
-              stats.permissionsSkipped++;
-            }
+            stats.permissionsSkipped++;
           }
+        }
 
-          // 2. Sync role-permission mappings
-          for (const roleId of permConfig.allowedRoleIds) {
-            const existingMapping = await queryRunner.query(
-              `SELECT "roleId", "permissionId" FROM role_permission
+        // 2. Sync role-permission mappings
+        for (const roleId of permConfig.allowedRoleIds) {
+          const existingMapping = await queryRunner.query(
+            `SELECT "roleId", "permissionId" FROM role_permission
                WHERE "roleId" = $1 AND "permissionId" = $2`,
+            [roleId, permissionId],
+          );
+
+          if (existingMapping.length === 0) {
+            await queryRunner.query(
+              `INSERT INTO role_permission ("roleId", "permissionId", "grantedAt")
+                 VALUES ($1, $2, NOW())`,
               [roleId, permissionId],
             );
-
-            if (existingMapping.length === 0) {
-              await queryRunner.query(
-                `INSERT INTO role_permission ("roleId", "permissionId", "grantedAt")
-                 VALUES ($1, $2, NOW())`,
-                [roleId, permissionId],
-              );
-              stats.mappingsAdded++;
-              console.log(
-                `  ✅ Mapped: roleId=${roleId} → ${permConfig.name}`,
-              );
-            } else {
-              stats.mappingsSkipped++;
-            }
+            stats.mappingsAdded++;
+            console.log(`  ✅ Mapped: roleId=${roleId} → ${permConfig.name}`);
+          } else {
+            stats.mappingsSkipped++;
           }
+        }
       }
 
       console.log('\n[PermissionSync] 📊 Summary:');

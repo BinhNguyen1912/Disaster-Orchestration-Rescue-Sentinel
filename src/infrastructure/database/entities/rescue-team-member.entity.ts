@@ -33,19 +33,19 @@ export class RescueTeamMemberEntity {
   @Column({ type: 'timestamp', nullable: true })
   leftAt?: Date;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @Column({ type: 'varchar', array: true })
   specializations: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   missionsCount: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   rescuedCount: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   hoursActive: number;
 
   @ManyToOne(() => RescueTeamEntity)

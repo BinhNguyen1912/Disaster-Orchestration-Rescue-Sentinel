@@ -38,8 +38,8 @@ export class RescueTeamMemberEntity {
   @Column({ type: 'boolean' })
   isActive: boolean;
 
-  @Column({ type: 'varchar', array: true })
-  specializations: string;
+  @Column({ type: 'int', array: true })
+  specializationIds: number[];
 
   @Column({ type: 'int' })
   missionsCount: number;

@@ -20,8 +20,12 @@ import type { IRescueTeamRepository } from '../../domain/repositories/rescue-tea
 import type { IRescueTeamMemberRepository } from '../../domain/repositories/rescue-team-member.repository.interface';
 import type { ITeamSpecializationRepository } from '../../domain/repositories/team-specialization.repository.interface';
 import type { IRescueTeamService } from '../interfaces/rescue-team.service.interface';
+import type { IProvinceRepository } from '../../../location/domain/repositories/location.repository.interface';
+import type { IWardRepository } from '../../../location/domain/repositories/location.repository.interface';
 import { RescueTeam } from '../../domain/entities/rescue-team';
 import { RescueTeamMember } from '../../domain/entities/rescue-team-member';
+import { TeamSpecializationEntity } from '@infrastructure/database/entities/team-specialization.entity';
+import { APP_MESSAGES } from '@shared/index';
 
 @Injectable()
 export class RescueTeamService implements IRescueTeamService {
@@ -32,15 +36,46 @@ export class RescueTeamService implements IRescueTeamService {
     private readonly memberRepo: IRescueTeamMemberRepository,
     @Inject('ITeamSpecializationRepository')
     private readonly specRepo: ITeamSpecializationRepository,
+    @Inject('IProvinceRepository')
+    private readonly provinceRepo: IProvinceRepository,
+    @Inject('IWardRepository')
+    private readonly wardRepo: IWardRepository,
   ) {}
 
   async create(dto: CreateRescueTeamDto, userId: number): Promise<RescueTeam> {
+    // Validate province exists
+    const province = await this.provinceRepo.findById(dto.provinceId);
+    if (!province) {
+      throw new BadRequestException(APP_MESSAGES.RESCUE.INVALID_PROVINCE);
+    }
+
+    // Validate adminUnit (ward) exists
+    const adminUnit = await this.wardRepo.findById(dto.adminUnitId);
+    if (!adminUnit) {
+      throw new BadRequestException(APP_MESSAGES.RESCUE.INVALID_ADMIN_UNIT);
+    }
+
+    // Validate adminUnit belongs to the correct province
+    if (adminUnit.provinceId !== dto.provinceId) {
+      throw new BadRequestException(
+        APP_MESSAGES.RESCUE.ADMIN_UNIT_NOT_IN_PROVINCE,
+      );
+    }
+
     if (dto.specializationIds && dto.specializationIds.length > 0) {
       const specs = await this.specRepo.findByIds(dto.specializationIds);
       const invalid = specs.filter((s) => s.teamType !== dto.teamType);
       if (invalid.length > 0) {
-        throw new BadRequestException('INVALID_SPECIALIZATION_FOR_TEAM_TYPE');
+        throw new BadRequestException(
+          APP_MESSAGES.RESCUE.INVALID_SPECIALIZATION_FOR_TEAM_TYPE,
+        );
       }
+    }
+
+    // Load specialization entities for ManyToMany relation
+    let specializations: any = [];
+    if (dto.specializationIds && dto.specializationIds.length > 0) {
+      specializations = await this.specRepo.findByIds(dto.specializationIds);
     }
 
     return this.teamRepo.create({
@@ -50,6 +85,7 @@ export class RescueTeamService implements IRescueTeamService {
       totalMissions: 0,
       totalRescued: 0,
       totalHoursActive: 0,
+      specializations,
     });
   }
 
@@ -66,7 +102,7 @@ export class RescueTeamService implements IRescueTeamService {
   async findById(id: number): Promise<RescueTeam> {
     const team = await this.teamRepo.findById(id);
     if (!team) {
-      throw new NotFoundException('RESCUE_TEAM_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
     return team;
   }
@@ -74,7 +110,7 @@ export class RescueTeamService implements IRescueTeamService {
   async update(id: number, dto: UpdateRescueTeamDto): Promise<RescueTeam> {
     const team = await this.teamRepo.update(id, dto);
     if (!team) {
-      throw new NotFoundException('RESCUE_TEAM_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
     return team;
   }
@@ -88,7 +124,7 @@ export class RescueTeamService implements IRescueTeamService {
       ...(dto.status && { status: dto.status }),
     } as any);
     if (!team) {
-      throw new NotFoundException('RESCUE_TEAM_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
     return team;
   }
@@ -96,7 +132,7 @@ export class RescueTeamService implements IRescueTeamService {
   async delete(id: number): Promise<void> {
     const team = await this.teamRepo.findById(id);
     if (!team) {
-      throw new NotFoundException('RESCUE_TEAM_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
 
     const activeMembers = await this.memberRepo.countActiveMembers(id);
@@ -113,7 +149,7 @@ export class RescueTeamService implements IRescueTeamService {
   ): Promise<RescueTeamMember> {
     const existing = await this.memberRepo.findByUserId(dto.userId);
     if (existing && existing.isActive) {
-      throw new ConflictException('USER_ALREADY_IN_TEAM');
+      throw new ConflictException(APP_MESSAGES.RESCUE.USER_ALREADY_IN_TEAM);
     }
 
     if (dto.roleInTeam === RoleInTeam.LEADER) {
@@ -131,10 +167,7 @@ export class RescueTeamService implements IRescueTeamService {
       userId: dto.userId,
       roleInTeam: dto.roleInTeam,
       joinedAt: new Date(),
-      isActive: true,
-      missionsCount: 0,
-      rescuedCount: 0,
-      hoursActive: 0,
+      specializationIds: dto.specializationIds,
     });
 
     if (dto.roleInTeam === RoleInTeam.LEADER) {
@@ -147,12 +180,14 @@ export class RescueTeamService implements IRescueTeamService {
   async removeMember(teamId: number, memberId: number): Promise<void> {
     const member = await this.memberRepo.findById(memberId);
     if (!member || member.teamId !== teamId) {
-      throw new NotFoundException('MEMBER_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.MEMBER_NOT_FOUND);
     }
 
     const activeCount = await this.memberRepo.countActiveMembers(teamId);
     if (activeCount <= 1) {
-      throw new BadRequestException('CANNOT_REMOVE_LAST_MEMBER');
+      throw new BadRequestException(
+        APP_MESSAGES.RESCUE.CANNOT_REMOVE_LAST_MEMBER,
+      );
     }
 
     if (member.roleInTeam === RoleInTeam.LEADER) {
@@ -181,7 +216,7 @@ export class RescueTeamService implements IRescueTeamService {
   ): Promise<RescueTeamMember> {
     const member = await this.memberRepo.findById(memberId);
     if (!member || member.teamId !== teamId) {
-      throw new NotFoundException('MEMBER_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.MEMBER_NOT_FOUND);
     }
 
     if (dto.roleInTeam === RoleInTeam.LEADER) {
@@ -198,7 +233,7 @@ export class RescueTeamService implements IRescueTeamService {
       roleInTeam: dto.roleInTeam,
     });
     if (!updated) {
-      throw new NotFoundException('MEMBER_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.MEMBER_NOT_FOUND);
     }
     return updated;
   }
@@ -206,7 +241,7 @@ export class RescueTeamService implements IRescueTeamService {
   async leaveTeam(userId: number): Promise<void> {
     const member = await this.memberRepo.findByUserId(userId);
     if (!member) {
-      throw new NotFoundException('MEMBER_NOT_FOUND');
+      throw new NotFoundException(APP_MESSAGES.RESCUE.MEMBER_NOT_FOUND);
     }
 
     const teamId = member.teamId;

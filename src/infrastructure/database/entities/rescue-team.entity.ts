@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
   JoinColumn,
 } from 'typeorm';
 import { ProvinceEntity } from './province.entity';
@@ -16,6 +18,7 @@ import { DutyLogEntity } from './duty-log.entity';
 import { TeamAchievementEntity } from './team-achievement.entity';
 import { SosRequestEntity } from './sos-request.entity';
 import { CasualtyEntity } from './casualty.entity';
+import { TeamSpecializationEntity } from './team-specialization.entity';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { TeamType } from '@shared/core/enums/teamType.enum';
 
@@ -36,7 +39,7 @@ export class RescueTeamEntity {
   @Column({ type: 'enum', enum: TeamType })
   teamType: TeamType;
 
-  @Column({ type: 'enum', enum: TeamStatus })
+  @Column({ type: 'enum', enum: TeamStatus, default: TeamStatus.AVAILABLE })
   status: TeamStatus;
 
   @Column({
@@ -66,25 +69,27 @@ export class RescueTeamEntity {
   @Column({ type: 'int', nullable: true })
   maxCapacity?: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   activeCasesCount: number;
 
-  @Column({ type: 'varchar', array: true })
-  specializations: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  equipment?: any;
+  @ManyToMany(() => TeamSpecializationEntity)
+  @JoinTable({
+    name: 'rescue_team_specialization',
+    joinColumn: { name: 'rescueTeamId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'specializationId', referencedColumnName: 'id' },
+  })
+  specializations: TeamSpecializationEntity[];
 
   @Column({ type: 'int', nullable: true })
   leaderId?: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   totalMissions: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   totalRescued: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 0 })
   totalHoursActive: number;
 
   @CreateDateColumn()

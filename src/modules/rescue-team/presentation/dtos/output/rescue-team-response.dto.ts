@@ -9,7 +9,6 @@ export class RescueTeamResponseDto {
   baseLocation?: any;
   coverageArea?: any;
   maxCapacity?: number;
-  equipment?: Record<string, any>;
   activeCasesCount: number;
   totalMissions: number;
   totalRescued: number;
@@ -30,7 +29,6 @@ export class RescueTeamResponseDto {
     dto.baseLocation = entity.baseLocation;
     dto.coverageArea = entity.coverageArea;
     dto.maxCapacity = entity.maxCapacity;
-    dto.equipment = entity.equipment;
     dto.activeCasesCount = entity.activeCasesCount;
     dto.totalMissions = entity.totalMissions;
     dto.totalRescued = entity.totalRescued;

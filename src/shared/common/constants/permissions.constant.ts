@@ -142,7 +142,7 @@ export const ROLE_PERMISSION_MATRIX: Record<
   },
   [SystemRoleId.PROVINCE_ADMIN]: {
     [PermModule.SOS]: ActionSet.CRUD,
-    [PermModule.RESCUE]: ActionSet.MANAGE_READ,
+    [PermModule.RESCUE]: ActionSet.ALL,
     [PermModule.FLOOD]: ActionSet.CRUD_VERIFY,
     [PermModule.DISASTER]: ActionSet.MANAGE_READ,
     [PermModule.DONATION]: ActionSet.MANAGE_READ,

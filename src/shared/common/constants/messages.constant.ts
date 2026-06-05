@@ -18,4 +18,27 @@ export const APP_MESSAGES = {
     INVALID_STRING: 'Trường này phải là một chuỗi',
     PASSWORD_MIN_LENGTH: 'Mật khẩu phải chứa ít nhất 6 ký tự',
   },
+  ROLE: {
+    ROLE_NOT_FOUND: 'Không tìm thấy vai trò',
+    CANNOT_DELETE_SYSTEM_ROLE: 'Không thể xóa vai trò hệ thống',
+  },
+  RESCUE: {
+    RESCUE_REQUEST_CREATED: 'Yêu cầu cứu hộ đã được tạo thành công',
+    RESCUE_REQUEST_NOT_FOUND: 'Không tìm thấy yêu cầu cứu hộ',
+    RESCUE_REQUEST_CANCELLED: 'Yêu cầu cứu hộ đã được hủy',
+    RESCUE_REQUEST_COMPLETED: 'Yêu cầu cứu hộ đã được hoàn thành',
+    INVALID_SPECIALIZATION_FOR_TEAM_TYPE:
+      'Chuyên môn không phù hợp với loại đội cứu hộ',
+    RESCUE_TEAM_NOT_FOUND: 'Không tìm thấy đội cứu hộ',
+    CANNOT_DELETE_TEAM_WITH_ACTIVE_MEMBERS:
+      'Không thể xóa đội cứu hộ khi còn thành viên đang hoạt động',
+    USER_ALREADY_IN_TEAM: 'Người dùng đã là thành viên của một đội cứu hộ khác',
+    MEMBER_NOT_FOUND: 'Không tìm thấy thành viên trong đội cứu hộ',
+    CANNOT_REMOVE_LAST_MEMBER:
+      'Không thể xóa thành viên cuối cùng của đội cứu hộ',
+    INVALID_PROVINCE: 'Tỉnh/Thành phố không hợp lệ',
+    INVALID_ADMIN_UNIT: 'Đơn vị hành chính không hợp lệ',
+    ADMIN_UNIT_NOT_IN_PROVINCE:
+      'Đơn vị hành chính không thuộc tỉnh/thành phố đã chọn',
+  },
 } as const;

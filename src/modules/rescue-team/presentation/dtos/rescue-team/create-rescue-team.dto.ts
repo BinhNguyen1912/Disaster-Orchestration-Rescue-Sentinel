@@ -40,7 +40,4 @@ export class CreateRescueTeamValidationDto {
   @IsArray()
   @IsInt({ each: true })
   specializationIds?: number[];
-
-  @IsOptional()
-  equipment?: Record<string, any>;
 }

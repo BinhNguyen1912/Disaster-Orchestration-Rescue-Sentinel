@@ -12,7 +12,6 @@ export class RescueTeamResponseDto {
   maxCapacity?: number;
   activeCasesCount: number;
   specializationIds: number[];
-  equipment?: any;
   leaderId?: number;
   totalMissions: number;
   totalRescued: number;

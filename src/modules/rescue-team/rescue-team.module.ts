@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import { RescueTeamService } from './application/services/rescue-team.service';
 import { TeamSpecializationService } from './application/services/team-specialization.service';
 import { RescueTeamController } from './presentation/controllers/rescue-team.controller';
 import { TeamSpecializationController } from './presentation/controllers/team-specialization.controller';
-
 import { RescueTeamRepositoryImpl } from './infrastructure/persistence/repositories/rescue-team.repository';
 import { RescueTeamMemberRepositoryImpl } from './infrastructure/persistence/repositories/rescue-team-member.repository';
 import { TeamSpecializationRepositoryImpl } from './infrastructure/persistence/repositories/team-specialization.repository';
-
+import { ProvinceRepositoryImpl, WardRepositoryImpl } from '../location/infrastructure/persistence/repositories/location.repository.impl';
+import { ProvinceEntity } from '@infrastructure/database/entities/province.entity';
+import { AdministrativeUnitEntity } from '@infrastructure/database/entities/administrative-unit.entity';
 import { RescueTeamEntity } from '@infrastructure/database/entities/rescue-team.entity';
 import { RescueTeamMemberEntity } from '@infrastructure/database/entities/rescue-team-member.entity';
 import { TeamSpecializationEntity } from '@infrastructure/database/entities/team-specialization.entity';
@@ -20,6 +20,8 @@ import { TeamSpecializationEntity } from '@infrastructure/database/entities/team
       RescueTeamEntity,
       RescueTeamMemberEntity,
       TeamSpecializationEntity,
+      ProvinceEntity,
+      AdministrativeUnitEntity,
     ]),
   ],
   controllers: [RescueTeamController, TeamSpecializationController],
@@ -37,6 +39,14 @@ import { TeamSpecializationEntity } from '@infrastructure/database/entities/team
     {
       provide: 'ITeamSpecializationRepository',
       useClass: TeamSpecializationRepositoryImpl,
+    },
+    {
+      provide: 'IProvinceRepository',
+      useClass: ProvinceRepositoryImpl,
+    },
+    {
+      provide: 'IWardRepository',
+      useClass: WardRepositoryImpl,
     },
   ],
   exports: [RescueTeamService, TeamSpecializationService],

@@ -19,5 +19,5 @@ export class AddMemberValidationDto {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  specializations?: number[];
+  specializationIds?: number[];
 }

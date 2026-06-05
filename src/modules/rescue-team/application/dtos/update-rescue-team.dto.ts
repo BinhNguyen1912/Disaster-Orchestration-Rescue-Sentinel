@@ -7,6 +7,5 @@ export interface UpdateRescueTeamDto {
   status?: TeamStatus;
   activeCasesCount?: number;
   maxCapacity?: number;
-  equipment?: Record<string, any>;
-  coverageArea?: { type: 'Polygon'; coordinates: number[][][] };
+  specializationIds?: number[];
 }

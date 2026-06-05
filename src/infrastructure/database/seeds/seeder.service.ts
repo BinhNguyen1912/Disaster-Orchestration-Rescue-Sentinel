@@ -156,13 +156,13 @@ export class SeederService {
 
     for (const spec of specs) {
       const exists = await this.specRepo.findOne({
-        where: { code: spec.code },
+        where: { name: spec.name, teamType: spec.teamType as any },
       });
       if (!exists) {
         await this.specRepo.save(
           this.specRepo.create({ ...spec, isActive: true }),
         );
-        this.logger.debug(`Inserted specialization: ${spec.code}`);
+        this.logger.debug(`Inserted specialization: ${spec.name}`);
       }
     }
   }

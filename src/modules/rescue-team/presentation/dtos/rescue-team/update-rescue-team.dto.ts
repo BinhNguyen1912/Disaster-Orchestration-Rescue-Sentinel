@@ -30,9 +30,6 @@ export class UpdateRescueTeamValidationDto {
   maxCapacity?: number;
 
   @IsOptional()
-  equipment?: Record<string, any>;
-
-  @IsOptional()
   @IsArray()
   coverageArea?: { type: 'Polygon'; coordinates: number[][][] };
 }

@@ -47,7 +47,7 @@ export class RescueTeamController {
   @ApiResponse({ status: 201, description: 'Tạo thành công' })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @RequirePermissions(Permissions.RESCUE_TEAM_CREATE)
+  @RequirePermissions(Permissions.RESCUE_CREATE)
   async create(
     @Body(new ValidationPipe({ transform: true }))
     dto: CreateRescueTeamValidationDto,
@@ -60,7 +60,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Danh sách đội cứu hộ' })
   @Get()
-  @RequirePermissions(Permissions.RESCUE_TEAM_READ)
+  @RequirePermissions(Permissions.RESCUE_READ)
   async findAll(
     @Query(new ValidationPipe({ transform: true }))
     query: QueryRescueTeamValidationDto,
@@ -73,7 +73,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Chi tiết đội cứu hộ' })
   @Get(':teamId')
-  @RequirePermissions(Permissions.RESCUE_TEAM_READ)
+  @RequirePermissions(Permissions.RESCUE_READ)
   async findById(@Param('teamId') teamId: string) {
     return this.service.findById(parseInt(teamId, 10));
   }
@@ -82,7 +82,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
   @Patch(':teamId')
-  @RequirePermissions(Permissions.RESCUE_TEAM_UPDATE)
+  @RequirePermissions(Permissions.RESCUE_UPDATE)
   async update(
     @Param('teamId') teamId: string,
     @Body(new ValidationPipe({ transform: true }))
@@ -95,7 +95,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
   @Patch(':teamId/location')
-  @RequirePermissions(Permissions.RESCUE_TEAM_UPDATE)
+  @RequirePermissions(Permissions.RESCUE_UPDATE)
   async updateLocation(
     @Param('teamId') teamId: string,
     @Body(new ValidationPipe({ transform: true }))
@@ -108,7 +108,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Xóa thành công' })
   @Delete(':teamId')
-  @RequirePermissions(Permissions.RESCUE_TEAM_DELETE)
+  @RequirePermissions(Permissions.RESCUE_DELETE)
   async delete(@Param('teamId') teamId: string) {
     await this.service.delete(parseInt(teamId, 10));
     return { success: true };
@@ -119,7 +119,7 @@ export class RescueTeamController {
   @ApiResponse({ status: 201, description: 'Thêm thành viên thành công' })
   @Post(':teamId/members')
   @HttpCode(HttpStatus.CREATED)
-  @RequirePermissions(Permissions.RESCUE_TEAM_MANAGE_MEMBERS)
+  @RequirePermissions(Permissions.RESCUE_MANAGE)
   async addMember(
     @Param('teamId') teamId: string,
     @Body(new ValidationPipe({ transform: true })) dto: AddMemberValidationDto,
@@ -131,7 +131,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Danh sách thành viên' })
   @Get(':teamId/members')
-  @RequirePermissions(Permissions.RESCUE_TEAM_READ)
+  @RequirePermissions(Permissions.RESCUE_READ)
   async getMembers(
     @Param('teamId') teamId: string,
     @Query('isActive') isActive?: string,
@@ -146,7 +146,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Xóa thành viên thành công' })
   @Delete(':teamId/members/:memberId')
-  @RequirePermissions(Permissions.RESCUE_TEAM_MANAGE_MEMBERS)
+  @RequirePermissions(Permissions.RESCUE_MANAGE)
   async removeMember(
     @Param('teamId') teamId: string,
     @Param('memberId') memberId: string,
@@ -162,7 +162,7 @@ export class RescueTeamController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Chuyển vai trò thành công' })
   @Patch(':teamId/members/:memberId/role')
-  @RequirePermissions(Permissions.RESCUE_TEAM_MANAGE_MEMBERS)
+  @RequirePermissions(Permissions.RESCUE_MANAGE)
   async updateMemberRole(
     @Param('teamId') teamId: string,
     @Param('memberId') memberId: string,

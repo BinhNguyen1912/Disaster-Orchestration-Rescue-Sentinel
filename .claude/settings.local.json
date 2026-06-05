@@ -14,7 +14,8 @@
       "Bash(netstat -ano)",
       "Bash(curl -s http://localhost:8585/rescue-teams)",
       "Bash(curl -v http://localhost:8585/rescue-teams -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjM1LCJwcm92aW5jZUlkIjoxLCJlbWFpbCI6ImFkbWluQHN5c3RlbS5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3OTkzMDEzOCwiZXhwIjoxNzc5OTMxMDM4fQ.c21huSvSmiWuODtkojXuKsc1xqA5ryc7z2QbC_3hvvI')",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(docker exec *)"
     ]
   }
 }

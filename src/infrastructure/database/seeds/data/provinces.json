@@ -1,36 +1,196 @@
 [
-  { "code": 1, "name": "Thành phố Hà Nội", "shortName": "Hà Nội", "isActive": true },
-  { "code": 4, "name": "Tỉnh Cao Bằng", "shortName": "Cao Bằng", "isActive": true },
-  { "code": 8, "name": "Tỉnh Tuyên Quang", "shortName": "Tuyên Quang", "isActive": true },
-  { "code": 11, "name": "Tỉnh Điện Biên", "shortName": "Điện Biên", "isActive": true },
-  { "code": 12, "name": "Tỉnh Lai Châu", "shortName": "Lai Châu", "isActive": true },
-  { "code": 14, "name": "Tỉnh Sơn La", "shortName": "Sơn La", "isActive": true },
-  { "code": 15, "name": "Tỉnh Lào Cai", "shortName": "Lào Cai", "isActive": true },
-  { "code": 19, "name": "Tỉnh Thái Nguyên", "shortName": "Thái Nguyên", "isActive": true },
-  { "code": 20, "name": "Tỉnh Lạng Sơn", "shortName": "Lạng Sơn", "isActive": true },
-  { "code": 22, "name": "Tỉnh Quảng Ninh", "shortName": "Quảng Ninh", "isActive": true },
-  { "code": 24, "name": "Tỉnh Bắc Ninh", "shortName": "Bắc Ninh", "isActive": true },
-  { "code": 25, "name": "Tỉnh Phú Thọ", "shortName": "Phú Thọ", "isActive": true },
-  { "code": 31, "name": "Thành phố Hải Phòng", "shortName": "Hải Phòng", "isActive": true },
-  { "code": 33, "name": "Tỉnh Hưng Yên", "shortName": "Hưng Yên", "isActive": true },
-  { "code": 37, "name": "Tỉnh Ninh Bình", "shortName": "Ninh Bình", "isActive": true },
-  { "code": 38, "name": "Tỉnh Thanh Hóa", "shortName": "Thanh Hóa", "isActive": true },
-  { "code": 40, "name": "Tỉnh Nghệ An", "shortName": "Nghệ An", "isActive": true },
-  { "code": 42, "name": "Tỉnh Hà Tĩnh", "shortName": "Hà Tĩnh", "isActive": true },
-  { "code": 44, "name": "Tỉnh Quảng Trị", "shortName": "Quảng Trị", "isActive": true },
+  {
+    "code": 1,
+    "name": "Thành phố Hà Nội",
+    "shortName": "Hà Nội",
+    "isActive": true
+  },
+  {
+    "code": 4,
+    "name": "Tỉnh Cao Bằng",
+    "shortName": "Cao Bằng",
+    "isActive": true
+  },
+  {
+    "code": 8,
+    "name": "Tỉnh Tuyên Quang",
+    "shortName": "Tuyên Quang",
+    "isActive": true
+  },
+  {
+    "code": 11,
+    "name": "Tỉnh Điện Biên",
+    "shortName": "Điện Biên",
+    "isActive": true
+  },
+  {
+    "code": 12,
+    "name": "Tỉnh Lai Châu",
+    "shortName": "Lai Châu",
+    "isActive": true
+  },
+  {
+    "code": 14,
+    "name": "Tỉnh Sơn La",
+    "shortName": "Sơn La",
+    "isActive": true
+  },
+  {
+    "code": 15,
+    "name": "Tỉnh Lào Cai",
+    "shortName": "Lào Cai",
+    "isActive": true
+  },
+  {
+    "code": 19,
+    "name": "Tỉnh Thái Nguyên",
+    "shortName": "Thái Nguyên",
+    "isActive": true
+  },
+  {
+    "code": 20,
+    "name": "Tỉnh Lạng Sơn",
+    "shortName": "Lạng Sơn",
+    "isActive": true
+  },
+  {
+    "code": 22,
+    "name": "Tỉnh Quảng Ninh",
+    "shortName": "Quảng Ninh",
+    "isActive": true
+  },
+  {
+    "code": 24,
+    "name": "Tỉnh Bắc Ninh",
+    "shortName": "Bắc Ninh",
+    "isActive": true
+  },
+  {
+    "code": 25,
+    "name": "Tỉnh Phú Thọ",
+    "shortName": "Phú Thọ",
+    "isActive": true
+  },
+  {
+    "code": 31,
+    "name": "Thành phố Hải Phòng",
+    "shortName": "Hải Phòng",
+    "isActive": true
+  },
+  {
+    "code": 33,
+    "name": "Tỉnh Hưng Yên",
+    "shortName": "Hưng Yên",
+    "isActive": true
+  },
+  {
+    "code": 37,
+    "name": "Tỉnh Ninh Bình",
+    "shortName": "Ninh Bình",
+    "isActive": true
+  },
+  {
+    "code": 38,
+    "name": "Tỉnh Thanh Hóa",
+    "shortName": "Thanh Hóa",
+    "isActive": true
+  },
+  {
+    "code": 40,
+    "name": "Tỉnh Nghệ An",
+    "shortName": "Nghệ An",
+    "isActive": true
+  },
+  {
+    "code": 42,
+    "name": "Tỉnh Hà Tĩnh",
+    "shortName": "Hà Tĩnh",
+    "isActive": true
+  },
+  {
+    "code": 44,
+    "name": "Tỉnh Quảng Trị",
+    "shortName": "Quảng Trị",
+    "isActive": true
+  },
   { "code": 46, "name": "Thành phố Huế", "shortName": "Huế", "isActive": true },
-  { "code": 48, "name": "Thành phố Đà Nẵng", "shortName": "Đà Nẵng", "isActive": true },
-  { "code": 51, "name": "Tỉnh Quảng Ngãi", "shortName": "Quảng Ngãi", "isActive": true },
-  { "code": 52, "name": "Tỉnh Gia Lai", "shortName": "Gia Lai", "isActive": true },
-  { "code": 56, "name": "Tỉnh Khánh Hòa", "shortName": "Khánh Hòa", "isActive": true },
-  { "code": 66, "name": "Tỉnh Đắk Lắk", "shortName": "Đắk Lắk", "isActive": true },
-  { "code": 68, "name": "Tỉnh Lâm Đồng", "shortName": "Lâm Đồng", "isActive": true },
-  { "code": 75, "name": "Tỉnh Đồng Nai", "shortName": "Đồng Nai", "isActive": true },
-  { "code": 79, "name": "Thành phố Hồ Chí Minh", "shortName": "TP.HCM", "isActive": true },
-  { "code": 80, "name": "Tỉnh Tây Ninh", "shortName": "Tây Ninh", "isActive": true },
-  { "code": 82, "name": "Tỉnh Đồng Tháp", "shortName": "Đồng Tháp", "isActive": true },
-  { "code": 86, "name": "Tỉnh Vĩnh Long", "shortName": "Vĩnh Long", "isActive": true },
-  { "code": 91, "name": "Tỉnh An Giang", "shortName": "An Giang", "isActive": true },
-  { "code": 92, "name": "Thành phố Cần Thơ", "shortName": "Cần Thơ", "isActive": true },
+  {
+    "code": 48,
+    "name": "Thành phố Đà Nẵng",
+    "shortName": "Đà Nẵng",
+    "isActive": true
+  },
+  {
+    "code": 51,
+    "name": "Tỉnh Quảng Ngãi",
+    "shortName": "Quảng Ngãi",
+    "isActive": true
+  },
+  {
+    "code": 52,
+    "name": "Tỉnh Gia Lai",
+    "shortName": "Gia Lai",
+    "isActive": true
+  },
+  {
+    "code": 56,
+    "name": "Tỉnh Khánh Hòa",
+    "shortName": "Khánh Hòa",
+    "isActive": true
+  },
+  {
+    "code": 66,
+    "name": "Tỉnh Đắk Lắk",
+    "shortName": "Đắk Lắk",
+    "isActive": true
+  },
+  {
+    "code": 68,
+    "name": "Tỉnh Lâm Đồng",
+    "shortName": "Lâm Đồng",
+    "isActive": true
+  },
+  {
+    "code": 75,
+    "name": "Tỉnh Đồng Nai",
+    "shortName": "Đồng Nai",
+    "isActive": true
+  },
+  {
+    "code": 79,
+    "name": "Thành phố Hồ Chí Minh",
+    "shortName": "TP.HCM",
+    "isActive": true
+  },
+  {
+    "code": 80,
+    "name": "Tỉnh Tây Ninh",
+    "shortName": "Tây Ninh",
+    "isActive": true
+  },
+  {
+    "code": 82,
+    "name": "Tỉnh Đồng Tháp",
+    "shortName": "Đồng Tháp",
+    "isActive": true
+  },
+  {
+    "code": 86,
+    "name": "Tỉnh Vĩnh Long",
+    "shortName": "Vĩnh Long",
+    "isActive": true
+  },
+  {
+    "code": 91,
+    "name": "Tỉnh An Giang",
+    "shortName": "An Giang",
+    "isActive": true
+  },
+  {
+    "code": 92,
+    "name": "Thành phố Cần Thơ",
+    "shortName": "Cần Thơ",
+    "isActive": true
+  },
   { "code": 96, "name": "Tỉnh Cà Mau", "shortName": "Cà Mau", "isActive": true }
 ]

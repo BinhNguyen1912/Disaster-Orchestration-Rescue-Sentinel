@@ -33,7 +33,9 @@
       "@modules/rescue-team/*": ["modules/rescue-team/*"],
       "@modules/health/*": ["modules/health/*"],
       "@modules/mail/*": ["modules/mail/*"],
-      "@modules/seeder/*": ["modules/seeder/*"]
+      "@modules/seeder/*": ["modules/seeder/*"],
+      "@modules/location/*": ["modules/location/*"],
+      "@seeds/*": ["infrastructure/database/seeds/*"]
     }
   }
 }

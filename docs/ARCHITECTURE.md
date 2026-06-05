@@ -637,6 +637,51 @@ import type { CreateRescueTeamDto } from '../../application/dtos';
 
 ## 9. FAQ
 
+### Q: Ai bấm nút SOS? Có phải đội cứu hộ không?
+
+**A:** Người bấm SOS **KHÔNG PHẢI đội cứu hộ.**
+
+| Người bấm SOS | Vai trò |
+|---------------|---------|
+| **Nạn nhân** | Bị kẹt trong lũ, cháy... bấm SOS cầu cứu |
+| **Người chứng kiến** | Thấy tai nạn, bấm báo có người gặp nạn |
+| **Thiết bị IoT** | Cảm biến nước, khói... tự động gửi SOS |
+
+**Đội cứu hộ** → Nhận lệnh điều động → Đến location cứu người
+
+Giống như gọi 113 → cảnh sát đến, không phải cảnh sát bấm 113.
+
+### Q: Hệ thống có thay thế hoàn toàn việc điều động thủ công không?
+
+**A:** Không. Hệ thống hỗ trợ, không thay thế hoàn toàn.
+
+Hệ thống có **3 chế độ hoạt động:**
+
+| Mode | Khi nào dùng | Ai quyết định |
+|------|--------------|---------------|
+| **Auto** | Hệ thống hoạt động tốt | AI dispatch tự động |
+| **Semi** | Gợi ý từ hệ thống + con người duyệt | Đội trưởng xác nhận |
+| **Manual** | Hệ thống lỗi/mạng yếu | Đội trưởng tự chọn |
+
+**Tiêu chí dispatch tự động:**
+- Chuyên môn (chữa cháy → đội PCCC, cấp cứu → đội Y_TE)
+- Vị trí (đội gần nhất được ưu tiên)
+- Tình trạng (đội đang rảnh)
+
+### Q: App của đội trưởng có tính năng gì?
+
+**A:** App đội trưởng hỗ trợ:
+
+```
+├── Danh sách thành viên (đã được phân chuyên môn sẵn)
+├── Trạng thái: Rảnh / Đang bận / Đang di chuyển
+├── Map hiển thị vị trí thật của từng thành viên
+├── Filter nhanh: "Có chuyên môn PCCC + Đang rảnh"
+└── Gửi thông báo tự động đến thành viên được chọn
+```
+
+Đội trưởng **không cần gọi điện từng người** → chỉ cần bấm chọn trên app → hệ thống gửi thông báo tự động.
+
 ### Q: Tại sao modules lại có cấu trúc giống nhau?
 
 **A:** Để consistency và dễ maintain. Khi team member chuyển từ module auth sang rescue-team, họ biết:

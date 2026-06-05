@@ -9,5 +9,4 @@ export interface CreateRescueTeamDto {
   coverageArea?: { type: 'Polygon'; coordinates: number[][][] };
   maxCapacity?: number;
   specializationIds?: number[];
-  equipment?: Record<string, any>;
 }

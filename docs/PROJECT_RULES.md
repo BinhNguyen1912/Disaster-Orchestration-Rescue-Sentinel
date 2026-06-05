@@ -1987,3 +1987,110 @@ Khi duoc yeu cau code mot tinh nang moi, AI PHAI thuc hien theo thu tu:
 5. Khong bo qua lop - Khong viet Prisma query trong Controller hay Use Case.
 6. Dat ten file dung convention - Xem muc 19.2.
 7. Ghi changelog - Tao file trong openspec/changes/ sau khi xong.
+
+---
+
+## 20. FAQ - Cau hoi thuong gap
+
+### 20.1 Ai bam nut SOS? Co phai doi cuu ho khong?
+
+**A:** Nguoi bam SOS **KHONG PHAI** doi cuu ho.
+
+| Nguoi bam SOS | Vai tro |
+|---------------|---------|
+| **Nan nhan** | Bi ket trong lu, chay... bam SOS cuu cuu |
+| **Nguoi chung kien** | Thay tai nan, bam bao co nguoi gap nan |
+| **Thiet bi IoT** | Cam bien nuoc, khoi... tu dong gui SOS |
+
+**Doi cuu ho** → Nhan lenh dieu dong → Den location cuu nguoi
+
+Giong nhu goi 113 → canh sat den, khong phai canh sat bam 113.
+
+### 20.2 He thong co thay the hoan toan viec dieu dong thu cong khong?
+
+**A:** Khong. He thong ho tro, khong thay the hoan toan.
+
+He thong co **3 che do hoat dong:**
+
+| Mode | Khi nao dung | Ai quyet dinh |
+|------|--------------|---------------|
+| **Auto** | He thong hoat dong tot | AI dispatch tu dong |
+| **Semi** | Goi y tu he thong + con nguoi duyet | Doi truong xac nhan |
+| **Manual** | He thong loi/mang yeu | Doi truong tu chon |
+
+**Tieu chi dispatch tu dong:**
+- Chuyen mon (chua chay → doi PCCC, cap cuu → doi Y_TE)
+- Vi tri (doi gan nhat duoc uu tien)
+- Tinh trang (doi dang rai)
+
+### 20.3 App cua doi truong co tinh nang gi?
+
+**A:** App doi truong ho tro:
+
+```
+├── Danh sach thanh vien (da duoc phan chuyen mon san)
+├── Trang thai: Rai / Dang ban / Dang di chuyen
+├── Map hien thi vi tri that cua tung thanh vien
+├── Filter nhanh: "Co chuyen mon PCCC + Dang rai"
+└── Gui thong bao tu dong den thanh vien duoc chon
+```
+
+Doi truong **khong can goi dien tung nguoi** → chi can bam chon tren app → he thong gui thong bao tu dong.
+
+### 20.4 Tai sao TIGER schema lai ton tai trong database?
+
+**A:** TIGER (Topologically Integrated Geographic Encoding and Referencing) la bo du lieu dia ly cua **US Census Bureau**, chua du lieu hanh chinh My.
+
+**Vo ich cho Vietnam:**
+- ❌ Khong chua ranh gioi tinh/huyen/xa Vietnam
+- ❌ Khong co ham geocoding cho dia chi Vietnam
+- ❌ Chi su dung duoc cho My
+
+**Giai phap cho Vietnam:**
+- ✅ Dung `vietnamese-provinces-database` tu GitHub
+- ✅ Generate `administrative-unit.json` voi 2742 don vi hanh chinh
+- ✅ Generate `province-centers.json` voi toa do lat/lng tu OSM Nominatim
+
+**Xoa TIGER:**
+```sql
+DROP SCHEMA IF EXISTS tiger CASCADE;
+DROP SCHEMA IF EXISTS topology CASCADE;
+```
+
+### 20.5 Neu dien thoai het pin thi sao? Co can thay the bo dam khong?
+
+**A:** He thong **khong thay the** bo dam/walkie-talkie.
+
+#### 1. Thua nhan thuc te
+Bo dam la cong cu lien lac tai hien truong (Field Communication).
+
+> *"Dạ tha thay cô, chinh xac la tai hien truong luc nuoc ngap, mua bo, viec lien lac truc tiep giua cac thanh vien va doi truong 100% van phai dua vao bo dam de dam bao toc do va su an toan. Ung dung cua em khong duoc sinh ra de thay the bo dam trong luc dang boi cuu nguoi."*
+
+#### 2. Diem yeu cua Bo dam ma App giai quyet duoc
+
+Bo dam rat tot de noi chuyen, nhung co mot diem yeu chet nguoi: **Khong luu vet duoc du lieu va khong cho nguoi o xa nhin thay buc tranh tong quan.**
+
+> *"Tuy nhien, bo dam co mot han che lon la Trung tam chi huy (Command Center) o tren tinh/thanh pho khong the nghe thay het hoi thoai cua tung doi o cac huyen, xa, va khong the biet chinh xac vi tri cua ho tren ban do neu ho khong tu doc toa do qua dam.Ung dung cua em giai quyet bai toan o tang quan ly vi mo: Truoc khi ra tran, hoac khi chi huy tai doanh trai (noi co nguon dien, co may tinh/ipad), nguoi quan ly su dung app de cau hinh quan so, cap nhat thiet bi hien co (bao nhieu xuong, bao nhieu ao phao). Khi co cuoc goi cuu nan, he thong dua vao du lieu nay de ra quyet dinh dieu dong Doi A hay Doi B.Nghĩa la: App giup dua ra quyet dinh dieu dong chinh xac, con Bo dam giup cac anh em thuc hien quyet dinh do tai hien truong."*
+
+#### 3. Kich ban phoi hop "App + Bo dam" (Hybrid Workflow)
+
+```
+Buoc 1 (App): Nguoi dan gui cuu nan (co toa do GPS)
+              Trung tam mo app, thay Doi 1 o gan, co du xuong
+              -> Bam nut "Dieu dong"
+
+Buoc 2 (Bo dam): Nguoi truc tong dai cahm bo dam len ho:
+                 "Doi 1 nghe ro, co ca cap cuu tai toa do X,
+                  di chuyen ngay"
+                 Doi truong Doi 1 nghe dam, len xuong va xuat phat.
+
+Buoc 3 (App tu dong): GPS gan tren xuong tu dong cap nhat
+                     vi tri Doi 1 len ban do trung tam
+                     -> Tong dai biet Doi 1 da di den dau ma
+                        khong can lien tuc hoi "Doi 1 toi dau roi?"
+                        lam nhieu song vo tuyen.
+```
+
+#### 4. Chen het cau tra loi voi Hoi dong
+
+> *"Vì vậy, đồ án của em xây dựng một hệ thống quản lý và giám sát tài nguyên cứu hộ, đóng vai trò là 'bộ não' hỗ trợ hậu cần và điều phối, phối hợp nhịp nhàng với công cụ liên lạc truyền thống là bộ đàm, chứ không thay thế hoàn toàn các thiết bị cơ học tại hiện trường ạ."*

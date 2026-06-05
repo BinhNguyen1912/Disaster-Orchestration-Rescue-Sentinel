@@ -21,7 +21,6 @@ export interface CreateRescueTeamInput {
   coverageArea?: GeoPolygon;
   maxCapacity?: number;
   specializationIds?: number[];
-  equipment?: Record<string, unknown>;
 }
 
 export interface UpdateRescueTeamInput {
@@ -30,7 +29,6 @@ export interface UpdateRescueTeamInput {
   currentLocation?: GeoPoint;
   maxCapacity?: number;
   specializationIds?: number[];
-  equipment?: Record<string, unknown>;
 }
 
 export interface UpdateRescueTeamLocationInput {
@@ -41,7 +39,7 @@ export interface UpdateRescueTeamLocationInput {
 export interface AddMemberInput {
   userId: number;
   roleInTeam: RoleInTeam;
-  specializations?: number[];
+  specializationIds?: number[];
 }
 
 export interface UpdateMemberRoleInput {

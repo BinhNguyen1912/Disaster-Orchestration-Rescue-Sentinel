@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3000/api/v1",
+      "value": "http://localhost:8585",
       "type": "string"
     },
     {
@@ -60,7 +60,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"identifier\": \"admin@hcm.gov.vn\",\n    \"password\": \"123123\"\n}",
+              "raw": "{\n    \"identifier\": \"dmin.hcm@rescue.gov.vn\",\n    \"password\": \"Admin@123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -256,7 +256,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"provinceId\": 1,\n    \"name\": \"Đội PCCC Quận 1\",\n    \"teamType\": \"PCCC\",\n    \"adminUnitId\": 1,\n    \"maxCapacity\": 20,\n    \"specializationIds\": [1, 2],\n    \"equipment\": {\n        \"truck\": true,\n        \"hose\": 5,\n        \"extinguisher\": 10\n    }\n}",
+              "raw": "{\n    \"provinceId\": 1,\n    \"name\": \"Đội PCCC Quận 1\",\n    \"teamType\": \"PCCC\",\n    \"adminUnitId\": 1,\n    \"maxCapacity\": 20,\n    \"specializationIds\": [1, 2]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -514,6 +514,183 @@
               }
             },
             "description": "User leaves their current rescue team"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Location",
+      "description": "Province and Ward/Commune endpoints for dropdown selections and map",
+      "item": [
+        {
+          "name": "GET /locations/provinces",
+          "request": {
+            "url": "{{baseUrl}}/locations/provinces",
+            "method": "GET",
+            "description": "Get all provinces for dropdown (ordered by name)"
+          }
+        },
+        {
+          "name": "GET /locations/provinces/:id",
+          "request": {
+            "url": "{{baseUrl}}/locations/provinces/1",
+            "method": "GET",
+            "description": "Get province details by ID"
+          }
+        },
+        {
+          "name": "GET /locations/provinces/:id/center",
+          "request": {
+            "url": "{{baseUrl}}/locations/provinces/1/center",
+            "method": "GET",
+            "description": "Get province center coordinates (lat/lng) for map centering"
+          }
+        },
+        {
+          "name": "GET /locations/wards?provinceId=1",
+          "request": {
+            "url": "{{baseUrl}}/locations/wards?provinceId=1",
+            "method": "GET",
+            "description": "Get wards/communes by province ID for dependent dropdown"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Roles",
+      "description": "Role management endpoints (System Admin only)",
+      "item": [
+        {
+          "name": "POST /roles",
+          "request": {
+            "url": "{{baseUrl}}/roles",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"RESCUE_TEAM_LEADER\",\n    \"description\": \"Trưởng đội cứu hộ\",\n    \"level\": 3,\n    \"isSystem\": false,\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a new role (requires user:manage permission)"
+          }
+        },
+        {
+          "name": "GET /roles",
+          "request": {
+            "url": "{{baseUrl}}/roles?page=1&limit=20",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get paginated list of roles"
+          }
+        },
+        {
+          "name": "GET /roles?isActive=true",
+          "request": {
+            "url": "{{baseUrl}}/roles?isActive=true",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get only active roles"
+          }
+        },
+        {
+          "name": "GET /roles?search=ADMIN",
+          "request": {
+            "url": "{{baseUrl}}/roles?search=ADMIN",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Search roles by name"
+          }
+        },
+        {
+          "name": "GET /roles/:id",
+          "request": {
+            "url": "{{baseUrl}}/roles/1",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Get role details by ID"
+          }
+        },
+        {
+          "name": "PATCH /roles/:id",
+          "request": {
+            "url": "{{baseUrl}}/roles/3",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"description\": \"Trưởng đội cứu hộ - Updated\",\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update role info"
+          }
+        },
+        {
+          "name": "DELETE /roles/:id",
+          "request": {
+            "url": "{{baseUrl}}/roles/5",
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Delete role (system roles cannot be deleted)"
           }
         }
       ]

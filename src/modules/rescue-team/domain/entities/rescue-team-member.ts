@@ -8,7 +8,7 @@ export interface RescueTeamMember {
   joinedAt: Date;
   leftAt?: Date;
   isActive: boolean;
-  specializations?: string | string[];
+  specializationIds?: number[];
   missionsCount: number;
   rescuedCount: number;
   hoursActive: number;
