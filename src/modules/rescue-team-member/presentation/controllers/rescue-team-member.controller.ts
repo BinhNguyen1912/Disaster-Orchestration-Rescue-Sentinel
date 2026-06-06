@@ -21,7 +21,7 @@ import {
 import { RescueTeamMemberService } from '../../application/services/rescue-team-member.service';
 import { AddMemberValidationDto } from '../dtos/add-member.validation.dto';
 import { UpdateMemberRoleValidationDto } from '../dtos/update-member-role.validation.dto';
-import { Public } from '@modules/auth/infrastructure/auth/decorators/public.decorator';
+import { Public } from '@shared/common/decorators/public.decorator';
 
 @ApiTags('Team Members')
 @Controller('teams/:teamId/members')

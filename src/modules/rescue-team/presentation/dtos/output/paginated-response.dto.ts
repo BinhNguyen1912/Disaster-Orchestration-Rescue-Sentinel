@@ -1,5 +1,5 @@
 export class PaginatedResponseDto {
-  items: any[];
+  data: any[];
   total: number;
   page: number;
   limit: number;
@@ -13,7 +13,7 @@ export class PaginatedResponseDto {
     Mapper: any,
   ): PaginatedResponseDto {
     const dto = new PaginatedResponseDto();
-    dto.items = entity.map((e) => Mapper.fromEntity(e));
+    dto.data = entity.map((e) => Mapper.fromEntity(e));
     dto.total = total;
     dto.page = page;
     dto.limit = limit;

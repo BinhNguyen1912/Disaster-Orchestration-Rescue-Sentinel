@@ -11,7 +11,17 @@ export interface IUserService {
   findAll(
     filters: QueryUserDto,
     pagination: PaginationParams,
-  ): Promise<PaginatedResult<User>>;
+  ): Promise<
+    PaginatedResult<
+      Omit<
+        User,
+        | 'password'
+        | 'passwordResetOtp'
+        | 'passwordResetOtpExpires'
+        | 'passwordResetToken'
+      >
+    >
+  >;
   findById(id: number): Promise<User>;
   getProfile(userId: number): Promise<User>;
   updateProfile(userId: number, dto: UpdateUserDto): Promise<User>;

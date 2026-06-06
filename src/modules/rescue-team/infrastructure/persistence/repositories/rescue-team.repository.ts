@@ -43,7 +43,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .take(limit)
       .getManyAndCount();
 
-    return { items, total };
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   private applyFilters(

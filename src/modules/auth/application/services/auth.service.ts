@@ -76,16 +76,28 @@ export class AuthService {
   }
 
   async register(dto: RegisterInput): Promise<BaseResponse<AuthUserResponse>> {
+    // Check phone
     const existing = await this.userRepository.findByIdentifier(dto.phone);
-    if (existing) {
+    if (existing && existing.deletedAt) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
     }
+    // Check email
     if (dto.email) {
       const existingEmail = await this.userRepository.findByIdentifier(
         dto.email,
       );
-      if (existingEmail) {
+      if (existingEmail && existingEmail.deletedAt) {
         throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
+      }
+    }
+    // Check nationalId
+    if (dto.nationalId) {
+      const existingNationalId = await this.userRepository.findByNationalId(
+        dto.nationalId,
+      );
+
+      if (existingNationalId) {
+        throw new BadRequestException(APP_MESSAGES.AUTH.NATIONAL_ID_EXISTS);
       }
     }
 

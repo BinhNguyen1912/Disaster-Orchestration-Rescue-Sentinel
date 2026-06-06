@@ -20,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { RoleService } from '../../application/services/role.service';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/auth/guards/jwt-auth.guard';
-import { RequirePermissions } from '@modules/auth/infrastructure/auth/decorators/permissions.decorator';
+import { RequirePermissions } from '@shared/common/decorators/permissions.decorator';
 import { Permissions } from '@shared/common/constants/permissions.constant';
 import {
   CreateRoleValidationDto,

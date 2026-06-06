@@ -20,7 +20,7 @@ export interface IUserRepository {
   findAll(
     filters: QueryUserParams,
     pagination: { page: number; limit: number },
-  ): Promise<PaginatedResult<User>>;
+  ): Promise<PaginatedResult<Omit<User, 'password'>>>;
   create(data: Partial<User>): Promise<User>;
   update(id: number, data: Partial<User>): Promise<User | null>;
   softDelete(id: number): Promise<boolean>;

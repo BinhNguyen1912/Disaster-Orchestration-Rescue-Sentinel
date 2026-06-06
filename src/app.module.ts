@@ -21,7 +21,7 @@ import { RescueTeamMemberModule } from './modules/rescue-team-member/rescue-team
 import { UserModule } from './modules/user/user.module';
 import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
-import { Public } from '@modules/auth/infrastructure/auth/decorators/public.decorator';
+import { Public } from '@shared/common/decorators/public.decorator';
 
 @ApiTags('Root')
 @Controller()

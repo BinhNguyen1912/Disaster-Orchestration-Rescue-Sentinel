@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { User } from '@modules/auth/domain/entities/user';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
@@ -35,16 +35,26 @@ export class UserRepositoryImpl
 
   async findByIdentifier(identifier: string): Promise<User | null> {
     const entity = await this.userRepository.findOne({
-      where: [{ email: identifier }, { phone: identifier }],
+      where: [
+        { email: identifier, deletedAt: IsNull() },
+        { phone: identifier, deletedAt: IsNull() },
+      ],
       relations: ['userRoles', 'userRoles.role'],
     });
 
     return entity ? this.toDomain(entity) : null;
   }
 
+  async findByNationalId(nationalId: string): Promise<User | null> {
+    const entity = await this.userRepository.findOne({
+      where: { nationalId, deletedAt: IsNull() },
+    });
+    return entity ? this.toDomain(entity) : null;
+  }
+
   async findByResetToken(resetToken: string): Promise<User | null> {
     const entity = await this.userRepository.findOne({
-      where: { passwordResetToken: resetToken },
+      where: { passwordResetToken: resetToken, deletedAt: IsNull() },
     });
     return entity ? this.toDomain(entity) : null;
   }

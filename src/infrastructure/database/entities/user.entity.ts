@@ -9,6 +9,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserRoleEntity } from './user-role.entity';
@@ -74,6 +75,7 @@ export class UserEntity {
   emailVerified: boolean;
 
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   password?: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -120,19 +122,19 @@ export class UserEntity {
   updatedAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  lastSeenAt?: Date;
-
-  @Column({ type: 'timestamp', nullable: true })
   deletedAt?: Date;
 
   // Các trường hỗ trợ tính năng quên mật khẩu (lưu tạm, xóa sau khi dùng)
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   passwordResetOtp?: string;
 
   @Column({ type: 'timestamp', nullable: true })
+  @Exclude()
   passwordResetOtpExpires?: Date;
 
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   passwordResetToken?: string;
 
   @ManyToOne(() => ProvinceEntity)

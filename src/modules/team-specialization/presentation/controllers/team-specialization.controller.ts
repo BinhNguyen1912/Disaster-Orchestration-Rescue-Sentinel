@@ -19,7 +19,7 @@ import {
   UpdateTeamSpecializationValidationDto,
 } from '../dtos/team-specialization/team-specialization.dto';
 import { TeamSpecializationResponseDto } from '../dtos/team-specialization/team-specialization-response.dto';
-import { Public } from '@modules/auth/infrastructure/auth/decorators/public.decorator';
+import { Public } from '@shared/common/decorators/public.decorator';
 
 @ApiTags('Team Specializations')
 @Controller('team-specializations')

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import {
   IUserRepository,
@@ -18,24 +18,30 @@ export class UserRepositoryImpl implements IUserRepository {
 
   async findById(id: number): Promise<User | null> {
     const user = await this.repo.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['province', 'adminUnit', 'userRoles', 'userRoles.role'],
     });
     return user;
   }
 
   async findByPhone(phone: string): Promise<User | null> {
-    const user = await this.repo.findOne({ where: { phone } });
+    const user = await this.repo.findOne({
+      where: { phone, deletedAt: IsNull() },
+    });
     return user;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.repo.findOne({ where: { email } });
+    const user = await this.repo.findOne({
+      where: { email, deletedAt: IsNull() },
+    });
     return user;
   }
 
   async findByNationalId(nationalId: string): Promise<User | null> {
-    const user = await this.repo.findOne({ where: { nationalId } });
+    const user = await this.repo.findOne({
+      where: { nationalId, deletedAt: IsNull() },
+    });
     return user;
   }
 
@@ -84,7 +90,7 @@ export class UserRepositoryImpl implements IUserRepository {
       .getManyAndCount();
 
     return {
-      items: items,
+      items,
       total,
       page,
       limit,
@@ -98,7 +104,9 @@ export class UserRepositoryImpl implements IUserRepository {
   }
 
   async update(id: number, data: Partial<User>): Promise<User | null> {
-    const existing = await this.repo.findOne({ where: { id } });
+    const existing = await this.repo.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
     if (!existing) return null;
     Object.assign(existing, data);
     return await this.repo.save(existing);
@@ -113,7 +121,7 @@ export class UserRepositoryImpl implements IUserRepository {
   }
 
   async count(conditions: Partial<User>): Promise<number> {
-    return this.repo.count({ where: conditions });
+    return this.repo.count({ where: { ...conditions, deletedAt: IsNull() } });
   }
 
   async search(query: string): Promise<User[]> {

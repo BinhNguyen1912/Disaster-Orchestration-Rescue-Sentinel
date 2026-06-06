@@ -25,8 +25,8 @@ import { ForgotPasswordDto } from '../dtos/auth/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/auth/reset-password.dto';
 import { LocalAuthGuard } from '../../infrastructure/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from '../../infrastructure/auth/guards/jwt-auth.guard';
-import { Public } from '../../infrastructure/auth/decorators/public.decorator';
-import { RequirePermissions } from '../../infrastructure/auth/decorators/permissions.decorator';
+import { Public } from '../../../../shared/common/decorators/public.decorator';
+import { RequirePermissions } from '../../../../shared/common/decorators/permissions.decorator';
 import { Permissions } from '@shared/common/constants/permissions.constant';
 
 @ApiTags('Authentication')

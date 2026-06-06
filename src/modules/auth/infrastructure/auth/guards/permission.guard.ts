@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { PERMISSIONS_KEY } from '../../../../../shared/common/decorators/permissions.decorator';
 import type { IPermissionRepository } from '../../../domain/repositories/permission.repository.interface';
 import { Inject } from '@nestjs/common';
 

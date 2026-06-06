@@ -2094,3 +2094,34 @@ Buoc 3 (App tu dong): GPS gan tren xuong tu dong cap nhat
 #### 4. Chen het cau tra loi voi Hoi dong
 
 > *"Vì vậy, đồ án của em xây dựng một hệ thống quản lý và giám sát tài nguyên cứu hộ, đóng vai trò là 'bộ não' hỗ trợ hậu cần và điều phối, phối hợp nhịp nhàng với công cụ liên lạc truyền thống là bộ đàm, chứ không thay thế hoàn toàn các thiết bị cơ học tại hiện trường ạ."*
+
+---
+
+## 21. CHANGELOG
+
+### 2026-06-06
+
+#### User Entity Serialization
+- Thêm `@Exclude()` decorator cho các fields nhạy cảm trong `UserEntity`:
+  - `password`
+  - `passwordResetOtp`
+  - `passwordResetOtpExpires`
+  - `passwordResetToken`
+- Thêm `ClassSerializerInterceptor` global trong `main.ts`
+
+#### ProvinceScopeGuard (Multi-Tenant)
+- Tạo `ProvinceScopeGuard` tại `src/modules/auth/infrastructure/auth/guards/province-scope.guard.ts`
+- Logic:
+  - `SYSTEM_ADMIN (roleId=1)` → không filter, lấy hết toàn quốc
+  - Các role khác → tự động set `request['provinceScope'] = { provinceId }`
+- Áp dụng cho `UserController` (`@UseGuards(JwtAuthGuard, ProvinceScopeGuard)`)
+- Controller merge `provinceScope` vào filters khi query
+
+#### User Repository Soft Delete
+- Fix tất cả methods trong `user.repository.ts` (module user) đều check `deletedAt: IsNull()`:
+  - `findById`, `findByPhone`, `findByEmail`, `findByNationalId`, `update`, `count`
+- Fix `findByIdentifier` và `findByResetToken` trong auth repository
+
+#### Registration Validation
+- Thêm `findByNationalId` method vào auth repository interface
+- Thêm check `nationalId` trong `register()` method - nếu CCCD đã tồn tại thì throw error
