@@ -53,7 +53,7 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true })
   nationalId: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   nationalIdVerified: boolean;
 
   @Column({ type: 'timestamp' })
@@ -65,13 +65,13 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true })
   phone: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   phoneVerified: boolean;
 
   @Column({ type: 'varchar', unique: true, nullable: true })
   email?: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   emailVerified: boolean;
 
   @Column({ type: 'varchar', nullable: true })
@@ -106,13 +106,13 @@ export class UserEntity {
   })
   currentLocation?: any; // geometry;
 
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 50 }) //CHECK LATER?
   trustScore: number;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: false })
   isVerified: boolean;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @CreateDateColumn()
