@@ -1,4 +1,4 @@
-import { AccessTokenPayload } from '../../../domain/interfaces/jwt-payload.interface';
+import { AccessTokenPayload } from '../../../modules/auth/domain/interfaces/jwt-payload.interface';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 export const CurrentUser = createParamDecorator(
@@ -9,6 +9,7 @@ export const CurrentUser = createParamDecorator(
     ? AccessTokenPayload[K]
     : AccessTokenPayload => {
     const request = ctx.switchToHttp().getRequest();
+    console.log('CurrentUser Decorator - Request User:', request.user);
     const user = request.user;
 
     return data ? user?.[data] : user;

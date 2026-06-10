@@ -14,6 +14,9 @@ export interface User {
   email?: string;
   emailVerified: boolean;
   password?: string;
+  passwordResetOtp?: string;
+  passwordResetOtpExpires?: Date;
+  passwordResetToken?: string;
   avatarUrl?: string;
   nationalIdFrontUrl?: string;
   nationalIdBackUrl?: string;

@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { RescueTeamService } from '../../application/services/rescue-team.service';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/auth/guards/jwt-auth.guard';
-import { RequirePermissions } from '@modules/auth/infrastructure/auth/decorators/permissions.decorator';
+import { RequirePermissions } from '@shared/common/decorators/permissions.decorator';
 import { Permissions } from '@shared/common/constants/permissions.constant';
 import { CreateRescueTeamValidationDto } from '../dtos/rescue-team/create-rescue-team.dto';
 import { UpdateRescueTeamValidationDto } from '../dtos/rescue-team/update-rescue-team.dto';

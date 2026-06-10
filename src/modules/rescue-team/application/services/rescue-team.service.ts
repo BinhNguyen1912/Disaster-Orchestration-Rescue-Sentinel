@@ -72,10 +72,6 @@ export class RescueTeamService implements IRescueTeamService {
     return this.teamRepo.create({
       ...dto,
       createdBy: userId,
-      activeCasesCount: 0,
-      totalMissions: 0,
-      totalRescued: 0,
-      totalHoursActive: 0,
       specializations,
     });
   }

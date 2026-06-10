@@ -75,37 +75,40 @@ export class AuthService {
     };
   }
 
-  async register(dto: RegisterInput): Promise<BaseResponse<AuthUserResponse>> {
-    const existing = await this.userRepository.findByIdentifier(dto.phone);
-    if (existing) {
+  async register(
+    registerInput: RegisterInput,
+  ): Promise<BaseResponse<AuthUserResponse>> {
+    const existing = await this.userRepository.findByIdentifier(
+      registerInput.phone,
+    );
+    if (existing && existing.deletedAt) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
     }
-    if (dto.email) {
+    if (registerInput.email) {
       const existingEmail = await this.userRepository.findByIdentifier(
-        dto.email,
+        registerInput.email,
       );
-      if (existingEmail) {
+      if (existingEmail && existingEmail.deletedAt) {
         throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
       }
     }
+    // Check nationalId
+    if (registerInput.nationalId) {
+      const existingNationalId = await this.userRepository.findByNationalId(
+        registerInput.nationalId,
+      );
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+      if (existingNationalId) {
+        throw new BadRequestException(APP_MESSAGES.AUTH.NATIONAL_ID_EXISTS);
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(registerInput.password, 10);
 
     const newUser = await this.userRepository.create({
-      fullName: dto.fullName,
-      phone: dto.phone,
-      email: dto.email,
+      ...registerInput,
       password: hashedPassword,
-      nationalId: dto.nationalId,
-      dateOfBirth: new Date(dto.dateOfBirth),
-      gender: dto.gender,
-      provinceId: dto.provinceId,
-      phoneVerified: false,
-      emailVerified: false,
-      nationalIdVerified: false,
-      trustScore: 50,
-      isVerified: false,
-      isActive: true,
+      dateOfBirth: new Date(registerInput.dateOfBirth),
     });
 
     return {
@@ -116,45 +119,36 @@ export class AuthService {
   }
 
   async adminRegister(
-    dto: AdminRegisterInput,
+    adminRegisterInput: AdminRegisterInput,
     createdBy: number,
   ): Promise<BaseResponse<AuthUserResponse>> {
-    const existing = await this.userRepository.findByIdentifier(dto.phone);
+    const existing = await this.userRepository.findByIdentifier(
+      adminRegisterInput.phone,
+    );
     if (existing) {
       throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
     }
-    if (dto.email) {
+    if (adminRegisterInput.email) {
       const existingEmail = await this.userRepository.findByIdentifier(
-        dto.email,
+        adminRegisterInput.email,
       );
       if (existingEmail) {
         throw new BadRequestException(APP_MESSAGES.AUTH.EMAIL_OR_PHONE_EXISTS);
       }
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await bcrypt.hash(adminRegisterInput.password, 10);
 
     const newUser = await this.userRepository.create({
-      fullName: dto.fullName,
-      phone: dto.phone,
-      email: dto.email,
+      ...adminRegisterInput,
       password: hashedPassword,
-      nationalId: dto.nationalId,
-      dateOfBirth: new Date(dto.dateOfBirth),
-      gender: dto.gender,
-      provinceId: dto.provinceId,
-      phoneVerified: false,
-      emailVerified: false,
-      nationalIdVerified: false,
-      trustScore: 50,
-      isVerified: true,
-      isActive: true,
+      dateOfBirth: new Date(adminRegisterInput.dateOfBirth),
     });
 
     await this.userRepository.assignRole(
       newUser.id,
-      dto.roleId,
-      dto.provinceId,
+      adminRegisterInput.roleId,
+      adminRegisterInput.provinceId,
       createdBy,
     );
 
@@ -250,7 +244,6 @@ export class AuthService {
         otp,
       );
     } else {
-      // Fallback: log ra console khi chưa có email (dùng SĐT)
       this.logger.warn(
         `[DEV ONLY] OTP cho ${identifier}: ${otp} (hết hạn lúc ${otpExpires.toISOString()})`,
       );
@@ -320,7 +313,6 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(refreshPayload);
 
-    // const refreshToken = randomUUID();
     const refreshExpiresInDays = parseInt(
       this.configService.get<string>('JWT_REFRESH_EXPIRES_DAYS', '7'),
     );

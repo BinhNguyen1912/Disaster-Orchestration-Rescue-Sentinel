@@ -16,15 +16,17 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from '../../application/services/user.service';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/auth/guards/jwt-auth.guard';
-import { RequirePermissions } from '@modules/auth/infrastructure/auth/decorators/permissions.decorator';
+import { ProvinceScopeGuard } from '@modules/auth/infrastructure/auth/guards/province-scope.guard';
+import { RequirePermissions } from '@shared/common/decorators/permissions.decorator';
 import { Permissions } from '@shared/common/constants/permissions.constant';
 import { UpdateUserValidationDto } from '../dtos/validation/update-user.validation.dto';
 import { QueryUserValidationDto } from '../dtos/validation/query-user.validation.dto';
 import { ChangePasswordValidationDto } from '../dtos/validation/change-password.validation.dto';
+import { CurrentUser } from '@shared/common/decorators/current-user.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ProvinceScopeGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly service: UserService) {}
@@ -33,10 +35,16 @@ export class UserController {
   @ApiOperation({ summary: 'Lấy danh sách người dùng' })
   @RequirePermissions(Permissions.USER_READ)
   async findAll(
+    @Request() req: any,
     @Query(new ValidationPipe({ transform: true }))
     query: QueryUserValidationDto,
   ) {
     const { page = 1, limit = 20, ...filters } = query;
+    // Merge provinceScope from guard if exists
+    const provinceScope = req['provinceScope'];
+    if (provinceScope && !filters.provinceId) {
+      filters.provinceId = provinceScope.provinceId;
+    }
     return this.service.findAll(filters, { page, limit });
   }
 
@@ -49,9 +57,9 @@ export class UserController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Lấy thông tin cá nhân' })
-  async getProfile(@Request() req: any) {
-    const userId = req.user.userId ?? req.user.sub;
-    return this.service.getProfile(userId);
+  async getProfile(@CurrentUser('sub') sub: number) {
+    console.log('Current user ID from token:', sub);
+    return this.service.getProfile(sub);
   }
 
   @Patch('profile')

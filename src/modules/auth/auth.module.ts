@@ -14,6 +14,7 @@ import { PermissionGuard } from './infrastructure/auth/guards/permission.guard';
 import { AccessGuard } from './infrastructure/auth/guards/access.guard';
 import { LocalAuthGuard } from './infrastructure/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from './infrastructure/auth/guards/jwt-auth.guard';
+import { ProvinceScopeGuard } from './infrastructure/auth/guards/province-scope.guard';
 
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import { RefreshTokenEntity } from '@infrastructure/database/entities/refresh-token.entity';
@@ -61,6 +62,7 @@ import { MailModule } from '@modules/mail/infrastructure/mail.module';
     PermissionGuard,
     LocalAuthGuard,
     JwtAuthGuard,
+    ProvinceScopeGuard,
     {
       provide: 'IUserRepository',
       useClass: UserRepositoryImpl,
@@ -81,6 +83,7 @@ import { MailModule } from '@modules/mail/infrastructure/mail.module';
     'IRefreshTokenRepository',
     'IPermissionRepository',
     PermissionGuard,
+    ProvinceScopeGuard,
   ],
 })
 export class AuthModule {}

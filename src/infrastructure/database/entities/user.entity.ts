@@ -9,6 +9,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { ProvinceEntity } from './province.entity';
 import { AdministrativeUnitEntity } from './administrative-unit.entity';
 import { UserRoleEntity } from './user-role.entity';
@@ -52,7 +53,7 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true })
   nationalId: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   nationalIdVerified: boolean;
 
   @Column({ type: 'timestamp' })
@@ -64,16 +65,17 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true })
   phone: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   phoneVerified: boolean;
 
   @Column({ type: 'varchar', unique: true, nullable: true })
   email?: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   emailVerified: boolean;
 
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   password?: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -104,13 +106,13 @@ export class UserEntity {
   })
   currentLocation?: any; // geometry;
 
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 50 }) //CHECK LATER?
   trustScore: number;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: false })
   isVerified: boolean;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @CreateDateColumn()
@@ -120,19 +122,19 @@ export class UserEntity {
   updatedAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  lastSeenAt?: Date;
-
-  @Column({ type: 'timestamp', nullable: true })
   deletedAt?: Date;
 
   // Các trường hỗ trợ tính năng quên mật khẩu (lưu tạm, xóa sau khi dùng)
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   passwordResetOtp?: string;
 
   @Column({ type: 'timestamp', nullable: true })
+  @Exclude()
   passwordResetOtpExpires?: Date;
 
   @Column({ type: 'varchar', nullable: true })
+  @Exclude()
   passwordResetToken?: string;
 
   @ManyToOne(() => ProvinceEntity)
