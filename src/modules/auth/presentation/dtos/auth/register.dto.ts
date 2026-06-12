@@ -9,6 +9,7 @@ import {
   Min,
   MinLength,
   Matches,
+  IsBoolean,
 } from 'class-validator';
 import { Gender } from '@shared/core/enums/gender.enum';
 
@@ -50,4 +51,20 @@ export class RegisterDto {
   @IsInt()
   @Min(1)
   provinceId: number;
+
+  @ApiProperty({ example: 1, required: false })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  adminUnitId?: number;
+
+  @ApiProperty({ example: false, required: false })
+  @IsBoolean()
+  @IsOptional()
+  isVolunteer?: boolean;
+
+  @ApiProperty({ example: false, required: false })
+  @IsBoolean()
+  @IsOptional()
+  needsHelp?: boolean;
 }

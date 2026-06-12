@@ -115,6 +115,12 @@ export class UserEntity {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isVolunteer: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  needsHelp: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

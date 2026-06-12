@@ -78,7 +78,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"fullName\": \"Nguyễn Văn Test\",\n    \"phone\": \"0909123456\",\n    \"email\": \"test@example.com\",\n    \"password\": \"123123\",\n    \"nationalId\": \"123456789\",\n    \"dateOfBirth\": \"1990-01-01\",\n    \"gender\": \"MALE\",\n    \"provinceId\": 1\n}",
+              "raw": "{\n    \"fullName\": \"Nguyễn Văn Test\",\n    \"phone\": \"0909123456\",\n    \"email\": \"test@example.com\",\n    \"password\": \"123123\",\n    \"nationalId\": \"123456789\",\n    \"dateOfBirth\": \"1990-01-01\",\n    \"gender\": \"MALE\",\n    \"provinceId\": 1,\n    \"isVolunteer\": true,\n    \"needsHelp\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -462,7 +462,7 @@
       "description": "Member management - /teams/:teamId/members",
       "item": [
         {
-          "name": "POST /teams/:teamId/members - Thêm thành viên (user)",
+          "name": "POST /teams/:teamId/members - Thêm thành viên (user có tài khoản)",
           "request": {
             "url": "{{baseUrl}}/teams/1/members",
             "method": "POST",
@@ -472,14 +472,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"userId\": 5,\n    \"roleInTeam\": \"LEADER\"\n}",
+              "raw": "{\n    \"userId\": 5,\n    \"roleInTeam\": \"MEMBER\"\n}",
               "options": { "raw": { "language": "json" } }
             },
-            "description": "Thêm thành viên là user đã có tài khoản"
+            "description": "Thêm thành viên là user đã có tài khoản. VALIDATIONS: userId phải tồn tại, user chưa thuộc đội này, LEADER phải là user (không citizen)"
           }
         },
         {
-          "name": "POST /teams/:teamId/members - Thêm thành viên (citizen)",
+          "name": "POST /teams/:teamId/members - Thêm thành viên (citizen - không có tài khoản)",
           "request": {
             "url": "{{baseUrl}}/teams/1/members",
             "method": "POST",
@@ -489,10 +489,27 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"citizenName\": \"Trần Văn Lớn\",\n    \"citizenPhone\": \"0987654321\",\n    \"roleInTeam\": \"LEADER\"\n}",
+              "raw": "{\n    \"citizenName\": \"Trần Văn Lớn\",\n    \"citizenPhone\": \"0987654321\",\n    \"roleInTeam\": \"MEMBER\"\n}",
               "options": { "raw": { "language": "json" } }
             },
-            "description": "Thêm thành viên là công dân (không cần userId)"
+            "description": "Thêm công dân không có tài khoản. VALIDATIONS: citizenName+bát buộc, citizenName+citizenPhone chưa tồn tại trong team, citizen không thể là LEADER"
+          }
+        },
+        {
+          "name": "POST /teams/:teamId/members - Thêm LEADER (userId bắt buộc)",
+          "request": {
+            "url": "{{baseUrl}}/teams/1/members",
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 6,\n    \"roleInTeam\": \"LEADER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Thêm LEADER cho đội - bắt buộc userId, LEADER không thể là citizen"
           }
         },
         {
@@ -503,11 +520,11 @@
             "header": [
               { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
             ],
-            "description": "Lấy danh sách thành viên (lọc theo isActive)"
+            "description": "Lấy danh sách thành viên (lọc theo isActive, roleInTeam)"
           }
         },
         {
-          "name": "PATCH /teams/:teamId/members/:memberId/role",
+          "name": "PATCH /teams/:teamId/members/:memberId/role - Thăng/hạ chức",
           "request": {
             "url": "{{baseUrl}}/teams/1/members/5/role",
             "method": "PATCH",
@@ -520,18 +537,18 @@
               "raw": "{\n    \"roleInTeam\": \"DEPUTY_LEADER\"\n}",
               "options": { "raw": { "language": "json" } }
             },
-            "description": "Thăng/hạ chức thành viên (MEMBER -> DEPUTY_LEADER -> LEADER)"
+            "description": "Thăng/hạ chức thành viên (MEMBER -> DEPUTY_LEADER -> LEADER). VALIDATIONS: citizen không thể lên LEADER, chỉ có 1 LEADER trong team"
           }
         },
         {
-          "name": "DELETE /teams/:teamId/members/:memberId",
+          "name": "DELETE /teams/:teamId/members/:memberId - Xóa thành viên",
           "request": {
             "url": "{{baseUrl}}/teams/1/members/5",
             "method": "DELETE",
             "header": [
               { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
             ],
-            "description": "Xóa thành viên khỏi đội (soft delete)"
+            "description": "Xóa thành viên khỏi đội (soft delete). Chỉ user có account mới có thể bị xóa, citizen không thể leaveTeam"
           }
         },
         {

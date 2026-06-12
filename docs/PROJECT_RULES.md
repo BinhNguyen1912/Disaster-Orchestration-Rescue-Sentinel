@@ -551,9 +551,9 @@ src/
 │   ├── value-objects/     # ProvinceId, Coordinate, NationalId...
 │   └── repositories/      # Interface definitions
 ├── application/
-│   ├── use-cases/         # SendSOS, DispatchTeam, UpdateCasualty, CreateDonation...
-│   ├── dtos/              # Input/Output DTOs
-│   └── services/          # Application services
+│   ├── services/          # RescueTeamService, SosRequestService, etc.
+│   ├── interfaces/        # IRescueTeamService, ISosRequestService, etc.
+│   └── dtos/              # Input/Output DTOs
 ├── infrastructure/
 │   ├── database/          # TypeORM, PostGIS repos
 │   ├── redis/             # Cache, BullMQ
@@ -851,31 +851,33 @@ category          ENUM (RESCUE, MEDICAL, LOGISTICS, TRAINING, OTHER)
 ### 7.13 Bảng `sos_requests` (Yêu cầu cứu hộ)
 
 ```sql
-id                UUID PRIMARY KEY
-province_id       UUID FK → provinces
-admin_unit_id     UUID FK → administrative_units
-user_id           UUID FK → users
-device_id         UUID FK → iot_devices (nullable)
+id                INTEGER PRIMARY KEY AUTOINCREMENT
+province_id       INTEGER FK → provinces
+admin_unit_id     INTEGER FK → administrative_units
+requester_id      INTEGER FK → users (nullable)         -- Null nếu gửi ẩn danh (Guest)
+requester_name    VARCHAR(100) (nullable)               -- Tên khách hàng vãng lai
+requester_phone   VARCHAR(15) (nullable)                -- SĐT khách hàng vãng lai
+device_id         INTEGER FK → iot_devices (nullable)
 
 location          geometry(Point, 4326)
 request_type      ENUM (MEDICAL, FOOD, RESCUE, STUCK, OTHER)
-status            ENUM (PENDING, ASSIGNED, IN_PROGRESS, RESOLVED, FALSE_ALARM, CANCELLED)
+status            ENUM (PENDING, DISPATCHED, ON_SITE, RESOLVED, CANCELLED)
 severity          ENUM (LOW, MEDIUM, HIGH, CRITICAL)
 image_urls        TEXT[]
 description       TEXT
 source            ENUM (APP, IOT_SMS, IOT_MQTT, WEB)
 
 -- Phân công
-assigned_team_id  UUID FK → rescue_teams
-assigned_by       UUID FK → users                 -- Coordinator/Admin phân công
+assigned_team_id  INTEGER FK → rescue_teams (nullable)
+assigned_by       INTEGER FK → users (nullable)         -- Coordinator/Admin phân công
 assigned_at       TIMESTAMP
-dispatch_method   ENUM (AUTO, MANUAL)             -- Tự động hay thủ công
+dispatch_method   ENUM (AUTO, MANUAL) (nullable)        -- Tự động hay thủ công
 
 -- Kết quả
 resolved_at       TIMESTAMP
-resolved_by       UUID FK → users
+resolved_by       INTEGER FK → users (nullable)
 resolution_notes  TEXT
-cluster_id        UUID                            -- Nhóm SOS cùng khu vực
+cluster_id        INTEGER (nullable)                    -- Nhóm SOS cùng khu vực
 
 -- Audit
 created_at        TIMESTAMP
@@ -1581,11 +1583,14 @@ _(Giữ nguyên từ v1, bổ sung thêm)_
 ### 16.3 Rules về SOS
 
 - `BR-SOS-01:` SOS phải có tọa độ GPS hợp lệ. Nếu không có GPS, cho nhập địa chỉ → geocode.
-- `BR-SOS-02:` Tài khoản chưa xác thực CCCD → bắt buộc kèm ảnh khi gửi SOS.
+- `BR-SOS-02:` Tài khoản chưa xác thực CCCD hoặc người dùng vãng lai (Guest) → bắt buộc kèm ảnh khi gửi SOS. Đối với Guest, yêu cầu bắt buộc cung cấp thêm `requesterName` và `requesterPhone`.
 - `BR-SOS-03:` Cluster SOS trong bán kính 100–200m, khoảng 5 phút.
 - `BR-SOS-04:` 1 SOS thường = VÀNG. Xác thực CCCD = hiện ngay. ≥3 SOS cùng cluster = ĐỎ.
-- `BR-SOS-05:` Tài khoản báo sai >3 lần → khóa tạm thời 24h.
+- `BR-SOS-05:` Rate limit cho yêu cầu SOS gửi từ khách (Guest) để chống spam: tối đa 3 yêu cầu trong vòng 10 phút trên cùng một địa chỉ IP.
 - `BR-SOS-06:` SOS RESOLVED phải lưu lịch sử đầy đủ — không xóa.
+- `BR-SOS-07:` Cư dân và Khách có thể tự hủy yêu cầu SOS của chính mình (Self-cancellation) khi tình hình đã an toàn, TRỪ KHI đội cứu hộ đã tiếp cận hiện trường (trạng thái `ON_SITE`).
+- `BR-SOS-08:` Khi một yêu cầu SOS bị hủy (CANCELLED) hoặc hoàn thành (RESOLVED), hệ thống phải tự động giải phóng đội cứu hộ đang được gán (giảm `activeCasesCount` của đội đi 1, và nếu số ca đang xử lý trở về 0 thì cập nhật trạng thái đội về `AVAILABLE`).
+- `BR-SOS-09:` Tài khoản báo sai >3 lần → khóa tạm thời 24h.
 
 ### 16.4 Rules về Dispatch
 
@@ -1594,6 +1599,8 @@ _(Giữ nguyên từ v1, bổ sung thêm)_
 - `BR-DISPATCH-03:` Chỉ user có permission `sos:dispatch:auto` mới được Auto Dispatch.
 - `BR-DISPATCH-04:` Optimistic Locking (cột `version`) để tránh race condition.
 - `BR-DISPATCH-05:` Khi phân công, ghi lại `dispatch_method` (AUTO/MANUAL) để phân tích sau.
+- `BR-DISPATCH-06:` Thay đổi đội cứu hộ (Reassign): Khi thay đổi đội cứu hộ đã gán cho một yêu cầu SOS, hệ thống phải giảm số ca xử lý của đội cũ đi 1 (và cập nhật trạng thái của đội cũ về `AVAILABLE` nếu họ không còn ca nào khác và đang ở trạng thái `BUSY`), sau đó gán đội mới, tăng số ca xử lý của đội mới lên 1 và chuyển trạng thái đội mới thành `BUSY`.
+- `BR-DISPATCH-07:` Tìm nhóm lân cận (Nearby Search): Hệ thống hỗ trợ tìm kiếm các yêu cầu SOS hoặc đội cứu hộ lân cận dựa trên tọa độ GPS hiện tại bằng các hàm không gian PostGIS (ST_Distance) trong bán kính chỉ định (mặc định là 5km), đồng thời tự động lọc theo `provinceId` của người dùng để tuân thủ multi-tenant.
 
 ### 16.5 Rules về Thiệt hại
 
@@ -1753,21 +1760,20 @@ src/
 │   ├── value-objects/          # ProvinceId, Coordinate, NationalId, Severity...
 │   └── repositories/           # Interface (Port) — ISosRepository, IUserRepository...
 │
-├── application/                # Lop 2: Luong nghiep vu (chi dung Domain Interfaces)
-│   ├── use-cases/              # 1 file = 1 Use Case, co method execute()
-│   ├── dtos/                   # Input/Output DTOs cho tung Use Case
-│   └── services/               # Application Service
+├── application/                # Lop 2: Luong nghiep vu (chua interfaces va services)
+│   ├── services/               # Application Service (e.g., UserService, RescueTeamService)
+│   ├── interfaces/             # Service Interface definitions (e.g., IUserService)
+│   └── dtos/                   # Input/Output DTOs
 │
 ├── infrastructure/             # Lop 3: Cong nghe ben ngoai
-│   ├── database/
-│   │   └── prisma/             # PrismaService, PrismaModule, Base Repository Impl
+│   ├── database/               # Database repositories & configuration
 │   ├── redis/                  # Cache, BullMQ queues
 │   ├── mqtt/                   # MQTT Client cho IoT
 │   ├── http-clients/           # Open-Meteo, GDACS, NCHMF
 │   └── storage/                # Cloudflare R2
 │
 ├── presentation/               # Lop 4: Giao tiep voi the gioi ben ngoai
-│   ├── controllers/            # REST API Controllers (chi validate + goi use-case)
+│   ├── controllers/            # REST API Controllers (chi validate + goi service)
 │   ├── gateways/               # WebSocket Gateways
 │   ├── guards/                 # JwtAuthGuard, PermissionGuard, ProvinceScopeGuard
 │   └── decorators/             # @RequirePermissions(), @CurrentUser(), @Province()
@@ -1781,9 +1787,9 @@ src/
 
 **Rule bat buoc ve dependency:**
 - domain -> KHONG duoc import bat cu thu gi ngoai TypeScript thuan.
-- application -> Chi duoc import tu domain. KHONG import Prisma, NestJS decorators.
-- infrastructure -> Implements cac interface cua domain. Duoc dung Prisma, Redis, etc.
-- presentation -> Chi goi xuong application (Use Cases). KHONG chua business logic.
+- application -> Chi duoc import tu domain. KHONG import TypeORM, NestJS decorators.
+- infrastructure -> Implements cac interface cua domain. Duoc dung TypeORM, Redis, etc.
+- presentation -> Chi goi xuong application (Services). KHONG chua business logic.
 
 ---
 
@@ -1791,13 +1797,11 @@ src/
 
 | Loai file            | Pattern                          | Vi du                           |
 | -------------------- | -------------------------------- | ------------------------------- |
-| Entity               | name.entity.ts                   | sos-request.entity.ts           |
-| Value Object         | name.vo.ts                       | coordinate.vo.ts                |
-| Repository Interface | name.repository.interface.ts     | sos.repository.interface.ts     |
-| Use Case             | action-name.use-case.ts          | send-sos.use-case.ts            |
+| Service Interface    | name.service.interface.ts        | user.service.interface.ts       |
+| Service Impl         | name.service.ts                  | user.service.ts                 |
 | DTO                  | action-name.dto.ts               | send-sos.dto.ts                 |
 | Controller           | name.controller.ts               | sos.controller.ts               |
-| Repository Impl      | prisma-name.repository.ts        | prisma-sos.repository.ts        |
+| Repository Impl      | name.repository.ts               | user.repository.ts              |
 | Guard                | name.guard.ts                    | permission.guard.ts             |
 | Module               | name.module.ts                   | sos.module.ts                   |
 
@@ -1806,8 +1810,8 @@ src/
 ### 19.3 Nguyen tac SOLID - Ap dung thuc te trong du an
 
 #### S - Single Responsibility (Don trach nhiem)
-- Moi Use Case chi lam dung 1 nghiep vu. SendSosUseCase khong duoc kiem nhiem gui Notification.
-- Controller chi lam 3 viec: validate DTO -> goi Use Case -> return response.
+- Service phu trach logic nghiep vu lien quan den module.
+- Controller chi lam 3 viec: validate DTO -> goi Service -> return response.
 - Repository chi lam 1 viec: tuong tac CSDL.
 
 #### O - Open/Closed (Mo de mo rong, dong de sua doi)
@@ -1816,24 +1820,24 @@ src/
 
 #### L - Liskov Substitution (Thay the Liskov)
 - Moi Repository Implementation phai tra ve dung Entity type da hua trong interface.
-- Khong tra ve Prisma raw object ra ngoai lop infrastructure.
+- Khong tra ve Database raw object ra ngoai lop infrastructure.
 
 #### I - Interface Segregation (Phan tach Interface)
 - KHONG tao mot Interface Repository khong lo. Moi aggregate root co interface rieng.
 - IBaseRepository chi chua CRUD co ban. Ham dac thu (PostGIS query) khai bao tai interface rieng.
 
 #### D - Dependency Inversion (Dao nguoc phu thuoc)
-- Use Case CHI inject Interface (Port), KHONG inject implementation truc tiep.
+- Service/Controller CHI inject Interface (Port), KHONG inject implementation truc tiep.
 
 ```typescript
-// DUNG: Use Case inject Interface qua token
+// DUNG: Service inject Interface qua token
 constructor(
-  @Inject(SOS_REPOSITORY_TOKEN)
-  private readonly sosRepo: ISosRepository,
+  @Inject('IUserRepository')
+  private readonly userRepo: IUserRepository,
 ) {}
 
-// SAI: Use Case inject Prisma truc tiep
-constructor(private readonly prisma: PrismaService) {}
+// SAI: Service inject Repository truc tiep
+constructor(private readonly userRepo: UserRepositoryImpl) {}
 ```
 
 ---
@@ -1854,20 +1858,20 @@ export interface IBaseRepository<T, ID = string> {
 }
 ```
 
-**Tang 2 - Abstract class tai infrastructure/database/prisma/:**
+**Tang 2 - Abstract class tai shared/infrastructure/persistence/:**
 ```typescript
-// base-prisma.repository.ts
-export abstract class BasePrismaRepository<T, ID = string>
-  implements IBaseRepository<T, ID> {
-  constructor(protected readonly prisma: PrismaService) {}
-  // Implements CRUD chung. Subclass override va them ham dac thu.
+// base.repository.ts
+export abstract class BaseRepository<DomainEntity, OrmEntity extends ObjectLiteral>
+  implements IBaseRepository<DomainEntity> {
+  constructor(protected readonly repository: Repository<OrmEntity>) {}
+  // Implements CRUD chung.
 }
 ```
 
 **Rules Base Repository:**
-- BR-BASE-01: Moi Repository Implementation phai ke thua BasePrismaRepository.
-- BR-BASE-02: Ham dac thu (PostGIS, aggregate...) override o subclass, khai bao o interface rieng.
-- BR-BASE-03: Khong bao gio tra ve Prisma Model tho ra ngoai Infrastructure layer. Phai map sang Entity.
+- BR-BASE-01: Repository Implementation ke thua BaseRepository khi co CRUD co ban.
+- BR-BASE-02: Ham dac thu (PostGIS, query build dac biet...) override o subclass, khai bao o interface rieng.
+- BR-BASE-03: Khong bao gio tra ve DB Model tho ra ngoai Infrastructure layer. Phai map hoac cast sang Domain Entity.
 
 ---
 
@@ -1912,11 +1916,11 @@ openspec/
 ## Thu tu implement
 1. Entity/ValueObject
 2. Interface Repository
-3. Use Case + DTO
-4. Repository Implementation (Prisma)
+3. Service Interface + Service Impl + DTO
+4. Repository Implementation (TypeORM)
 5. Controller
 6. Module Registration
-7. Migration
+7. DB Synchronize / Schema Update
 ```
 
 **Thu tu phat trien bat buoc:**
@@ -1924,11 +1928,11 @@ openspec/
 Spec (openspec/specs/)
   -> Entity / Value Object
     -> Interface Repository (domain/repositories)
-      -> Use Case + DTO (application)
-        -> Repository Impl (infrastructure/database/prisma)
+      -> Service Interface & Impl + DTO (application)
+        -> Repository Impl (infrastructure/persistence)
           -> Controller (presentation/controllers)
             -> Module Registration
-              -> Prisma Migration
+              -> DB Schema Verification
                 -> Changelog (openspec/changes/)
 ```
 
@@ -1946,31 +1950,31 @@ Spec (openspec/specs/)
 ```typescript
 // DUNG - Controller mong, chi 3 buoc
 @Post()
-@RequirePermissions('sos:create')
+@RequirePermissions(Permissions.SOS_CREATE)
 async sendSos(
-  @Body() dto: SendSosDto,
-  @CurrentUser() user: UserContext,
-): Promise<SosResponseDto> {
-  return this.sendSosUseCase.execute(dto, user);
+  @Body() dto: CreateSosRequestValidationDto,
+  @Request() req: any,
+) {
+  return this.service.create(dto, req.user);
 }
 
 // SAI - Controller beo, chua business logic
 @Post()
-async sendSos(@Body() dto: SendSosDto) {
-  const team = await this.prisma.rescueTeam.findFirst(...);
+async sendSos(@Body() dto: CreateSosRequestValidationDto) {
+  const team = await this.teamRepo.findOne(...);
   if (team.status !== 'AVAILABLE') throw new Error(...);
 }
 ```
 
 ---
 
-### 19.7 Quy tac Database & Prisma
+### 19.7 Quy tac Database & TypeORM
 
-- BR-DB-01: Khong bao gio dung synchronize: true. Chi dung npx prisma migrate dev.
-- BR-DB-02: Moi migration phai review truoc khi apply.
-- BR-DB-03: Soft delete bat buoc - dung deleted_at, khong xoa record thuc.
+- BR-DB-01: Development tu dong đồng bộ schema qua synchronize: true trong DatabaseModule.
+- BR-DB-02: Moi thay doi schema phai duoc kiem tra can than khi khoi dong ung dung.
+- BR-DB-03: Soft delete bat buoc - dung deleted_at, khong xoa record thuc (neu thiet ke co deletedAt).
 - BR-DB-04: Moi bang nghiep vu phai co cot province_id - bat buoc cho multi-tenant.
-- BR-DB-05: Khong viet raw SQL trong Use Case hoac Controller. Raw query chi trong Repository.
+- BR-DB-05: Khong viet raw SQL trong Service hoac Controller. Raw query chi trong Repository.
 - BR-DB-06: PostGIS functions (ST_Distance, ST_Within...) chi duoc dung trong Infrastructure layer.
 - BR-DB-07: GIST index bat buoc tren moi cot geometry. B-tree index tren status, province_id, created_at.
 
@@ -2098,6 +2102,16 @@ Buoc 3 (App tu dong): GPS gan tren xuong tu dong cap nhat
 ---
 
 ## 21. CHANGELOG
+
+### 2026-06-12
+
+#### SOS Request Module (Guest, Reassignment, Cancellation & Spatial Query)
+- Hỗ trợ gửi yêu cầu SOS không cần đăng nhập (Guest), yêu cầu bắt buộc có `requesterName`, `requesterPhone` và ít nhất 1 ảnh hiện trường (`BR-SOS-02`).
+- Áp dụng Rate Limit cho Guest SOS: tối đa 3 requests / 10 phút trên mỗi IP (`BR-SOS-05`).
+- Hỗ trợ tự hủy yêu cầu SOS (Self-cancellation) cho cư dân/guest trước khi đội cứu hộ đến hiện trường (`BR-SOS-07`).
+- Cơ chế giải phóng tài nguyên: Khi hoàn thành (`RESOLVED`) hoặc hủy (`CANCELLED`) yêu cầu SOS, hệ thống tự động giảm tải cho đội cứu hộ (`activeCasesCount` giảm 1, cập nhật trạng thái về `AVAILABLE` nếu tải bằng 0) (`BR-SOS-08`).
+- Bổ sung quy trình đổi đội cứu hộ (Reassign Team): tự động giảm tải cho đội cũ và tăng tải cho đội mới được gán (`BR-DISPATCH-06`).
+- Tìm nhóm lân cận (Nearby Search): sử dụng PostGIS spatial query (`ST_Distance`) để tìm các SOS/đội cứu hộ xung quanh trong bán kính chỉ định (`BR-DISPATCH-07`).
 
 ### 2026-06-06
 

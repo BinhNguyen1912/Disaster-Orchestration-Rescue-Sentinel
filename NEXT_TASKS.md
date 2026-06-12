@@ -100,14 +100,14 @@ userId: number | null;
 - [x] Bỏ `unique: true` trên `userId` để 1 user có thể thuộc nhiều đội
 - [x] Thêm `citizenName`, `citizenPhone` cho người dân không có tài khoản
 - [x] Fix `addMember` validation
-- [ ] Fix TypeScript errors (cần mapper hoặc type casting)
-- [ ] Viết unit tests
-- [ ] Update Postman collection
+- [x] Fix TypeScript errors (cần mapper hoặc type casting)
+- [x] Viết unit tests
+- [x] Update Postman collection
 
 ### ⏳ Cần làm tiếp theo sau Rescue Team Member
 
 1. **Verify code flow `addMember`** hoạt động đúng
-2. **Unit tests cho `RescueTeamMember`**
+2. [x] **Unit tests cho `RescueTeamMember`**
 3. **Update Postman** với payload mới cho add member
 
 ---
@@ -262,3 +262,12 @@ ST_SetSRID(ST_MakePoint(lng, lat), 4326)
 ---
 
 > **Lưu ý:** SOS Module là core business — không nên bỏ qua auto-dispatch và WebSocket
+
+
+
+
+### NOTE BỔ SUNG TỪ NGƯỜI DÙNG (KHÔNG PHẢI AI NOTE) 
+** LƯU Ý : NẾU TASK NÀO HOÀN THÀNH THÊM (X) SAU MỤC TÔI GHI ĐỂ TÔI BIẾT NHA
+
+
+1. Hiện tại khi người dùng login , chưa biết được là User đăng nhập từ thiết bị gì 

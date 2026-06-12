@@ -16,7 +16,11 @@
       "Bash(curl -v http://localhost:8585/rescue-teams -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjM1LCJwcm92aW5jZUlkIjoxLCJlbWFpbCI6ImFkbWluQHN5c3RlbS5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3OTkzMDEzOCwiZXhwIjoxNzc5OTMxMDM4fQ.c21huSvSmiWuODtkojXuKsc1xqA5ryc7z2QbC_3hvvI')",
       "Bash(git stash *)",
       "Bash(docker exec *)",
-      "Bash(node -e \"const c = JSON.parse\\(require\\('fs'\\).readFileSync\\('postman/Disaster_Rescue_API.postman_collection.json', 'utf8'\\)\\); c.item.forEach\\(\\(i, idx\\) => console.log\\(\\(idx+1\\) + '. ' + i.name\\)\\)\")"
+      "Bash(node -e \"const c = JSON.parse\\(require\\('fs'\\).readFileSync\\('postman/Disaster_Rescue_API.postman_collection.json', 'utf8'\\)\\); c.item.forEach\\(\\(i, idx\\) => console.log\\(\\(idx+1\\) + '. ' + i.name\\)\\)\")",
+      "WebFetch(domain:chatgpt.com)",
+      "WebFetch(domain:drive.google.com)",
+      "WebFetch(domain:res.cloudinary.com)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

@@ -30,6 +30,9 @@ export interface RegisterInput {
   dateOfBirth: string;
   gender: Gender;
   provinceId: number;
+  adminUnitId?: number;
+  isVolunteer?: boolean;
+  needsHelp?: boolean;
 }
 
 export interface AdminRegisterInput extends RegisterInput {

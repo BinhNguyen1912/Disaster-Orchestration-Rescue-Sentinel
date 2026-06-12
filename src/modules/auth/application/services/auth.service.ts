@@ -111,6 +111,14 @@ export class AuthService {
       dateOfBirth: new Date(registerInput.dateOfBirth),
     });
 
+    // Mặc định gán role USER (4) cho tỉnh thành đã đăng ký
+    await this.userRepository.assignRole(newUser.id, 4, newUser.provinceId);
+
+    // Nếu chọn là tình nguyện viên, gán thêm role VOLUNTEER (5)
+    if (registerInput.isVolunteer) {
+      await this.userRepository.assignRole(newUser.id, 5, newUser.provinceId);
+    }
+
     return {
       statusCode: 201,
       message: APP_MESSAGES.AUTH.REGISTER_SUCCESS,

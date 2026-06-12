@@ -98,4 +98,22 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
     });
     return result;
   }
+
+  async findNearestAvailable(
+    lat: number,
+    lng: number,
+    provinceId: number,
+  ): Promise<RescueTeamEntity | null> {
+    return this.repo
+      .createQueryBuilder('rt')
+      .where('rt.provinceId = :provinceId', { provinceId })
+      .andWhere('rt.status IN (:...statuses)', {
+        statuses: ['AVAILABLE', 'STANDBY'],
+      })
+      .orderBy(
+        'ST_Distance(rt.currentLocation, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
+        'ASC',
+      )
+      .getOne();
+  }
 }

@@ -1,6 +1,6 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-06-05
+> **Lần cập nhật gần nhất:** 2026-06-11
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
 > **Trạng thái tổng:** 🟡 **Phase 3 — Team Specialization Module mới**
 
@@ -125,7 +125,7 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 
 ## 🟢 Phase 3: Nghiệp vụ chính (Đang làm)
 
-### ✅ Rescue Team Module — Hoàn thành 2026-05-22, cập nhật 2026-06-05
+### ✅ Rescue Team Module — Hoàn thành 2026-05-22, cập nhật 2026-06-11
 
 - ✅ `RescueTeamEntity`, `RescueTeamMemberEntity` + `ITeamSpecializationRepository`
 - ✅ `RescueTeamRepository` + `RescueTeamMemberRepository`
@@ -134,7 +134,7 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 - ✅ `RescueTeamController` (11 endpoints)
 - ✅ `RescueTeamModule` import `TeamSpecializationModule`
 - ✅ `TeamSpecialization` seed data (13 specs)
-- ✅ Unit test **47 cases** — tất cả passed (2026-06-05)
+- ✅ Unit test **89 cases** (gồm cả RescueTeam và RescueTeamMember) — tất cả passed (2026-06-11)
 - ✅ Refactor DTOs (`CreateRescueTeamDto`, `UpdateRescueTeamDto`, `AddMemberDto`)
 - ✅ `RescueTeamContracts` interface
 - ✅ ManyToMany bidirectional relationship với `TeamSpecializationEntity`
@@ -264,6 +264,7 @@ src/
 
 | Ngày | Nội dung công việc |
 |------|--------------------|
+| 2026-06-11 | **Fix & Migrate Unit Tests**: Di chuyển các unit test liên quan đến Member từ `RescueTeamService` sang `RescueTeamMemberService` để tương thích hoàn toàn với cấu trúc service mới. Sửa phương thức `delete` trong unit test của `RescueTeamService` để bỏ kiểm tra active members dư thừa. Tất cả 89 tests đã PASS thành công. |
 | 2026-06-05 | **Make teamType optional**: 1) Update `CreateRescueTeamDto.teamType` thành optional. 2) Update service validation chỉ check specialization-teamType match khi teamType được cung cấp. 3) Update `RescueTeamEntity.teamType` nullable. 4) Thêm test case mới (47 total). 5) Update Postman với endpoint tạo team không cần teamType (VOLUNTEER_SPONTANEOUS). |
 | 2026-06-05 | **Flexible Member System + Unit Tests (46 cases)**: 1) Fix TypeScript errors sau khi consolidate TeamSpecialization. 2) Update `RescueTeamMemberEntity` - `userId` nullable, thêm `citizenName`, `citizenPhone`. 3) Update `RescueTeamEntity` thêm `leaderCitizenName`, `leaderPhone`. 4) Update `RescueTeamService.addMember()` hỗ trợ thêm thành viên chỉ với citizenName (không cần userId). 5) Fix logic `removeMember`, `updateMemberRole`, `leaveTeam` để hỗ trợ citizen leader. 6) Viết lại unit test đầy đủ 46 cases - tất cả passed. |
 | 2026-06-05 | **Add Team Specialization Module (standalone)**: Tách TeamSpecialization thành module riêng theo feature-based modular structure. Thêm @ManyToMany inverse side vào TeamSpecializationEntity. CRUD endpoints đầy đủ (GET list, GET by id, POST, PATCH, DELETE soft). Export ITeamSpecializationRepository để RescueTeamModule có thể inject. Cập nhật Postman collection. |

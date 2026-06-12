@@ -24,4 +24,9 @@ export interface IRescueTeamRepository {
   update(id: number, data: Partial<RescueTeam>): Promise<RescueTeam | null>;
   delete(id: number): Promise<boolean>;
   countActiveCases(teamId: number): Promise<number>;
+  findNearestAvailable(
+    lat: number,
+    lng: number,
+    provinceId: number,
+  ): Promise<RescueTeam | null>;
 }

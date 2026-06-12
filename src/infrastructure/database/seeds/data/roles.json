@@ -26,5 +26,12 @@
     "level": 10,
     "isSystem": true,
     "isActive": true
+  },
+  {
+    "name": "VOLUNTEER",
+    "description": "Tình nguyện viên",
+    "level": 20,
+    "isSystem": true,
+    "isActive": true
   }
 ]

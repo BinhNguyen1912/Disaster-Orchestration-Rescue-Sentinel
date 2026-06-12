@@ -15,11 +15,11 @@ import { UserEntity } from './user.entity';
 import { IotDeviceEntity } from './iot-device.entity';
 import { RescueTeamEntity } from './rescue-team.entity';
 import { CasualtyEntity } from './casualty.entity';
-import { SosType } from '@shared/core/enums/sosType.enum';
 import { SosStatus } from '@shared/core/enums/sosStatus.enum';
 import { Severity } from '@shared/core/enums/level.enum';
 import { SosSource } from '@shared/core/enums/sosSource.enum';
 import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
+import { SosRequestType } from '@shared/index';
 
 @Entity('sos_request')
 export class SosRequestEntity {
@@ -32,8 +32,14 @@ export class SosRequestEntity {
   @Column({ type: 'int' })
   adminUnitId: number;
 
-  @Column({ type: 'int' })
-  userId: number;
+  @Column({ type: 'int', nullable: true })
+  requesterId?: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  requesterName?: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  requesterPhone?: string | null;
 
   @Column({ type: 'int', nullable: true })
   deviceId?: number;
@@ -41,14 +47,20 @@ export class SosRequestEntity {
   @Column({ type: 'geometry', spatialFeatureType: 'Point', srid: 4326 })
   location: any; // geometry;
 
-  @Column({ type: 'enum', enum: SosType })
-  requestType: SosType;
+  @Column({ type: 'enum', enum: SosRequestType })
+  requestType: SosRequestType;
 
   @Column({ type: 'enum', enum: SosStatus })
   status: SosStatus;
 
   @Column({ type: 'enum', enum: Severity })
   severity: Severity;
+
+  @Column({ type: 'int', default: 1 })
+  trappedPeopleCount: number;
+
+  @Column({ type: 'varchar', array: true, nullable: true })
+  specialNeedsTags?: string[] | null;
 
   @Column({ type: 'varchar', array: true })
   imageUrls: string;
@@ -97,9 +109,9 @@ export class SosRequestEntity {
   @JoinColumn({ name: 'adminUnitId' })
   adminUnit: AdministrativeUnitEntity;
 
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'userId' })
-  user: UserEntity;
+  @ManyToOne(() => UserEntity, { nullable: true })
+  @JoinColumn({ name: 'requesterId' })
+  user?: UserEntity | null;
 
   @ManyToOne(() => IotDeviceEntity)
   @JoinColumn({ name: 'deviceId' })

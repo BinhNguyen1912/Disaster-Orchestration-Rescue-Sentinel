@@ -102,6 +102,7 @@ export const SystemRoleId = {
   PROVINCE_ADMIN: 2,
   RESCUE_TEAM_LEADER: 3,
   USER: 4,
+  VOLUNTEER: 5,
 } as const;
 
 export const MODULE_DESCRIPTIONS: Record<PermModule, string> = {
@@ -164,6 +165,17 @@ export const ROLE_PERMISSION_MATRIX: Record<
   },
   [SystemRoleId.USER]: {
     [PermModule.SOS]: ActionSet.CREATE_READ,
+    [PermModule.RESCUE]: ActionSet.READ_ONLY,
+    [PermModule.FLOOD]: ActionSet.CREATE_READ,
+    [PermModule.DISASTER]: ActionSet.READ_ONLY,
+    [PermModule.DONATION]: ActionSet.READ_ONLY,
+    [PermModule.MESSAGE]: ActionSet.READ_ONLY,
+    [PermModule.ALERT]: ActionSet.READ_ONLY,
+    [PermModule.USER]: [],
+    [PermModule.REPORT]: [],
+  },
+  [SystemRoleId.VOLUNTEER]: {
+    [PermModule.SOS]: ActionSet.READ_ONLY,
     [PermModule.RESCUE]: ActionSet.READ_ONLY,
     [PermModule.FLOOD]: ActionSet.CREATE_READ,
     [PermModule.DISASTER]: ActionSet.READ_ONLY,
