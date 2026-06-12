@@ -843,6 +843,193 @@
           }
         }
       ]
+    },
+    {
+      "name": "9. SOS Requests",
+      "description": "SOS emergency requests and dispatch management",
+      "item": [
+        {
+          "name": "POST /api/v1/sos-requests - Gửi yêu cầu SOS (Public)",
+          "request": {
+            "url": "{{baseUrl}}/api/v1/sos-requests",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requesterName\": \"Khách Vãng Lai\",\n    \"requesterPhone\": \"0900123456\",\n    \"requestType\": \"FLOOD\",\n    \"latitude\": 10.7589,\n    \"longitude\": 106.7004,\n    \"severity\": \"HIGH\",\n    \"provinceId\": 1,\n    \"adminUnitId\": 12,\n    \"trappedPeopleCount\": 2,\n    \"specialNeedsTags\": [\"CHILDREN\"],\n    \"imageUrls\": [\"https://pub-mock.r2.dev/sos/mock-file.jpg\"],\n    \"description\": \"Nước dâng cao ngập nửa nhà\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Gửi yêu cầu cứu hộ khẩn cấp (Hỗ trợ khách vãng lai và cư dân)"
+          }
+        },
+        {
+          "name": "GET /api/v1/sos-requests - Danh sách SOS",
+          "request": {
+            "url": "{{baseUrl}}/api/v1/sos-requests?page=1&limit=20",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Lấy danh sách các yêu cầu SOS (phân trang, tự động giới hạn theo tỉnh/vai trò)"
+          }
+        },
+        {
+          "name": "GET /api/v1/sos-requests/nearby - SOS lân cận",
+          "request": {
+            "url": "{{baseUrl}}/api/v1/sos-requests/nearby?lat=10.7589&lng=106.7004&radius=5",
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "description": "Tìm kiếm các yêu cầu SOS xung quanh vị trí chỉ định bằng truy vấn không gian PostGIS"
+          }
+        },
+        {
+          "name": "PATCH /api/v1/sos-requests/:id/status - Cập nhật trạng thái",
+          "request": {
+            "url": "{{baseUrl}}/api/v1/sos-requests/1/status",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"ON_SITE\",\n    \"resolutionNotes\": \"Đã tiếp cận hiện trường\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Cập nhật trạng thái cứu hộ của yêu cầu SOS"
+          }
+        },
+        {
+          "name": "PATCH /api/v1/sos-requests/:id/assign - Phân công đội cứu hộ",
+          "request": {
+            "url": "{{baseUrl}}/api/v1/sos-requests/1/assign",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"teamId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Điều phối phân công đội cứu hộ (Thủ công hoặc Tự động nếu không truyền teamId)"
+          }
+        },
+        {
+          "name": "DELETE /api/v1/sos-requests/:id - Hủy yêu cầu SOS (Public)",
+          "request": {
+            "url": "{{baseUrl}}/api/v1/sos-requests/1",
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reason\": \"Nước đã rút và an toàn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Cư dân hoặc khách vãng lai tự hủy yêu cầu cứu hộ trước khi đội cứu hộ đến hiện trường"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Upload",
+      "description": "Media file upload endpoints to Cloudflare R2",
+      "item": [
+        {
+          "name": "POST /upload/single - Upload 1 tệp tin (Public)",
+          "request": {
+            "url": "{{baseUrl}}/upload/single?folder=sos",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "Tải lên 1 ảnh hiện trường hoặc tệp PDF lên Cloudflare R2 (Chấp nhận tối đa 10MB)"
+          }
+        },
+        {
+          "name": "POST /upload/multiple - Upload nhiều tệp tin (Public)",
+          "request": {
+            "url": "{{baseUrl}}/upload/multiple?folder=sos",
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "Tải lên nhiều tệp tin ảnh hoặc tài liệu PDF đồng thời lên Cloudflare R2"
+          }
+        }
+      ]
     }
   ]
 }
+

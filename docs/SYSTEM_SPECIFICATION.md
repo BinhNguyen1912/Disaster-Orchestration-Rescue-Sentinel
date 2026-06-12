@@ -129,6 +129,27 @@ Quản lý nhân sự của mỗi đội cứu hộ. Tích hợp triết lý thi
 *   Quản lý danh mục phân cấp hành chính (Tỉnh/Thành phố → Quận/Huyện → Phường/Xã).
 *   Chứa tọa độ tâm của tỉnh/phường để phục vụ việc hiển thị và căn giữa bản đồ của client.
 
+### 2.8 Module Yêu cầu SOS (SOS Request Module)
+*   **Gửi SOS công khai (Public SOS)**: Hỗ trợ cả người dùng đăng nhập và người dùng vãng lai (Guest) gửi yêu cầu cứu nạn khẩn cấp kèm tọa độ GPS.
+    *   Đối với Guest: Yêu cầu bắt buộc cung cấp họ tên (`requesterName`), số điện thoại liên hệ (`requesterPhone`), và tối thiểu một ảnh đính kèm hiện trường (`BR-SOS-02`).
+    *   Chống spam: Áp dụng cơ chế **Rate Limit** đối với Guest, giới hạn tối đa 3 yêu cầu SOS trong vòng 10 phút trên cùng một địa chỉ IP (`BR-SOS-05`).
+*   **Tìm kiếm lân cận (Nearby Search)**: Sử dụng hàm PostGIS (`ST_Distance`) để tìm kiếm các yêu cầu SOS và đội cứu hộ trong bán kính chỉ định (mặc định là 5km), tự động lọc theo địa bàn hành chính tỉnh (`provinceId`) để tuân thủ mô hình multi-tenant (`BR-DISPATCH-07`).
+*   **Tự động/Thủ công điều phối (Auto & Manual Dispatch)**:
+    *   Hệ thống hỗ trợ gán thủ công đội cứu hộ cho yêu cầu SOS hoặc kích hoạt thuật toán tự động đề xuất dựa trên điểm số: `Score = distance*0.5 + active_cases*0.3 + skill_mismatch*0.2` (`BR-DISPATCH-02`).
+    *   Chỉ các đội cứu hộ ở trạng thái `AVAILABLE` hoặc `STANDBY` mới được phân công (`BR-DISPATCH-01`).
+*   **Chuyển giao và Giải phóng tài nguyên**:
+    *   **Tự hủy yêu cầu (Self-cancellation)**: Người dân hoặc Guest có thể tự hủy yêu cầu SOS của mình khi tình hình đã an toàn, trừ phi đội cứu hộ đã tiếp cận hiện trường ở trạng thái `ON_SITE` (`BR-SOS-07`).
+    *   **Giải phóng tài nguyên (Resource Release)**: Khi yêu cầu SOS được chuyển sang trạng thái hoàn thành (`RESOLVED`) hoặc hủy (`CANCELLED`), hệ thống tự động giảm số ca đang xử lý (`activeCasesCount`) của đội được gán đi 1 và cập nhật lại trạng thái đội về `AVAILABLE` nếu không còn ca nào khác (`BR-SOS-08`).
+    *   **Thay đổi đội cứu hộ (Reassign)**: Cho phép chuyển giao nhiệm vụ cứu hộ sang đội khác, hệ thống tự động cập nhật giảm ca cho đội cũ và tăng ca, thiết lập trạng thái `BUSY` cho đội mới gán (`BR-DISPATCH-06`).
+
+### 2.9 Module Tải lên Phương tiện (Media Upload Module)
+*   **Tải lên đám mây trực tiếp**: Sử dụng thư viện AWS SDK S3 để kết nối và truyền dữ liệu (hình ảnh SOS, ảnh CCCD, ảnh thiệt hại...) trực tiếp lên Cloudflare R2 từ bộ nhớ đệm (in-memory stream) thay vì ghi xuống đĩa cứng máy chủ (`BR-UPLOAD-03`), trả về URL truy cập công khai.
+*   **Bộ lọc kiểm tra tệp (Multer Upload Helper)**:
+    *   Tách biệt logic kiểm tra dữ liệu ra khỏi controller bằng helper tái sử dụng `upload.helper.ts`.
+    *   Giới hạn dung lượng tệp tải lên tối đa là 10MB cho mỗi tệp (`BR-UPLOAD-02`).
+    *   Chỉ chấp nhận các loại tệp hình ảnh (`image/jpeg`, `image/png`, `image/gif`, `image/webp`) và tài liệu PDF (`application/pdf`) (`BR-UPLOAD-01`).
+*   **Định danh tệp tin**: Tên tệp được đặt ngẫu nhiên kết hợp mốc thời gian `Date.now()` để tránh xung đột ghi đè tệp tin: `${folder}/${Date.now()}-${randomPart}${ext}` (`BR-UPLOAD-04`).
+
 ---
 
 ## 3. 👥 Phân quyền & Phạm vi Hoạt động của Tài khoản (RBAC Scope)
@@ -233,11 +254,70 @@ Hệ thống phân chia quyền lực dựa trên 5 cấp bậc tài khoản ch�
 
 ---
 
+### 4.3 Quy trình Gửi và Điều phối SOS (SOS Request & Dispatch Flow)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Client (Guest / Resident)
+    participant Ctrl as SosRequestController
+    participant Srv as SosRequestService
+    participant Repo as SosRequestRepository
+    participant DB as PostGIS DB
+    participant Dispatch as DistanceDispatchStrategy
+    participant TeamRepo as RescueTeamRepository
+    
+    C->>Ctrl: POST /api/v1/sos-requests (payload + image URLs)
+    Note over C,Ctrl: (If Guest: requires requesterName, requesterPhone & image attachment)
+    Ctrl->>Srv: create(dto, userPayload)
+    Note over Srv: Validate payload & rate limit (3 req / 10 min for Guest)
+    Srv->>Repo: save(SosRequestEntity)
+    Repo->>DB: INSERT into sos_request
+    DB-->>Repo: Saved entity
+    Note over Srv: Active Auto-Dispatch Strategy
+    Srv->>Dispatch: dispatch(sosRequest)
+    Dispatch->>TeamRepo: findNearestAvailable(location, radius)
+    TeamRepo->>DB: Spatial ST_Distance Query
+    DB-->>TeamRepo: Nearest available teams
+    TeamRepo-->>Dispatch: List of teams
+    Dispatch-->>Srv: Best candidate team
+    Srv->>TeamRepo: Update team active cases & status (BUSY)
+    TeamRepo->>DB: UPDATE rescue_team
+    Srv->>Repo: Update sos_request status (DISPATCHED)
+    Repo->>DB: UPDATE sos_request
+    Srv-->>Ctrl: Saved SOS Request with assigned team
+    Ctrl-->>C: Response (201 Created)
+```
+
+### 4.4 Quy trình Tải phương tiện trực tiếp lên Cloudflare R2 (Media Upload Flow)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Client
+    participant Ctrl as UploadController
+    participant Helper as upload.helper.ts
+    participant Srv as StorageService
+    participant R2 as Cloudflare R2 (S3 Compatible)
+    
+    C->>Ctrl: POST /api/v1/upload/single?folder=sos (multipart/form-data)
+    Ctrl->>Helper: fileFilter() & limits verification
+    Note over Helper: Check file type (Image/PDF) & size <= 10MB
+    Helper-->>Ctrl: Validated buffer & extension
+    Ctrl->>Srv: uploadFile(file, folder)
+    Note over Srv: Generate randomized filename:<br/>folder/Date.now()-randomPart.ext
+    Srv->>R2: PutObjectCommand(Buffer Stream)
+    R2-->>Srv: Upload confirmation
+    Note over Srv: Generate public access URL:<br/>R2_PUBLIC_URL/folder/filename.ext
+    Srv-->>Ctrl: Public URL
+    Ctrl-->>C: Response (201 Created)
+```
+
+---
+
 ## 5. 🚀 Lộ trình Phát triển Tính năng Cốt lõi Tiếp theo (Roadmap)
 
 Trong các phase tiếp theo, hệ thống sẽ tích hợp các thành phần cốt lõi để hiện thực hóa khả năng phản ứng cứu hộ tự động:
 
-1.  **SOS Auto-Dispatching (Điều phối cứu hộ tự động dựa trên vị trí)**:
+1.  **SOS Auto-Dispatching (Điều phối cứu hộ tự động dựa trên vị trí)** — **[Đã hoàn thành ngày 2026-06-12]**:
     *   Khi người dân gửi yêu cầu SOS, hệ thống sẽ sử dụng truy vấn khoảng cách PostGIS (`ST_Distance`) để quét tìm tất cả các đội cứu hộ đang có trạng thái `AVAILABLE` trong bán kính X km.
     *   Tự động lọc các đội có chuyên môn phù hợp với loại hình tai nạn (ví dụ: SOS cháy nổ → đội chuyên PCCC; SOS thương vong nặng → đội chuyên Cấp cứu Y tế).
     *   Tự động gán đội cứu hộ tối ưu nhất cho nạn nhân.

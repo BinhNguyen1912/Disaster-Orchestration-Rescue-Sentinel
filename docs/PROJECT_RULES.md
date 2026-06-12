@@ -1645,6 +1645,13 @@ _(Giữ nguyên từ v1, bổ sung thêm)_
 - `BR-SEC-04:` Authorization bằng NestJS Guard + `@RequirePermissions()` Decorator — không if-else trong controller.
 - `BR-SEC-05:` CCCD, thông tin sức khỏe lưu mã hóa AES-256 at-rest.
 
+### 16.10 Rules về Upload phương tiện (Media Upload)
+
+- `BR-UPLOAD-01:` Chỉ hỗ trợ tải các tệp hình ảnh (`image/jpeg`, `image/png`, `image/gif`, `image/webp`) và tài liệu PDF (`application/pdf`).
+- `BR-UPLOAD-02:` Kích thước tối đa cho mỗi tệp tải lên là 10MB.
+- `BR-UPLOAD-03:` Tệp được xử lý hoàn toàn trên bộ nhớ (In-memory) thông qua bộ nhớ đệm Multer (`memoryStorage`) để tránh lưu trữ tạm thời trên ổ đĩa cứng của máy chủ.
+- `BR-UPLOAD-04:` Tên tệp tải lên Cloudflare R2 được đặt tên ngẫu nhiên chứa dấu mốc thời gian (`Date.now()`) và chuỗi ngẫu nhiên nhằm tránh xung đột ghi đè tệp: `${folder}/${Date.now()}-${randomPart}${ext}`.
+
 ---
 
 ## 17. CÂU HỎI MỞ & VẤN ĐỀ CẦN GIẢI QUYẾT
@@ -2112,6 +2119,13 @@ Buoc 3 (App tu dong): GPS gan tren xuong tu dong cap nhat
 - Cơ chế giải phóng tài nguyên: Khi hoàn thành (`RESOLVED`) hoặc hủy (`CANCELLED`) yêu cầu SOS, hệ thống tự động giảm tải cho đội cứu hộ (`activeCasesCount` giảm 1, cập nhật trạng thái về `AVAILABLE` nếu tải bằng 0) (`BR-SOS-08`).
 - Bổ sung quy trình đổi đội cứu hộ (Reassign Team): tự động giảm tải cho đội cũ và tăng tải cho đội mới được gán (`BR-DISPATCH-06`).
 - Tìm nhóm lân cận (Nearby Search): sử dụng PostGIS spatial query (`ST_Distance`) để tìm các SOS/đội cứu hộ xung quanh trong bán kính chỉ định (`BR-DISPATCH-07`).
+
+#### Cloudflare R2 Media Upload Integration
+- Tích hợp dịch vụ lưu trữ đám mây tương thích S3 (Cloudflare R2) để tải lên hình ảnh/tài liệu trực tiếp lên R2 từ bộ nhớ đệm (in-memory stream).
+- Tạo `StorageService` và `StorageModule` đóng gói cấu hình SDK S3.
+- Tạo `UploadController` cung cấp endpoint `/api/v1/upload/single` và `/api/v1/upload/multiple`.
+- Viết `upload.helper.ts` tách biệt logic kiểm tra định dạng và kích thước tệp ra khỏi controller.
+- Viết bộ unit test cho `UploadController` và kiểm thử tích hợp E2E đầy đủ.
 
 ### 2026-06-06
 

@@ -80,7 +80,7 @@ userId: number | null;
 
 ## 📊 Phân tích Modules Hiện Tại
 
-### ✅ Modules đã hoàn thành (basic CRUD):
+### ✅ Modules đã hoàn thành (basic CRUD / core workflow):
 
 | Module | Trạng thái | Ghi chú |
 |--------|-----------|---------|
@@ -89,6 +89,8 @@ userId: number | null;
 | Team Specialization | ✅ Hoàn thành | CRUD (standalone module) |
 | Location | ✅ Basic | Chỉ CRUD theo province |
 | Role | ✅ Basic | CRUD đơn giản |
+| SOS Request | ✅ Hoàn thành | Gửi SOS (Guest/User), Phân bổ, Hủy, Tìm lân cận |
+| Media Upload | ✅ Hoàn thành | Cloudflare R2 Upload (In-memory streams) |
 
 ---
 
@@ -120,7 +122,7 @@ userId: number | null;
 
 ## 📊 Phân tích Modules Hiện Tại
 
-### ✅ Modules đã hoàn thành (basic CRUD):
+### ✅ Modules đã hoàn thành (basic CRUD / core workflow):
 
 | Module | Trạng thái | Ghi chú |
 |--------|-----------|---------|
@@ -129,6 +131,8 @@ userId: number | null;
 | Team Specialization | ✅ Hoàn thành | CRUD (standalone module) |
 | Location | ✅ Basic | Chỉ CRUD theo province |
 | Role | ✅ Basic | CRUD đơn giản |
+| SOS Request | ✅ Hoàn thành | Gửi SOS (Guest/User), Phân bổ, Hủy, Tìm lân cận |
+| Media Upload | ✅ Hoàn thành | Cloudflare R2 Upload (In-memory streams) |
 
 ---
 
@@ -180,13 +184,13 @@ userId: number | null;
 ```
 
 **Endpoints cần có:**
-- [ ] `POST /sos-requests` — Gửi SOS (public)
-- [ ] `GET /sos-requests` — Danh sách SOS (filter by status, province, date range)
-- [ ] `GET /sos-requests/:id` — Chi tiết
-- [ ] `PATCH /sos-requests/:id/status` — Cập nhật status (dispatcher/leader)
-- [ ] `PATCH /sos-requests/:id/assign` — Auto-assign đội gần nhất
-- [ ] `DELETE /sos-requests/:id` — Hủy SOS (user hoặc admin)
-- [ ] `GET /sos-requests/nearby` — Tìm SOS requests gần một tọa độ
+- [x] `POST /sos-requests` — Gửi SOS (public)
+- [x] `GET /sos-requests` — Danh sách SOS (filter by status, province, date range)
+- [x] `GET /sos-requests/:id` — Chi tiết
+- [x] `PATCH /sos-requests/:id/status` — Cập nhật status (dispatcher/leader)
+- [x] `PATCH /sos-requests/:id/assign` — Auto-assign đội gần nhất / Reassign
+- [x] `DELETE /sos-requests/:id` — Hủy SOS (user hoặc admin)
+- [x] `GET /sos-requests/nearby` — Tìm SOS requests gần một tọa độ
 - [ ] `GET /sos-requests/stats` — Thống kê SOS theo thời gian/khu vực
 
 **Business Rules:**
@@ -244,20 +248,20 @@ ST_SetSRID(ST_MakePoint(lng, lat), 4326)
 ## ✅ Checklist triển khai
 
 ### Phase 3.1: Location Nâng cao (Pre-requisite)
-- [ ] Thêm spatial query methods vào LocationRepository
-- [ ] Thêm endpoint `GET /locations/search?lat=&lng=&radius=`
-- [ ] Test PostGIS distance queries
+- [x] Thêm spatial query methods vào LocationRepository
+- [x] Thêm endpoint `GET /locations/search?lat=&lng=&radius=`
+- [x] Test PostGIS distance queries
 
 ### Phase 3.2: SOS Request Module
-- [ ] Tạo module `modules/sos-request/`
-- [ ] Entity + Repository + Service + Controller
-- [ ] Auto-dispatch logic với PostGIS
+- [x] Tạo module `modules/sos-request/`
+- [x] Entity + Repository + Service + Controller
+- [x] Auto-dispatch logic với PostGIS
 - [ ] WebSocket integration
 
 ### Phase 3.3: Rescue Team Nâng cao
-- [ ] Thêm status transition logic
+- [x] Thêm status transition logic
 - [ ] Thêm statistics methods
-- [ ] Cập nhật RescuTeamRepository với spatial queries
+- [x] Cập nhật RescuTeamRepository với spatial queries
 
 ---
 

@@ -1,8 +1,8 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-06-11
+> **Lần cập nhật gần nhất:** 2026-06-12
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
-> **Trạng thái tổng:** 🟡 **Phase 3 — Team Specialization Module mới**
+> **Trạng thái tổng:** 🟡 **Phase 3 — Tích hợp SOS Request & R2 Media Upload**
 
 ---
 
@@ -12,7 +12,7 @@
 |-------|-----|---------|-----------|
 | 1 | Hạ tầng & Foundation | ██████████ 100% | ✅ Hoàn thành |
 | 2 | Auth & Core Modules | ██████████ 100% | ✅ Hoàn thành |
-| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ██████░░░░ 55% | 🟡 Đang làm |
+| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ███████░░░ 70% | 🟡 Đang làm |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
 ---
@@ -56,7 +56,7 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 | `RescueTeamEntity` | `rescue_team` | ✅ Hoàn thành (Rescue Module) |
 | `RescueTeamMemberEntity` | `rescue_team_member` | ✅ Hoàn thành (Rescue Module) |
 | `TeamSpecializationEntity` | `team_specialization` | ✅ Hoàn thành (Rescue Module) |
-| `SosRequestEntity` | `sos_request` | ✅ Entity có, chưa có logic |
+| `SosRequestEntity` | `sos_request` | ✅ Hoàn thành (SOS Request Module) |
 | `FloodReportEntity` | `flood_report` | ✅ Entity có, chưa có logic |
 | `CasualtyEntity` | `casualty` | ✅ Entity có, chưa có logic |
 | `DisasterEventEntity` | `disaster_event` | ✅ Entity có, chưa có logic |
@@ -176,9 +176,19 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 - ✅ Export `ITeamSpecializationRepository` để `RescueTeamModule` có thể inject
 - ✅ **Consolidate Entity (2026-06-05)**: `TeamSpecialization` entity chuyển vào `shared/domain/entities/team-specialization.entity.ts` để tránh duplicate giữa các modules
 
+### ✅ SOS Request Module & R2 Upload Integration — Hoàn thành 2026-06-12
+
+- ✅ `SosRequestEntity` schema & data definitions.
+- ✅ `SosRequestRepository` & custom spatial queries with PostGIS.
+- ✅ `SosRequestService` & controller endpoints (`/api/v1/sos-requests` single/nearby/status/assign/cancel).
+- ✅ `DistanceBasedDispatchStrategy` implementing dynamic dispatch logic.
+- ✅ `StorageService` & `StorageModule` integrating Cloudflare R2 client.
+- ✅ `UploadController` providing `/api/v1/upload/single` and `/api/v1/upload/multiple` with custom `upload.helper.ts` (size/type validation).
+- ✅ Unit & Integration tests for SOS request, R2 upload, and Guest SOS flows.
+- ✅ Postman collection updated with all SOS Request and Upload endpoints.
+
 ### 🔲 Các module khác
 
-- [ ] Module SOS (gửi SOS, auto-dispatch theo PostGIS, realtime WebSocket)
 - [ ] Module Flood Report (báo cáo lũ, xác minh)
 - [ ] Module Casualty (thương vong)
 - [ ] Module Disaster Event (sự kiện thiên tai tổng hợp)
@@ -264,6 +274,7 @@ src/
 
 | Ngày | Nội dung công việc |
 |------|--------------------|
+| 2026-06-12 | **Implement SOS Request Module & R2 Media Upload**: 1) Thiết lập Cloudflare R2 Upload qua `StorageService` và `UploadController` cùng `upload.helper.ts` cho phép xử lý in-memory streams. 2) Xây dựng `SosRequestModule` hỗ trợ đầy đủ quy trình gửi SOS (kể cả Guest/Rate limit), tự hủy, phân bổ đội (auto-dispatch bằng PostGIS `ST_Distance`), đổi đội (reassign) và tìm kiếm lân cận. 3) Cập nhật Postman collection với 8 use cases mới. 4) Viết unit & E2E integration tests. |
 | 2026-06-11 | **Fix & Migrate Unit Tests**: Di chuyển các unit test liên quan đến Member từ `RescueTeamService` sang `RescueTeamMemberService` để tương thích hoàn toàn với cấu trúc service mới. Sửa phương thức `delete` trong unit test của `RescueTeamService` để bỏ kiểm tra active members dư thừa. Tất cả 89 tests đã PASS thành công. |
 | 2026-06-05 | **Make teamType optional**: 1) Update `CreateRescueTeamDto.teamType` thành optional. 2) Update service validation chỉ check specialization-teamType match khi teamType được cung cấp. 3) Update `RescueTeamEntity.teamType` nullable. 4) Thêm test case mới (47 total). 5) Update Postman với endpoint tạo team không cần teamType (VOLUNTEER_SPONTANEOUS). |
 | 2026-06-05 | **Flexible Member System + Unit Tests (46 cases)**: 1) Fix TypeScript errors sau khi consolidate TeamSpecialization. 2) Update `RescueTeamMemberEntity` - `userId` nullable, thêm `citizenName`, `citizenPhone`. 3) Update `RescueTeamEntity` thêm `leaderCitizenName`, `leaderPhone`. 4) Update `RescueTeamService.addMember()` hỗ trợ thêm thành viên chỉ với citizenName (không cần userId). 5) Fix logic `removeMember`, `updateMemberRole`, `leaveTeam` để hỗ trợ citizen leader. 6) Viết lại unit test đầy đủ 46 cases - tất cả passed. |
