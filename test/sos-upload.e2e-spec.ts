@@ -15,7 +15,9 @@ describe('SOS Upload Flow (e2e)', () => {
 
   // Mock StorageService so E2E tests don't require internet or real R2 credentials
   const mockStorageService = {
-    uploadFile: jest.fn().mockResolvedValue('https://pub-mock.r2.dev/sos/mock-uploaded-file.jpg'),
+    uploadFile: jest
+      .fn()
+      .mockResolvedValue('https://pub-mock.r2.dev/sos/mock-uploaded-file.jpg'),
   };
 
   beforeAll(async () => {
@@ -32,12 +34,17 @@ describe('SOS Upload Flow (e2e)', () => {
     // Dynamically fetch or seed a mock province and administrative unit to avoid FK errors in DB
     try {
       const provRepo = moduleFixture.get(getRepositoryToken(ProvinceEntity));
-      const adminRepo = moduleFixture.get(getRepositoryToken(AdministrativeUnitEntity));
+      const adminRepo = moduleFixture.get(
+        getRepositoryToken(AdministrativeUnitEntity),
+      );
 
       const provinces = await provRepo.find({ take: 1 });
       if (provinces.length > 0) {
         mockProvinceId = provinces[0].id;
-        const units = await adminRepo.find({ where: { provinceId: mockProvinceId }, take: 1 });
+        const units = await adminRepo.find({
+          where: { provinceId: mockProvinceId },
+          take: 1,
+        });
         if (units.length > 0) {
           mockAdminUnitId = units[0].id;
         }

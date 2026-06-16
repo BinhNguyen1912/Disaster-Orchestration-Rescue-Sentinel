@@ -51,9 +51,7 @@ export class StorageService {
   ): Promise<string> {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     const fileExt = path.extname(file.originalname);
-    //Xóa dấu gạch chéo ở đầu và cuối chuỗi nếu có
     const cleanFolder = folder.replace(/^\/+|\/+$/g, '');
-    //Tạo key với đường dẫn đầy đủ
     const key = `${cleanFolder}/${uniqueSuffix}${fileExt}`;
 
     try {

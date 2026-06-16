@@ -1,8 +1,8 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-06-12
+> **Lần cập nhật gần nhất:** 2026-06-15
 > **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
-> **Trạng thái tổng:** 🟡 **Phase 3 — Tích hợp SOS Request & R2 Media Upload**
+> **Trạng thái tổng:** 🟡 **Phase 3 — Spatial NNS + WebSocket Real-time Dispatch**
 
 ---
 
@@ -12,7 +12,8 @@
 |-------|-----|---------|-----------|
 | 1 | Hạ tầng & Foundation | ██████████ 100% | ✅ Hoàn thành |
 | 2 | Auth & Core Modules | ██████████ 100% | ✅ Hoàn thành |
-| 3 | Nghiệp vụ chính (SOS, Rescue, Disaster) | ███████░░░ 70% | 🟡 Đang làm |
+| 3 | Nghiệp vụ chính (SOS, Rescue, Dispatch) | ████████░░ 80% | 🟡 Đang làm |
+| 3.5 | Spatial NNS + WebSocket Real-time | ███░░░░░░░ 30% | 🔵 Mới bắt đầu |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
 ---
@@ -187,7 +188,30 @@ Toàn bộ bảng đã được định nghĩa TypeORM Entity với `synchronize
 - ✅ Unit & Integration tests for SOS request, R2 upload, and Guest SOS flows.
 - ✅ Postman collection updated with all SOS Request and Upload endpoints.
 
-### 🔲 Các module khác
+### 🔵 Phase 3.5: Spatial NNS + WebSocket Real-time Dispatch (Đang triển khai 2026-06-15)
+
+#### ✅ Đã hoàn thành:
+- ✅ **BA Analysis**: Phân tích 8 thuật toán Spatial NNS, chọn R-Tree (GiST) + Expanding Radius
+- ✅ **WebSocket Module** (`src/modules/websocket/`) — module tập trung quản lý tất cả gateways
+  - ✅ `DispatchGateway` — namespace `/dispatch` (điều phối cứu hộ, SOS tracking)
+  - ✅ `NotificationGateway` — namespace `/notification` (push notification đến user)
+  - ✅ `DispatchSocketService` — service emit event cho dispatch
+  - ✅ `NotificationSocketService` — service emit event cho notification
+  - ✅ `websocket.events.ts` — constants tất cả event names
+  - ✅ `main.ts` đã thêm `IoAdapter` (Socket.io adapter)
+  - ✅ `AppModule` đã import `WebSocketModule`
+- ✅ Cài packages: `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io`
+
+#### 🔲 Còn lại:
+- [ ] Thêm `@Index({ spatial: true })` vào các entity có geometry column
+- [ ] Implement `findNearestAvailable()` + `findNearbyTeams()` trong `RescueTeamRepository`
+- [ ] Tạo `DispatchService` với Expanding Radius logic (5km → 10km → 20km → 40km)
+- [ ] Tích hợp `DispatchSocketService` vào `SosRequestService` (emit khi dispatch)
+- [ ] Tích hợp `NotificationSocketService` vào các service cần push notification
+- [ ] SOS State Machine transitions (PENDING_DISPATCH → TEAM_ASSIGNED → TEAM_MOVING → RESCUING → COMPLETED)
+- [ ] Test Spatial Query với PostGIS
+
+### 🔲 Các module khác (Phase 3 tiếp theo)
 
 - [ ] Module Flood Report (báo cáo lũ, xác minh)
 - [ ] Module Casualty (thương vong)
@@ -223,7 +247,7 @@ src/
 │   └── seeds/
 │
 ├── modules/
-│   ├── auth/                         # AUTH MICROSERVICE
+│   ├── auth/                         # AUTH MODULE
 │   │   ├── domain/
 │   │   │   ├── entities/User.ts      # Pure domain class (business logic)
 │   │   │   ├── interfaces/
@@ -234,7 +258,7 @@ src/
 │   │   │   └── persistence/repositories/ # TypeORM impls
 │   │   └── presentation/controllers + dtos
 │   │
-│   ├── rescue-team/                   # RESCUE TEAM MICROSERVICE
+│   ├── rescue-team/                   # RESCUE TEAM MODULE
 │   │   ├── domain/repositories/      # Repository interfaces
 │   │   ├── domain/entities/         # Domain entities (RescueTeam, RescueTeamMember)
 │   │   ├── application/services/     # Business logic
@@ -242,22 +266,28 @@ src/
 │   │   ├── infrastructure/persistence/repositories/
 │   │   └── presentation/
 │   │
-│   ├── location/                      # LOCATION MICROSERVICE (2026-06-05)
-│   │   ├── domain/repositories/      # Location repository interface
-│   │   ├── application/services/     # LocationService
+│   ├── sos-request/                   # SOS REQUEST MODULE
+│   │   ├── domain/repositories/
+│   │   ├── domain/entities/
+│   │   ├── application/services/     # SosRequestService, DispatchService (WIP)
 │   │   ├── infrastructure/persistence/repositories/
 │   │   └── presentation/
 │   │
-│   ├── role/                          # ROLE MICROSERVICE (2026-06-05)
-│   │   ├── domain/entities/          # RoleEntity
-│   │   ├── domain/repositories/      # Repository interfaces
-│   │   ├── application/services/     # RoleService
-│   │   ├── application/dtos/         # Role DTOs
-│   │   ├── infrastructure/persistence/repositories/
-│   │   └── presentation/
+│   ├── websocket/                     # WEBSOCKET MODULE (2026-06-15) ← MỚI
+│   │   ├── events/
+│   │   │   └── websocket.events.ts   # Constants toàn bộ event names
+│   │   ├── gateways/
+│   │   │   ├── dispatch.gateway.ts   # namespace /dispatch
+│   │   │   └── notification.gateway.ts # namespace /notification
+│   │   ├── services/
+│   │   │   ├── dispatch-socket.service.ts     # Emit events /dispatch
+│   │   │   └── notification-socket.service.ts # Emit events /notification
+│   │   └── websocket.module.ts       # Module tập trung, export services
 │   │
+│   ├── location/                      # LOCATION MODULE
+│   ├── role/                          # ROLE MODULE
 │   ├── health/
-│   └── mail/
+│   └── upload/                        # MEDIA UPLOAD MODULE
 │
 └── app.module.ts
 ```
@@ -273,7 +303,8 @@ src/
 ## 📅 Lịch sử buổi code
 
 | Ngày | Nội dung công việc |
-|------|--------------------|
+|------|---------|
+| 2026-06-15 | **Spatial NNS Analysis + WebSocket Module Setup**: 1) Phân tích 8 thuật toán Spatial Nearest Neighbor Search (Brute Force, R-Tree/GiST, KD-Tree, Quadtree, Geohash, H3, LSH, Expanding Radius) — chọn R-Tree (GiST) + Expanding Radius. 2) Viết tài liệu BA đầy đủ `docs/spatial_nns_analysis.md` (Business Problem, Business Goals, Stakeholders, FR/NFR, Domain Model, Business Rules, Failure Scenarios). 3) Tạo `WebSocketModule` tập trung với 2 namespaces: `/dispatch` (DispatchGateway + DispatchSocketService) và `/notification` (NotificationGateway + NotificationSocketService). 4) Cài `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io`. 5) Thêm `IoAdapter` vào `main.ts`. 6) Kiểm tra và xác nhận Socket CHƯA setup trước đó (zero-from-scratch). |
 | 2026-06-12 | **Implement SOS Request Module & R2 Media Upload**: 1) Thiết lập Cloudflare R2 Upload qua `StorageService` và `UploadController` cùng `upload.helper.ts` cho phép xử lý in-memory streams. 2) Xây dựng `SosRequestModule` hỗ trợ đầy đủ quy trình gửi SOS (kể cả Guest/Rate limit), tự hủy, phân bổ đội (auto-dispatch bằng PostGIS `ST_Distance`), đổi đội (reassign) và tìm kiếm lân cận. 3) Cập nhật Postman collection với 8 use cases mới. 4) Viết unit & E2E integration tests. |
 | 2026-06-11 | **Fix & Migrate Unit Tests**: Di chuyển các unit test liên quan đến Member từ `RescueTeamService` sang `RescueTeamMemberService` để tương thích hoàn toàn với cấu trúc service mới. Sửa phương thức `delete` trong unit test của `RescueTeamService` để bỏ kiểm tra active members dư thừa. Tất cả 89 tests đã PASS thành công. |
 | 2026-06-05 | **Make teamType optional**: 1) Update `CreateRescueTeamDto.teamType` thành optional. 2) Update service validation chỉ check specialization-teamType match khi teamType được cung cấp. 3) Update `RescueTeamEntity.teamType` nullable. 4) Thêm test case mới (47 total). 5) Update Postman với endpoint tạo team không cần teamType (VOLUNTEER_SPONTANEOUS). |

@@ -63,7 +63,7 @@ export class SosRequestEntity {
   specialNeedsTags?: string[] | null;
 
   @Column({ type: 'varchar', array: true })
-  imageUrls: string;
+  imageUrls: string[];
 
   @Column({ type: 'varchar', nullable: true })
   description?: string;

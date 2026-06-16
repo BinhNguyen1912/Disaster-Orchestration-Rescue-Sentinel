@@ -89,6 +89,9 @@ export class RescueTeamEntity {
   @Column({ type: 'varchar', nullable: true })
   leaderPhone?: string;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  logoUrl?: string | null;
+
   @Column({ type: 'int', default: 0 })
   totalMissions: number;
 

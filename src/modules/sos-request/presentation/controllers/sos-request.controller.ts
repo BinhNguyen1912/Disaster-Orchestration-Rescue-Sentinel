@@ -32,12 +32,12 @@ import { SosRequestService } from '../../application/services/sos-request.servic
 import { SosStatus } from '@shared/core/enums/sosStatus.enum';
 
 @ApiTags('SOS Requests')
-@Controller('api/v1/sos-requests')
+@Controller('sos-requests')
 export class SosRequestController {
   constructor(
     private readonly jwtService: JwtService,
     private readonly service: SosRequestService,
-  ) {}
+  ) { }
 
   private extractUserFromHeader(req: any): any {
     const authHeader = req.headers.authorization;
@@ -46,7 +46,6 @@ export class SosRequestController {
       try {
         return this.jwtService.decode(token);
       } catch (err) {
-        // ignore
       }
     }
     return undefined;

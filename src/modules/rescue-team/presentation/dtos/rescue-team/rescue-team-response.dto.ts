@@ -16,6 +16,7 @@ export class RescueTeamResponseDto {
   totalMissions: number;
   totalRescued: number;
   totalHoursActive: number;
+  logoUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }

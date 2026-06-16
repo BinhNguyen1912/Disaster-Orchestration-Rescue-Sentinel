@@ -32,4 +32,8 @@ export class UpdateRescueTeamValidationDto {
   @IsOptional()
   @IsArray()
   coverageArea?: { type: 'Polygon'; coordinates: number[][][] };
+
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
 }

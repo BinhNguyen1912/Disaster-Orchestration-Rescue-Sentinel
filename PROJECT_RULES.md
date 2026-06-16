@@ -185,3 +185,89 @@ Dùng `import type` khi chỉ import type để tránh circular dependency:
 import type { CreateRoleDto } from '../dtos/role.dto';
 import type { Role } from '../../domain/entities/role.entity';
 ```
+
+## 13. WebSocket Gateway Pattern (BẮT BUỘC)
+
+Tất cả WebSocket phải đi qua `WebSocketModule` tập trung. **KHÔNG** tạo gateway riêng lẻ bên trong module nghiệp vụ.
+
+### Cấu trúc thư mục:
+```
+modules/websocket/
+  events/
+    websocket.events.ts     # Tất cả event name constants
+  gateways/
+    *.gateway.ts            # Mỗi file = 1 namespace
+  services/
+    *-socket.service.ts     # Service emit event, được inject bởi module khác
+  websocket.module.ts       # Export các services
+```
+
+### Pattern Gateway → Service:
+```typescript
+// Gateway: chỉ xử lý kết nối và lắng nghe event từ client
+@WebSocketGateway({ namespace: '/dispatch', cors: { origin: '*' } })
+export class DispatchGateway implements OnGatewayInit {
+  @WebSocketServer() server: Server;
+
+  constructor(private readonly dispatchSocketService: DispatchSocketService) {}
+
+  afterInit(server: Server) {
+    // ✅ BẮT BUỘC: Gán server cho service ngay khi init
+    this.dispatchSocketService.setServer(server);
+  }
+}
+
+// Service: chứa toàn bộ logic emit event — được inject vào module khác
+@Injectable()
+export class DispatchSocketService {
+  private server: Server;
+
+  setServer(server: Server) { this.server = server; }
+
+  broadcastNewSos(provinceId: number, sos: any) {
+    this.server?.to(`province:${provinceId}`).emit(DISPATCH_EVENTS.SOS_CREATED, sos);
+  }
+}
+```
+
+### Cách dùng ở module khác:
+```typescript
+// ✅ ĐÚNG — import WebSocketModule, inject service
+@Module({ imports: [WebSocketModule] })
+export class SosRequestModule {}
+
+// Inject service
+constructor(private readonly dispatchSocket: DispatchSocketService) {}
+
+// Emit event
+this.dispatchSocket.broadcastNewSos(provinceId, sos);
+```
+
+```typescript
+// ❌ SAI — tạo gateway trong module nghiệp vụ
+@Module({ providers: [MyOwnGateway] })
+export class SosRequestModule {}
+```
+
+### Thêm namespace mới:
+1. Tạo `gateways/{name}.gateway.ts`
+2. Tạo `services/{name}-socket.service.ts`
+3. Thêm vào `providers` và `exports` trong `websocket.module.ts`
+
+## 14. Spatial Query Rules (PostGIS)
+
+- Tất cả spatial query (`ST_Distance`, `ST_DWithin`, `<->`) chỉ được viết ở **Infrastructure layer** (`infrastructure/persistence/repositories/`)
+- **KHÔNG** viết raw spatial SQL trong Service hay Controller
+- Luôn cast `::geography` khi tính khoảng cách theo mét (không dùng `::geometry` thuần)
+- Luôn tạo GiST index cho geometry columns: `@Index({ spatial: true })`
+
+```typescript
+// ✅ ĐÚNG — cast geography, dùng GiST <-> để sort
+const point = `ST_SetSRID(ST_Point(${lng}, ${lat}), 4326)`;
+query
+  .andWhere(`ST_DWithin(team.currentLocation::geography, ${point}::geography, :radius)`)
+  .orderBy(`team.currentLocation <-> ${point}`)
+
+// ❌ SAI — geometry degree, không chính xác theo mét
+query.orderBy(`ST_Distance(team.currentLocation, ST_Point(${lng}, ${lat}))`)
+```

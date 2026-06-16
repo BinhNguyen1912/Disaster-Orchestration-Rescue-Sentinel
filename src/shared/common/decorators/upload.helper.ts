@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { APP_MESSAGES } from '../constants/messages.constant';
 
 export interface FileFilterOptions {
   maxSizeInMb?: number;
@@ -28,7 +29,7 @@ export const createMulterOptions = (
       if (!allowedMimeTypes.includes(file.mimetype)) {
         return callback(
           new BadRequestException(
-            `Định dạng tệp tin ${file.originalname} không được hỗ trợ. Chỉ hỗ trợ tải lên các định dạng hình ảnh (jpg, png, gif, webp) hoặc tài liệu PDF.`,
+            `${APP_MESSAGES.UPLOAD.UPLOAD_ERROR_FILE_TYPE} ${file.originalname}`,
           ),
           false,
         );

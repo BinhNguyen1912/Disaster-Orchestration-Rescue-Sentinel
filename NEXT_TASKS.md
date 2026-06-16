@@ -194,7 +194,7 @@ userId: number | null;
 - [ ] `GET /sos-requests/stats` — Thống kê SOS theo thời gian/khu vực
 
 **Business Rules:**
-- [ ] Chỉ tìm đội có `status = AVAILABLE` và `teamType` phù hợp với `emergencyType`
+- [x] Chỉ tìm đội có `status = AVAILABLE` và `teamType` phù hợp với `emergencyType`
 - [ ] Tính khoảng cách từ đội đến SOS location dùng PostGIS `ST_Distance`
 - [ ] Ưu tiên đội có `activeCasesCount < maxCapacity`
 - [ ] SOS status flow: PENDING → DISPATCHED → ON_SITE → RESOLVED hoặc CANCELLED

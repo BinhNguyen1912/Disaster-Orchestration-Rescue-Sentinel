@@ -40,4 +40,8 @@ export class CreateRescueTeamValidationDto {
   @IsArray()
   @IsInt({ each: true })
   specializationIds?: number[];
+
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
 }

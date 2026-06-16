@@ -19,6 +19,8 @@ import type { IProvinceRepository } from '../../../location/domain/repositories/
 import type { IWardRepository } from '../../../location/domain/repositories/location.repository.interface';
 import { RescueTeam } from '../../domain/entities/rescue-team';
 import { APP_MESSAGES } from '@shared/index';
+import { ConfigService } from '@nestjs/config';
+import { TeamType } from '@shared/core/enums/teamType.enum';
 
 @Injectable()
 export class RescueTeamService implements IRescueTeamService {
@@ -31,6 +33,7 @@ export class RescueTeamService implements IRescueTeamService {
     private readonly provinceRepo: IProvinceRepository,
     @Inject('IWardRepository')
     private readonly wardRepo: IWardRepository,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(dto: CreateRescueTeamDto, userId: number): Promise<RescueTeam> {
@@ -69,21 +72,26 @@ export class RescueTeamService implements IRescueTeamService {
       specializations = await this.specRepo.findByIds(dto.specializationIds);
     }
 
-    return this.teamRepo.create({
+    const createdTeam = await this.teamRepo.create({
       ...dto,
       createdBy: userId,
       specializations,
     });
+    return this.populateLogoFallback(createdTeam);
   }
 
   async findAll(
     filters: QueryRescueTeamDto,
     pagination: PaginationParams,
   ): Promise<PaginatedResult<RescueTeam>> {
-    return this.teamRepo.findAll(filters, {
+    const result = await this.teamRepo.findAll(filters, {
       page: pagination.page || 1,
       limit: pagination.limit || 20,
     });
+    if (result.items) {
+      result.items = result.items.map((team) => this.populateLogoFallback(team));
+    }
+    return result;
   }
 
   async findById(id: number): Promise<RescueTeam> {
@@ -91,7 +99,7 @@ export class RescueTeamService implements IRescueTeamService {
     if (!team) {
       throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
-    return team;
+    return this.populateLogoFallback(team);
   }
 
   async update(id: number, dto: UpdateRescueTeamDto): Promise<RescueTeam> {
@@ -99,7 +107,7 @@ export class RescueTeamService implements IRescueTeamService {
     if (!team) {
       throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
-    return team;
+    return this.populateLogoFallback(team);
   }
 
   async updateLocation(
@@ -113,7 +121,7 @@ export class RescueTeamService implements IRescueTeamService {
     if (!team) {
       throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
-    return team;
+    return this.populateLogoFallback(team);
   }
 
   async delete(id: number): Promise<void> {
@@ -126,5 +134,25 @@ export class RescueTeamService implements IRescueTeamService {
     // This is because member count is managed by the member module
 
     await this.teamRepo.delete(id);
+  }
+
+  private populateLogoFallback(team: RescueTeam): RescueTeam {
+    if (!team) return team;
+    if (!team.logoUrl) {
+      const pcccLogo = this.configService.get<string>('DEFAULT_LOGO_PCCC') || '';
+      const yteLogo = this.configService.get<string>('DEFAULT_LOGO_YTE') || '';
+      const volunteerLogo = this.configService.get<string>('DEFAULT_LOGO_VOLUNTEER') || '';
+      const generalLogo = this.configService.get<string>('DEFAULT_LOGO_GENERAL') || '';
+
+      team.logoUrl =
+        team.teamType === TeamType.PCCC
+          ? pcccLogo
+          : team.teamType === TeamType.Y_TE
+            ? yteLogo
+            : team.teamType === TeamType.TINH_NGUYEN
+              ? volunteerLogo
+              : generalLogo;
+    }
+    return team;
   }
 }

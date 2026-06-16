@@ -8,4 +8,5 @@ export interface UpdateRescueTeamDto {
   activeCasesCount?: number;
   maxCapacity?: number;
   specializationIds?: number[];
+  logoUrl?: string;
 }

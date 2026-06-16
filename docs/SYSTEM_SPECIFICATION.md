@@ -38,7 +38,7 @@ graph TD
 ```
 src/
 ├── app.module.ts                       # Module gốc của ứng dụng
-├── main.ts                             # Entrypoint khởi tạo ứng dụng NestJS
+├── main.ts                             # Entrypoint khởi tạo ứng dụng NestJS (với IoAdapter)
 ├── shared/                             # Nhân shared (Shared Kernel)
 │   ├── common/
 │   │   ├── constants/                  # Messages, Permissions hằng số
@@ -62,7 +62,17 @@ src/
     ├── location/                       # Quản lý địa bàn, hành chính cấp tỉnh
     ├── rescue-team/                    # Quản lý thông tin đội cứu hộ
     ├── rescue-team-member/             # Quản lý thành viên trong đội cứu hộ
-    └── team-specialization/            # Quản lý chuyên môn của các đội cứu hộ
+    ├── team-specialization/            # Quản lý chuyên môn của các đội cứu hộ
+    ├── sos-request/                    # Quản lý yêu cầu SOS & điều phối cứu hộ
+    ├── upload/                         # Tải phương tiện lên Cloudflare R2
+    └── websocket/                      # WebSocket Real-time (2026-06-15)
+        ├── events/websocket.events.ts  # Constants tất cả event names
+        ├── gateways/
+        │   ├── dispatch.gateway.ts     # namespace /dispatch
+        │   └── notification.gateway.ts # namespace /notification
+        └── services/
+            ├── dispatch-socket.service.ts
+            └── notification-socket.service.ts
 ```
 
 #### Cấu trúc chuẩn bên trong một Module Nghiệp vụ:
@@ -149,6 +159,20 @@ Quản lý nhân sự của mỗi đội cứu hộ. Tích hợp triết lý thi
     *   Giới hạn dung lượng tệp tải lên tối đa là 10MB cho mỗi tệp (`BR-UPLOAD-02`).
     *   Chỉ chấp nhận các loại tệp hình ảnh (`image/jpeg`, `image/png`, `image/gif`, `image/webp`) và tài liệu PDF (`application/pdf`) (`BR-UPLOAD-01`).
 *   **Định danh tệp tin**: Tên tệp được đặt ngẫu nhiên kết hợp mốc thời gian `Date.now()` để tránh xung đột ghi đè tệp tin: `${folder}/${Date.now()}-${randomPart}${ext}` (`BR-UPLOAD-04`).
+
+### 2.10 Module WebSocket Real-time (2026-06-15)
+
+Module tập trung quản lý toàn bộ kết nối WebSocket (Socket.io) của hệ thống. Áp dụng pattern **Gateway → Service** để tách biệt việc quản lý kết nối và logic emit event.
+
+*   **Namespace `/dispatch`** — Phục vụ điều phối cứu hộ realtime:
+    *   Admin tỉnh join room `province:{provinceId}` để nhận SOS mới và cập nhật trạng thái.
+    *   Rescue Team join room `team:{teamId}` để nhận nhiệm vụ được assign.
+    *   Hỗ trợ cập nhật GPS realtime từ đội cứu hộ (`team:update-location`).
+*   **Namespace `/notification`** — Push notification đến từng user:
+    *   User join room `user:{userId}` ngay khi kết nối (gửi query `?userId=xxx`).
+    *   Server có thể push notification, cập nhật badge count tới từng user cụ thể.
+*   **Events Constants** (`websocket.events.ts`): Tất cả tên event được định nghĩa tập trung, dùng chung cho cả server và client.
+*   **Cách dùng từ module khác**: Import `WebSocketModule`, inject `DispatchSocketService` hoặc `NotificationSocketService` — không cần biết đến Gateway.
 
 ---
 
@@ -327,3 +351,84 @@ Trong các phase tiếp theo, hệ thống sẽ tích hợp các thành phần c
 3.  **Tích hợp Bản đồ Ngập lụt (Flood Map & Geofencing)**:
     *   Người dân báo cáo ngập lụt kèm độ sâu nước. Khi Admin xác minh, dữ liệu sẽ được vẽ thành các vùng nguy hiểm (Polygon) trên bản đồ.
     *   Hệ thống tự động phát cảnh báo (Push Notification/SMS) cho người dùng khi họ di chuyển đi vào vùng ngập lụt nguy hiểm nhờ tính năng Geo-fencing.
+
+---
+
+## 6. 📌 Business Rules Tổng hợp (BR Catalogue)
+
+Các Business Rules quan trọng nhất của hệ thống:
+
+| Rule ID | Mô tả | Module |
+|---------|---------|--------|
+| BR-SOS-01 | Chỉ người dùng đã đăng nhập hoặc Guest (có tên + SĐT + ảnh) mới được gửi SOS | SOS |
+| BR-SOS-02 | Guest bắt buộc có ít nhất 1 ảnh đính kèm | SOS |
+| BR-SOS-05 | Rate limit: Guest tối đa 3 SOS / 10 phút / IP | SOS |
+| BR-SOS-07 | Người dân có thể tự hủy SOS trừ khi đội đã ON_SITE | SOS |
+| BR-SOS-08 | Khi SOS RESOLVED/CANCELLED → tự động giảm activeCasesCount đội | SOS |
+| BR-DISPATCH-01 | Chỉ đội AVAILABLE hoặc STANDBY được dispatch | Dispatch |
+| BR-DISPATCH-02 | Score = distance×0.5 + active_cases×0.3 + skill_mismatch×0.2 | Dispatch |
+| BR-DISPATCH-05 | teamType phải khớp sosRequestType | Dispatch |
+| BR-DISPATCH-06 | Reassign tự động cập nhật activeCases đội cũ và mới | Dispatch |
+| BR-DISPATCH-07 | Expanding radius: 5km → 10km → 20km → 40km → Alert Admin | Dispatch |
+| BR-DISPATCH-08 | Đội ngoài tỉnh không được dispatch (multi-tenant) | Dispatch |
+| BR-UPLOAD-01 | Chỉ chấp nhận image/jpeg, image/png, image/gif, image/webp, application/pdf | Upload |
+| BR-UPLOAD-02 | Giới hạn 10MB mỗi file | Upload |
+| BR-UPLOAD-03 | Upload thẳng lên Cloudflare R2 qua in-memory stream | Upload |
+| BR-UPLOAD-04 | Tên file: folder/Date.now()-randomPart.ext | Upload |
+
+---
+
+## 7. 🔄 SOS State Machine
+
+Vong đời của một yêu cầu SOS:
+
+```
+CREATED
+  │
+  ▼
+PENDING_DISPATCH  ← Đang tìm đội (Spatial NNS đang chạy)
+  │
+  ├─── Không tìm được đội ──► PENDING_DISPATCH (alert Admin → manual dispatch)
+  │
+  ▼
+TEAM_ASSIGNED  ← Đội được assign, chưa di chuyển
+  │              Socket emit: team:assigned đến Rescue Team
+  ▼
+TEAM_MOVING    ← Đội đang trên đưỜng tới
+  │              Socket broadcast: sos:status-updated đến Admin
+  ▼
+RESCUING       ← Đội đã tới hiện trường
+  │
+  ▼
+RESCUED        ← Nạn nhân được cứu
+  │
+  ▼
+COMPLETED      ← Nhiệm vụ hoàn tất, activeCasesCount giảm
+  │
+  └─── (bất kỳ state nào, trừ ON_SITE) ──► CANCELLED
+```
+
+---
+
+## 8. 🌐 WebSocket Events Catalogue
+
+### Namespace `/dispatch` (Diều phối cứu hộ)
+
+| Event | Hướng | Mô tả | Người nhận |
+|-------|--------|---------|------------|
+| `sos:created` | Server → Client | SOS mới được tạo | Admin tỉnh |
+| `sos:status-updated` | Server → Client | Trạng thái SOS thay đổi | Admin tỉnh |
+| `sos:no-team-available` | Server → Client | Không tìm được đội | Admin tỉnh |
+| `sos:assigned` | Server → Client | Được phân công nhiệm vụ | Rescue Team |
+| `sos:reassigned` | Server → Client | Nhiệm vụ bị chuyển giao | Rescue Team |
+| `join:province` | Client → Server | Admin join room tỉnh | — |
+| `join:team` | Client → Server | Rescue team join room đội | — |
+| `team:update-location` | Client → Server | Cập nhật GPS đội | — |
+
+### Namespace `/notification` (Push notification)
+
+| Event | Hướng | Mô tả | Người nhận |
+|-------|--------|---------|------------|
+| `notification:push` | Server → Client | Push notification đến user | User cụ thể |
+| `notification:badge` | Server → Client | Cập nhật badge count | User cụ thể |
+| `notification:mark-read` | Client → Server | Đánh dấu đã đọc | — |

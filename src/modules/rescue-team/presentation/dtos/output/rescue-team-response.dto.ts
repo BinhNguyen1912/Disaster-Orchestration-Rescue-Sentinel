@@ -16,6 +16,7 @@ export class RescueTeamResponseDto {
   createdBy: number;
   createdAt: Date;
   updatedAt: Date;
+  logoUrl?: string;
 
   static fromEntity(entity: any): RescueTeamResponseDto {
     const dto = new RescueTeamResponseDto();
@@ -36,6 +37,7 @@ export class RescueTeamResponseDto {
     dto.createdBy = entity.createdBy;
     dto.createdAt = entity.createdAt;
     dto.updatedAt = entity.updatedAt;
+    dto.logoUrl = entity.logoUrl;
     return dto;
   }
 }

@@ -18,6 +18,7 @@ export interface RescueTeam {
   leaderId?: number;
   leaderCitizenName?: string;
   leaderPhone?: string;
+  logoUrl?: string | null;
   totalMissions: number;
   totalRescued: number;
   totalHoursActive: number;

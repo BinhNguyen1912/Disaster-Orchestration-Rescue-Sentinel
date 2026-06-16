@@ -49,4 +49,11 @@ export const APP_MESSAGES = {
     ADMIN_UNIT_NOT_IN_PROVINCE:
       'Đơn vị hành chính không thuộc tỉnh/thành phố đã chọn',
   },
+  UPLOAD: {
+    UPLOAD_ERROR_SELECT_FILE: 'Vui lòng chọn tệp tin cần tải lên.',
+    UPLOAD_ERROR_FILE_TYPE: 'Định dạng tệp tin không được hỗ trợ.',
+    UPLOAD_ERROR_MAX_SIZE: 'Tệp tin vượt quá kích thước tối đa.',
+    UPLOAD_SUCCESS: 'Tải tệp lên thành công',
+
+  }
 } as const;

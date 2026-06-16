@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { RescueTeamService } from './rescue-team.service';
 import { TeamType } from '@shared/core/enums/teamType.enum';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
+import { ConfigService } from '@nestjs/config';
 
 describe('RescueTeamService', () => {
   let service: RescueTeamService;
@@ -28,6 +29,18 @@ describe('RescueTeamService', () => {
     findById: jest.fn(),
   };
 
+  const mockConfigService = {
+    get: jest.fn((key: string) => {
+      const keys: Record<string, string> = {
+        DEFAULT_LOGO_PCCC: 'pccc-logo-url',
+        DEFAULT_LOGO_YTE: 'yte-logo-url',
+        DEFAULT_LOGO_VOLUNTEER: 'volunteer-logo-url',
+        DEFAULT_LOGO_GENERAL: 'general-logo-url',
+      };
+      return keys[key];
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -36,6 +49,7 @@ describe('RescueTeamService', () => {
         { provide: 'ITeamSpecializationRepository', useValue: mockSpecRepo },
         { provide: 'IProvinceRepository', useValue: mockProvinceRepo },
         { provide: 'IWardRepository', useValue: mockWardRepo },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
@@ -82,6 +96,65 @@ describe('RescueTeamService', () => {
         createdBy: 1,
         specializations: [],
       });
+    });
+
+    it('should create team successfully and keep custom logoUrl if provided', async () => {
+      const customDto = { ...validDto, logoUrl: 'custom-logo-url' };
+      const createdTeam = {
+        id: 1,
+        ...customDto,
+        activeCasesCount: 0,
+        totalMissions: 0,
+      };
+      mockTeamRepo.create.mockResolvedValue(createdTeam);
+
+      const result = await service.create(customDto, 1);
+
+      expect(result.logoUrl).toBe('custom-logo-url');
+    });
+
+    it('should create team successfully and fallback to PCCC logo if none provided', async () => {
+      const createdTeam = {
+        id: 1,
+        ...validDto,
+        activeCasesCount: 0,
+        totalMissions: 0,
+      };
+      mockTeamRepo.create.mockResolvedValue(createdTeam);
+
+      const result = await service.create(validDto, 1);
+
+      expect(result.logoUrl).toBe('pccc-logo-url');
+    });
+
+    it('should create team successfully and fallback to volunteer logo if type is TINH_NGUYEN', async () => {
+      const volunteerDto = { ...validDto, teamType: TeamType.TINH_NGUYEN };
+      const createdTeam = {
+        id: 1,
+        ...volunteerDto,
+        activeCasesCount: 0,
+        totalMissions: 0,
+      };
+      mockTeamRepo.create.mockResolvedValue(createdTeam);
+
+      const result = await service.create(volunteerDto, 1);
+
+      expect(result.logoUrl).toBe('volunteer-logo-url');
+    });
+
+    it('should create team successfully and fallback to general logo if type is other', async () => {
+      const otherDto = { ...validDto, teamType: TeamType.QUAN_SU };
+      const createdTeam = {
+        id: 1,
+        ...otherDto,
+        activeCasesCount: 0,
+        totalMissions: 0,
+      };
+      mockTeamRepo.create.mockResolvedValue(createdTeam);
+
+      const result = await service.create(otherDto, 1);
+
+      expect(result.logoUrl).toBe('general-logo-url');
     });
 
     it('should throw BadRequestException when province not found', async () => {
@@ -182,6 +255,15 @@ describe('RescueTeamService', () => {
       expect(result).toEqual(team);
     });
 
+    it('should return team with logoUrl populated from fallback if database logoUrl is null', async () => {
+      const team = { id: 1, name: 'Team Alpha', teamType: TeamType.Y_TE, logoUrl: null };
+      mockTeamRepo.findById.mockResolvedValue(team);
+
+      const result = await service.findById(1);
+
+      expect(result.logoUrl).toBe('yte-logo-url');
+    });
+
     it('should throw NotFoundException when team not found', async () => {
       mockTeamRepo.findById.mockResolvedValue(null);
 
@@ -209,6 +291,24 @@ describe('RescueTeamService', () => {
         {},
         { page: 1, limit: 20 },
       );
+    });
+
+    it('should return paginated results with logoUrl fallback applied to all teams', async () => {
+      const paginatedResult = {
+        items: [
+          { id: 1, teamType: TeamType.PCCC, logoUrl: null },
+          { id: 2, teamType: TeamType.Y_TE, logoUrl: 'custom-url' },
+        ],
+        total: 2,
+        page: 1,
+        limit: 20,
+      };
+      mockTeamRepo.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await service.findAll({}, { page: 1, limit: 20 });
+
+      expect(result.items[0].logoUrl).toBe('pccc-logo-url');
+      expect(result.items[1].logoUrl).toBe('custom-url');
     });
   });
 
