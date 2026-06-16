@@ -21,19 +21,25 @@ services:
       timeout: 5s
       retries: 5
   # === Redis (Cache + BullMQ) ===
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: rescue-redis
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis_data:/data
-  #   healthcheck:
-  #     test: [ "CMD", "redis-cli", "ping" ]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  ## Thuộc tính restart,Khi Container bị lỗi (Crash / Exit code = 0),Khi Docker Daemon / Server bị restart,Nếu bạn chủ động chạy docker stop trước đó
+  ## no (Mặc định),  Không khởi động lại, Không khởi động lại, Không
+  ## on-failure, Tự khởi động lại, Không (Trừ khi lúc server sập container đang lỗi), Không
+  ## always, Tự khởi động lại, Tự khởi động lại, Vẫn tự khởi động lại khi Server restart
+  ## unless-stopped, Tự khởi động lại, Tự khởi động lại, Không khởi động lại
+  redis:
+    image: redis:7-alpine
+    container_name: rescue-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_data: # redis_data:
+  postgres_data:
+  redis_data:

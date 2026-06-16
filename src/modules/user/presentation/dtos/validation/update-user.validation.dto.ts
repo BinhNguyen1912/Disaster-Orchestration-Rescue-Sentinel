@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsInt } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateUserValidationDto {
@@ -36,4 +36,9 @@ export class UpdateUserValidationDto {
   @IsOptional()
   @IsString()
   addressDetail?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  roleId?: number;
 }

@@ -24,7 +24,14 @@ import { NotificationSocketService } from './services/notification-socket.servic
  *   2. Tạo service mới trong services/
  *   3. Thêm vào providers và exports ở đây
  */
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DeviceEntity } from '@infrastructure/database/entities/device.entity';
+import { NotificationEntity } from '@infrastructure/database/entities/notification.entity';
+
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([DeviceEntity, NotificationEntity]),
+  ],
   providers: [
     // Gateways (không export — chỉ dùng nội bộ để init)
     DispatchGateway,

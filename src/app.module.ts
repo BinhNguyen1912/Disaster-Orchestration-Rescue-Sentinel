@@ -11,6 +11,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 import { LoggerMiddleware } from '@shared/common/middlewares/logger.middleware';
 import { DatabaseModule } from '@infrastructure/database/database.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { HealthModule } from '@modules/health/health.module';
 import { RescueTeamModule } from '@modules/rescue-team/rescue-team.module';
@@ -42,6 +43,7 @@ export class AppController {
       isGlobal: true,
     }),
     DatabaseModule,
+    RedisModule,
     AuthModule,
     HealthModule,
     RescueTeamModule,

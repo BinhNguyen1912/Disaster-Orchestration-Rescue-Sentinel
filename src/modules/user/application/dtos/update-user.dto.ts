@@ -7,4 +7,5 @@ export interface UpdateUserDto {
   nationalIdBackUrl?: string;
   addressDetail?: string;
   homeLocation?: any;
+  roleId?: number;
 }

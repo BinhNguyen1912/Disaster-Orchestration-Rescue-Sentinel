@@ -49,15 +49,25 @@ export class DispatchGateway
     const role = client.handshake.query['role'];
 
     if (provinceId) {
+      (client as any).provinceId = provinceId;
       client.join(`province:${provinceId}`);
-      this.logger.log(`⚡ [${client.id}] joined province:${provinceId} (role=${role})`);
+      this.logger.log(
+        `🟢 [CONNECT] (Dispatch) Socket ID: ${client.id} | Province ID: ${provinceId} | Role: ${role} joined room province:${provinceId}`,
+      );
     } else {
-      this.logger.log(`⚡ [${client.id}] connected (no province)`);
+      this.logger.log(`🟢 [CONNECT] (Dispatch) Socket ID: ${client.id} connected with no province scope`);
     }
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`🔌 [${client.id}] disconnected from /dispatch`);
+    const provinceId = (client as any).provinceId;
+    if (provinceId) {
+      this.logger.log(
+        `🔴 [DISCONNECT] (Dispatch) Socket ID: ${client.id} | Province ID: ${provinceId} disconnected`,
+      );
+    } else {
+      this.logger.log(`🔴 [DISCONNECT] (Dispatch) Socket ID: ${client.id} disconnected`);
+    }
   }
 
   /**

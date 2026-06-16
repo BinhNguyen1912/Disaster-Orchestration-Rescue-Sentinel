@@ -58,4 +58,21 @@ export class AdminRegisterDto {
   @IsInt()
   @Min(1)
   roleId: number;
+
+  @ApiPropertyOptional({
+    example: 2,
+    description: 'ID đơn vị hành chính cấp xã/phường',
+  })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  adminUnitId?: number;
+
+  @ApiPropertyOptional({
+    example: '123 Đường ABC',
+    description: 'Địa chỉ chi tiết',
+  })
+  @IsString()
+  @IsOptional()
+  addressDetail?: string;
 }

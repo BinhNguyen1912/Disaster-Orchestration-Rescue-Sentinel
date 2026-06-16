@@ -31,11 +31,13 @@ export class PermissionGuard implements CanActivate {
     const user = request.user;
 
     if (!user?.roleId) {
+      console.log('PermissionGuard: user has no roleId, passing through');
       return true;
     }
 
     const userPermissions =
       await this.permissionRepository.findPermissionNamesByRoleId(user.roleId);
+    console.log(`PermissionGuard: roleId = ${user.roleId}, userPermissions =`, userPermissions, `required =`, requiredPermissions);
 
     const hasAllPermissions = requiredPermissions.every((perm) =>
       userPermissions.includes(perm),

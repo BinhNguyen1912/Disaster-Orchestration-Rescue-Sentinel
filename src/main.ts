@@ -1,14 +1,16 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { IoAdapter } from '@nestjs/platform-socket.io';
+import { RedisIoAdapter } from './modules/websocket/adapters/redis-io.adapter';
 import { ClassSerializerInterceptor } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // WebSocket adapter — bắt buộc để Socket.io hoạt động
-  app.useWebSocketAdapter(new IoAdapter(app));
+  // WebSocket adapter — sử dụng Redis Adapter để đồng bộ hóa các instances
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   app.enableCors({
     origin: '*',

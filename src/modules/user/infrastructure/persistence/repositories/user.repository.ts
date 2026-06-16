@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
+import { UserRoleEntity } from '@infrastructure/database/entities/user-role.entity';
 import {
   IUserRepository,
   QueryUserParams,
@@ -103,13 +104,49 @@ export class UserRepositoryImpl implements IUserRepository {
     return (await this.repo.save(user)) as unknown as User;
   }
 
-  async update(id: number, data: Partial<User>): Promise<User | null> {
+  async update(id: number, data: Partial<User> & { roleId?: number }): Promise<User | null> {
     const existing = await this.repo.findOne({
       where: { id, deletedAt: IsNull() },
     });
     if (!existing) return null;
-    Object.assign(existing, data);
-    return await this.repo.save(existing);
+    
+    const { roleId, ...userData } = data;
+    Object.assign(existing, userData);
+    await this.repo.save(existing);
+
+    if (roleId !== undefined) {
+      const userRoleRepo = this.repo.manager.getRepository(UserRoleEntity);
+      const activeRole = await userRoleRepo.findOne({
+        where: { userId: id, isActive: true },
+      });
+
+      if (activeRole) {
+        let changed = false;
+        if (activeRole.roleId !== roleId) {
+          activeRole.roleId = roleId;
+          activeRole.assignedAt = new Date();
+          changed = true;
+        }
+        if (activeRole.provinceId !== existing.provinceId) {
+          activeRole.provinceId = existing.provinceId;
+          changed = true;
+        }
+        if (changed) {
+          await userRoleRepo.save(activeRole);
+        }
+      } else {
+        const newRole = userRoleRepo.create({
+          userId: id,
+          roleId: roleId,
+          provinceId: existing.provinceId || 1,
+          isActive: true,
+          assignedAt: new Date(),
+        });
+        await userRoleRepo.save(newRole);
+      }
+    }
+
+    return this.findById(id);
   }
 
   async softDelete(id: number): Promise<boolean> {

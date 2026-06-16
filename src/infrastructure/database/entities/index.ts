@@ -26,3 +26,5 @@ export * from './team-specialization.entity';
 export * from './user-role.entity';
 export * from './user.entity';
 export * from './weather-alert.entity';
+export * from './notification.entity';
+

@@ -496,6 +496,14 @@ async function bootstrap() {
   let createdCount = 0;
   let skippedCount = 0;
 
+  // Query valid adminUnitIds for this province from database
+  const adminUnits = await dataSource.query(
+    'SELECT id FROM administrative_unit WHERE "provinceId" = $1',
+    [PROVINCE_ID],
+  );
+  const validAdminUnitIds = adminUnits.map((row: any) => row.id);
+  console.log(`🔑 Found ${validAdminUnitIds.length} valid administrative units for provinceId = ${PROVINCE_ID}`);
+
   for (const userData of mockUsers) {
     const existing = await userRepo.findOne({
       where: { nationalId: userData.nationalId },
@@ -509,14 +517,20 @@ async function bootstrap() {
 
     const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
 
+    // Dynamically assign a valid adminUnitId if units exist for this province
+    const assignedAdminUnitId = validAdminUnitIds.length > 0
+      ? validAdminUnitIds[createdCount % validAdminUnitIds.length]
+      : null;
+
     const user = userRepo.create({
       ...userData,
       password: hashedPassword,
+      adminUnitId: assignedAdminUnitId,
     });
 
     await userRepo.save(user);
     console.log(
-      `  ✅ Created: ${userData.fullName} | adminUnitId=${userData.adminUnitId}`,
+      `  ✅ Created: ${userData.fullName} | adminUnitId=${assignedAdminUnitId}`,
     );
     createdCount++;
   }
