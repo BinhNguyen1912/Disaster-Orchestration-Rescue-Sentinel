@@ -36,4 +36,15 @@ export class UpdateRescueTeamValidationDto {
   @IsOptional()
   @IsString()
   logoUrl?: string;
+
+  @IsOptional()
+  @IsNumber()
+  provinceId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  adminUnitId?: number;
+
+  @IsOptional()
+  baseLocation?: { type: 'Point'; coordinates: [number, number] };
 }

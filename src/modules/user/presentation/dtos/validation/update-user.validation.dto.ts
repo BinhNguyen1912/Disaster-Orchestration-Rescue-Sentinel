@@ -41,4 +41,14 @@ export class UpdateUserValidationDto {
   @IsOptional()
   @IsInt()
   roleId?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  dateOfBirth?: string;
 }

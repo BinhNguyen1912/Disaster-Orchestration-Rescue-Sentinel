@@ -147,7 +147,7 @@ export const ROLE_PERMISSION_MATRIX: Record<
     [PermModule.FLOOD]: ActionSet.CRUD_VERIFY,
     [PermModule.DISASTER]: ActionSet.MANAGE_READ,
     [PermModule.DONATION]: ActionSet.MANAGE_READ,
-    [PermModule.USER]: ActionSet.MANAGE_READ,
+    [PermModule.USER]: ActionSet.ALL,
     [PermModule.REPORT]: ActionSet.READ_ONLY,
     [PermModule.ALERT]: ActionSet.MANAGE_READ,
     [PermModule.MESSAGE]: ActionSet.MANAGE_READ,

@@ -9,4 +9,7 @@ export interface UpdateRescueTeamDto {
   maxCapacity?: number;
   specializationIds?: number[];
   logoUrl?: string;
+  provinceId?: number;
+  adminUnitId?: number;
+  baseLocation?: { type: 'Point'; coordinates: [number, number] };
 }

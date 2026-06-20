@@ -27,4 +27,5 @@ export * from './user-role.entity';
 export * from './user.entity';
 export * from './weather-alert.entity';
 export * from './notification.entity';
-
+export * from './system-setting.entity';
+export * from './system-category.entity';

@@ -5,6 +5,7 @@ import {
   IsInt,
   IsBoolean,
 } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateRoleValidationDto {
   @IsString()
@@ -56,6 +57,8 @@ export class UpdateRoleValidationDto {
 
 export class QueryRoleValidationDto {
   @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   isActive?: boolean;
 
   @IsOptional()
@@ -63,10 +66,12 @@ export class QueryRoleValidationDto {
   search?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   page?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   limit?: number;
 }

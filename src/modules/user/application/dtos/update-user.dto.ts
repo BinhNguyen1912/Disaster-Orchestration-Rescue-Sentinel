@@ -8,4 +8,6 @@ export interface UpdateUserDto {
   addressDetail?: string;
   homeLocation?: any;
   roleId?: number;
+  gender?: string;
+  dateOfBirth?: string;
 }

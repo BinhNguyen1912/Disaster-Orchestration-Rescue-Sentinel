@@ -10,4 +10,6 @@ export interface AdminRegisterDto {
   gender: Gender;
   provinceId: number;
   roleId: number;
+  adminUnitId?: number;
+  addressDetail?: string;
 }

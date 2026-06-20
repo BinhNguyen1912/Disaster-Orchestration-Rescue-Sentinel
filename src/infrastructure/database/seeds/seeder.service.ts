@@ -6,6 +6,8 @@ import { RoleEntity } from '../entities/role.entity';
 import { UserEntity } from '../entities/user.entity';
 import { UserRoleEntity } from '../entities/user-role.entity';
 import { TeamSpecializationEntity } from '../entities/team-specialization.entity';
+import { SystemSettingEntity } from '../entities/system-setting.entity';
+import { SystemCategoryEntity } from '../entities/system-category.entity';
 import { TeamType } from '@shared/core/enums/teamType.enum';
 import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
@@ -26,6 +28,10 @@ export class SeederService {
     private readonly userRoleRepo: Repository<UserRoleEntity>,
     @InjectRepository(TeamSpecializationEntity)
     private readonly specRepo: Repository<TeamSpecializationEntity>,
+    @InjectRepository(SystemSettingEntity)
+    private readonly settingRepo: Repository<SystemSettingEntity>,
+    @InjectRepository(SystemCategoryEntity)
+    private readonly categoryRepo: Repository<SystemCategoryEntity>,
   ) {}
 
   async seed() {
@@ -34,6 +40,8 @@ export class SeederService {
     await this.seedRoles();
     await this.seedTeamSpecializations();
     await this.seedAdmins();
+    await this.seedSettings();
+    await this.seedCategories();
     this.logger.log('Database seeding completed successfully.');
   }
 
@@ -259,6 +267,389 @@ export class SeederService {
         this.logger.debug(
           `Assigned role ${roleName} to ${userData.email} in province ${provinceCode}`,
         );
+      }
+    }
+  }
+
+  private async seedSettings() {
+    this.logger.log('Seeding System Settings...');
+    const defaultSettings = [
+      {
+        key: 'system.name',
+        value: 'Cứu hộ Việt Nam',
+        group: 'general',
+        description: 'Tên hiển thị của hệ thống',
+      },
+      {
+        key: 'system.code',
+        value: 'RESCUE-VN',
+        group: 'general',
+        description: 'Mã định danh hệ thống',
+      },
+      {
+        key: 'system.description',
+        value: 'Hệ thống quản lý cứu hộ và ứng phó thiên tai',
+        group: 'general',
+        description: 'Mô tả ngắn của hệ thống',
+      },
+      {
+        key: 'system.language',
+        value: 'vi',
+        group: 'general',
+        description: 'Ngôn ngữ mặc định',
+      },
+      {
+        key: 'system.timezone',
+        value: 'GMT+7',
+        group: 'general',
+        description: 'Múi giờ mặc định',
+      },
+      {
+        key: 'system.date_format',
+        value: 'DD/MM/YYYY',
+        group: 'general',
+        description: 'Định dạng ngày hiển thị',
+      },
+      {
+        key: 'system.time_format',
+        value: '24h',
+        group: 'general',
+        description: 'Định dạng giờ hiển thị',
+      },
+      {
+        key: 'system.page_size',
+        value: '20',
+        group: 'general',
+        description: 'Số bản ghi hiển thị mặc định',
+      },
+      {
+        key: 'system.logo',
+        value: 'logo.png',
+        group: 'general',
+        description: 'Tệp logo thương hiệu',
+      },
+      {
+        key: 'system.favicon',
+        value: 'favicon.ico',
+        group: 'general',
+        description: 'Tệp favicon',
+      },
+      {
+        key: 'system.copyright',
+        value: '© 2026 Cứu Hộ Việt Nam. All rights reserved.',
+        group: 'general',
+        description: 'Thông tin bản quyền dưới chân trang',
+      },
+      {
+        key: 'system.website',
+        value: 'https://cuuhovietnam.gov.vn',
+        group: 'general',
+        description: 'Trang thông tin chính thức',
+      },
+      {
+        key: 'system.support_email',
+        value: 'support@cuuhovietnam.gov.vn',
+        group: 'general',
+        description: 'Email hỗ trợ kỹ thuật',
+      },
+      {
+        key: 'system.support_hotline',
+        value: '1900 1234',
+        group: 'general',
+        description: 'Hotline tổng đài chi viện',
+      },
+
+      {
+        key: 'auth.password.min_length',
+        value: '8',
+        group: 'security',
+        description: 'Độ dài mật khẩu tối thiểu',
+      },
+      {
+        key: 'auth.lockout_duration',
+        value: '15m',
+        group: 'security',
+        description: 'Thời gian khóa tài khoản tạm thời',
+      },
+      {
+        key: 'auth.max_attempts',
+        value: '5',
+        group: 'security',
+        description: 'Số lần đăng nhập sai tối đa',
+      },
+      {
+        key: 'auth.allow_concurrent',
+        value: 'true',
+        group: 'security',
+        description: 'Cho phép đăng nhập đồng thời nhiều thiết bị',
+      },
+      {
+        key: 'auth.enable_2fa',
+        value: 'false',
+        group: 'security',
+        description: 'Bắt buộc xác thực hai bước',
+      },
+
+      {
+        key: 'sos.expiry_time',
+        value: '120',
+        group: 'sos',
+        description: 'Thời gian yêu cầu SOS hết hạn (phút)',
+      },
+      {
+        key: 'sos.search_radius',
+        value: '15',
+        group: 'sos',
+        description: 'Bán kính tìm kiếm đội cứu hộ xung quanh (km)',
+      },
+      {
+        key: 'sos.retry_count',
+        value: '3',
+        group: 'sos',
+        description: 'Số lần tự động gửi lại tín hiệu',
+      },
+      {
+        key: 'sos.auto_close',
+        value: 'true',
+        group: 'sos',
+        description: 'Tự động đóng sự cố SOS sau khi hoàn thành',
+      },
+      {
+        key: 'sos.allow_hardware',
+        value: 'true',
+        group: 'sos',
+        description: 'Cho phép SOS từ nút ấn khẩn cấp cứng',
+      },
+      {
+        key: 'sos.allow_app',
+        value: 'true',
+        group: 'sos',
+        description: 'Cho phép phát SOS từ app di động',
+      },
+
+      {
+        key: 'dispatch.max_teams',
+        value: '3',
+        group: 'sos',
+        description: 'Số đội cứu hộ tối đa tham gia xử lý 1 sự cố',
+      },
+      {
+        key: 'dispatch.prioritize_nearest',
+        value: 'true',
+        group: 'sos',
+        description: 'Ưu tiên đội gần nhất',
+      },
+      {
+        key: 'dispatch.prioritize_specialty',
+        value: 'true',
+        group: 'sos',
+        description: 'Ưu tiên đội theo chuyên môn phù hợp sự cố',
+      },
+      {
+        key: 'dispatch.allow_inter_province',
+        value: 'false',
+        group: 'sos',
+        description: 'Cho phép điều động đội liên tỉnh',
+      },
+
+      {
+        key: 'severity.critical',
+        value: '15',
+        group: 'sos',
+        description: 'Thời gian phản hồi SLA khẩn cấp cao (phút)',
+      },
+      {
+        key: 'severity.high',
+        value: '30',
+        group: 'sos',
+        description: 'Thời gian phản hồi SLA mức cao (phút)',
+      },
+      {
+        key: 'severity.medium',
+        value: '60',
+        group: 'sos',
+        description: 'Thời gian phản hồi SLA trung bình (phút)',
+      },
+      {
+        key: 'severity.low',
+        value: '120',
+        group: 'sos',
+        description: 'Thời gian phản hồi SLA mức thấp (phút)',
+      },
+
+      {
+        key: 'map.coordinate_system',
+        value: 'EPSG:4326',
+        group: 'map',
+        description: 'Hệ tọa độ hiển thị bản đồ số',
+      },
+      {
+        key: 'map.provider',
+        value: 'OpenStreetMap',
+        group: 'map',
+        description: 'Nhà cung cấp bản đồ nền',
+      },
+      {
+        key: 'map.update_frequency',
+        value: '15',
+        group: 'map',
+        description: 'Tần suất cập nhật tọa độ GPS trực tuyến (giây)',
+      },
+      {
+        key: 'map.auto_refresh',
+        value: 'true',
+        group: 'map',
+        description: 'Tự động làm mới bản đồ khi có định vị mới',
+      },
+
+      {
+        key: 'geofence.enable',
+        value: 'true',
+        group: 'map',
+        description: 'Bật hàng rào địa lý cảnh báo',
+      },
+      {
+        key: 'geofence.warning_radius',
+        value: '500',
+        group: 'map',
+        description: 'Bán kính geofence cảnh báo nguy hiểm (mét)',
+      },
+      {
+        key: 'geofence.breach_distance',
+        value: '100',
+        group: 'map',
+        description: 'Khoảng cách geofence vượt vùng an toàn (mét)',
+      },
+    ];
+
+    for (const setting of defaultSettings) {
+      const exists = await this.settingRepo.findOne({
+        where: { key: setting.key },
+      });
+      if (!exists) {
+        await this.settingRepo.save(this.settingRepo.create(setting));
+        this.logger.debug(`Seeded system setting: ${setting.key}`);
+      }
+    }
+  }
+
+  private async seedCategories() {
+    this.logger.log('Seeding System Categories...');
+    const defaultCategories = [
+      // Rescue Team Types
+      {
+        type: 'RESCUE_TEAM_TYPE',
+        code: 'MILITARY',
+        name: 'Lực lượng quân đội chi viện',
+        orderIndex: 1,
+      },
+      {
+        type: 'RESCUE_TEAM_TYPE',
+        code: 'VOLUNTEER_GROUP',
+        name: 'Đoàn tình nguyện tự phát',
+        orderIndex: 2,
+      },
+      {
+        type: 'RESCUE_TEAM_TYPE',
+        code: 'LOCAL_CIVILIAN',
+        name: 'Đội tự quản dân phòng cấp xã',
+        orderIndex: 3,
+      },
+      {
+        type: 'RESCUE_TEAM_TYPE',
+        code: 'RED_CROSS',
+        name: 'Hội chữ thập đỏ',
+        orderIndex: 4,
+      },
+
+      // Mission Types
+      {
+        type: 'MISSION_TYPE',
+        code: 'EVACUATION',
+        name: 'Di dời dân cư vùng lũ quét',
+        orderIndex: 1,
+      },
+      {
+        type: 'MISSION_TYPE',
+        code: 'SUPPLY_DELIVERY',
+        name: 'Vận chuyển nhu yếu phẩm tế trợ',
+        orderIndex: 2,
+      },
+      {
+        type: 'MISSION_TYPE',
+        code: 'MEDICAL_SUPPORT',
+        name: 'Cứu thương & hỗ trợ sơ tán y tế',
+        orderIndex: 3,
+      },
+      {
+        type: 'MISSION_TYPE',
+        code: 'SEARCH_RESCUE',
+        name: 'Tìm kiếm cứu hộ đường thủy',
+        orderIndex: 4,
+      },
+
+      // Vehicle Types
+      {
+        type: 'VEHICLE_TYPE',
+        code: 'MOTORBOAT',
+        name: 'Xuồng cao tốc có động cơ',
+        orderIndex: 1,
+      },
+      {
+        type: 'VEHICLE_TYPE',
+        code: 'RUBBER_BOAT',
+        name: 'Xuồng cao su chèo tay',
+        orderIndex: 2,
+      },
+      {
+        type: 'VEHICLE_TYPE',
+        code: 'AMBULANCE',
+        name: 'Xe cứu thương chuyên dụng',
+        orderIndex: 3,
+      },
+      {
+        type: 'VEHICLE_TYPE',
+        code: 'TRUCK_HEAVY',
+        name: 'Xe tải lội nước gầm cao',
+        orderIndex: 4,
+      },
+
+      // Equipment Types
+      {
+        type: 'EQUIPMENT_TYPE',
+        code: 'LIFE_VEST',
+        name: 'Áo phao cứu sinh tiêu chuẩn',
+        orderIndex: 1,
+      },
+      {
+        type: 'EQUIPMENT_TYPE',
+        code: 'LIFE_BUOY',
+        name: 'Pao tròn cứu sinh cứu nạn',
+        orderIndex: 2,
+      },
+      {
+        type: 'EQUIPMENT_TYPE',
+        code: 'FLASHLIGHT',
+        name: 'Đèn pin siêu sáng chống nước',
+        orderIndex: 3,
+      },
+      {
+        type: 'EQUIPMENT_TYPE',
+        code: 'ROPE_HEAVY',
+        name: 'Dây thừng kéo cứu sinh chịu lực',
+        orderIndex: 4,
+      },
+    ];
+
+    for (const cat of defaultCategories) {
+      const exists = await this.categoryRepo.findOne({
+        where: { code: cat.code },
+      });
+      if (!exists) {
+        await this.categoryRepo.save(
+          this.categoryRepo.create({ ...cat, isActive: true }),
+        );
+        this.logger.debug(`Seeded category dictionary: ${cat.code}`);
       }
     }
   }

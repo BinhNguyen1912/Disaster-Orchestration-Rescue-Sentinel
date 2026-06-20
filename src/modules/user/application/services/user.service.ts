@@ -48,7 +48,11 @@ export class UserService implements IUserService {
   }
 
   async updateProfile(userId: number, dto: UpdateUserDto): Promise<User> {
-    const user = await this.userRepo.update(userId, dto);
+    const updateData: any = { ...dto };
+    if (dto.dateOfBirth) {
+      updateData.dateOfBirth = new Date(dto.dateOfBirth);
+    }
+    const user = await this.userRepo.update(userId, updateData);
     if (!user) {
       throw new NotFoundException(APP_MESSAGES.USER.USER_NOT_FOUND);
     }
@@ -75,7 +79,12 @@ export class UserService implements IUserService {
       }
     }
 
-    const updated = await this.userRepo.update(id, dto);
+    const updateData: any = { ...dto };
+    if (dto.dateOfBirth) {
+      updateData.dateOfBirth = new Date(dto.dateOfBirth);
+    }
+
+    const updated = await this.userRepo.update(id, updateData);
     return updated!;
   }
 

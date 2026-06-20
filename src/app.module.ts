@@ -23,6 +23,7 @@ import { UserModule } from './modules/user/user.module';
 import { SosRequestModule } from './modules/sos-request/sos-request.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
+import { SystemSettingModule } from './modules/system-setting/system-setting.module';
 import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
 import { Public } from '@shared/common/decorators/public.decorator';
@@ -55,6 +56,7 @@ export class AppController {
     SosRequestModule,
     UploadModule,
     WebSocketModule,
+    SystemSettingModule,
   ],
 
   controllers: [AppController],

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   Inject,
+  OnModuleInit,
 } from '@nestjs/common';
 import type { CreateRescueTeamDto } from '../dtos/create-rescue-team.dto';
 import type { UpdateRescueTeamDto } from '../dtos/update-rescue-team.dto';
@@ -21,9 +22,51 @@ import { RescueTeam } from '../../domain/entities/rescue-team';
 import { APP_MESSAGES } from '@shared/index';
 import { ConfigService } from '@nestjs/config';
 import { TeamType } from '@shared/core/enums/teamType.enum';
+import * as https from 'https';
+
+function fetchCoords(
+  query: string,
+): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    // Remove administrative terms to make Nominatim queries more accurate
+    const cleanedQuery = query
+      .replace(/^(Xã|Phường|Thị trấn|Quận|Huyện|Thành phố|Tỉnh)\s+/gi, '')
+      .replace(/,\s*(Xã|Phường|Thị trấn|Quận|Huyện|Thành phố|Tỉnh)\s+/gi, ', ');
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanedQuery + ', Vietnam')}&limit=1`;
+    const options = {
+      headers: {
+        'User-Agent': 'RescueSystem/1.0',
+      },
+    };
+
+    https
+      .get(url, options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            const results = JSON.parse(data);
+            if (results && results.length > 0) {
+              resolve({
+                lat: parseFloat(results[0].lat),
+                lng: parseFloat(results[0].lon),
+              });
+            } else {
+              resolve(null);
+            }
+          } catch (e) {
+            resolve(null);
+          }
+        });
+        res.on('error', () => resolve(null));
+      })
+      .on('error', () => resolve(null));
+  });
+}
 
 @Injectable()
-export class RescueTeamService implements IRescueTeamService {
+export class RescueTeamService implements IRescueTeamService, OnModuleInit {
   constructor(
     @Inject('IRescueTeamRepository')
     private readonly teamRepo: IRescueTeamRepository,
@@ -72,12 +115,107 @@ export class RescueTeamService implements IRescueTeamService {
       specializations = await this.specRepo.findByIds(dto.specializationIds);
     }
 
+    let baseLocation = dto.baseLocation;
+    if (!baseLocation && adminUnit && province) {
+      const addressQuery = `${adminUnit.name}, ${province.name}`;
+      try {
+        const coords = await fetchCoords(addressQuery);
+        if (coords) {
+          baseLocation = {
+            type: 'Point',
+            coordinates: [coords.lng, coords.lat],
+          };
+        }
+      } catch (e) {
+        console.error('Failed to geocode new team address:', e);
+      }
+    }
+
     const createdTeam = await this.teamRepo.create({
       ...dto,
       createdBy: userId,
       specializations,
+      baseLocation,
+      currentLocation: baseLocation,
     });
     return this.populateLogoFallback(createdTeam);
+  }
+
+  async onModuleInit() {
+    // Run after a short delay to allow server boot to settle
+    setTimeout(() => {
+      this.geocodeMissingTeams().catch((err) => {
+        console.error('Failed to geocode missing teams on startup:', err);
+      });
+    }, 5000);
+  }
+
+  private async geocodeMissingTeams() {
+    console.log('[Geocoding] Checking for rescue teams missing coordinates...');
+    const result = await this.teamRepo.findAll(
+      {},
+      {
+        page: 1,
+        limit: 1000,
+      },
+    );
+    const teams = result.items || [];
+    const missingTeams = teams.filter((t) => !t.baseLocation);
+
+    if (missingTeams.length === 0) {
+      console.log('[Geocoding] All rescue teams have coordinates.');
+      return;
+    }
+
+    console.log(
+      `[Geocoding] Found ${missingTeams.length} teams missing baseLocation. Geocoding...`,
+    );
+
+    for (let i = 0; i < missingTeams.length; i++) {
+      const team = missingTeams[i];
+      const adminUnitName = (team as any).adminUnit?.name || '';
+      const provinceName = (team as any).province?.name || '';
+      if (!adminUnitName && !provinceName) continue;
+
+      const addressQuery = `${adminUnitName}, ${provinceName}`;
+      console.log(
+        `[Geocoding] [${i + 1}/${missingTeams.length}] Geocoding team: ${team.name} using address "${addressQuery}"`,
+      );
+
+      try {
+        const coords = await fetchCoords(addressQuery);
+        if (coords) {
+          await this.teamRepo.update(team.id, {
+            baseLocation: {
+              type: 'Point',
+              coordinates: [coords.lng, coords.lat],
+            },
+            currentLocation: {
+              type: 'Point',
+              coordinates: [coords.lng, coords.lat],
+            },
+          });
+          console.log(
+            `[Geocoding] Successfully updated team ${team.name} to coordinates [${coords.lng}, ${coords.lat}]`,
+          );
+        } else {
+          console.warn(
+            `[Geocoding] Could not find coordinates for: "${addressQuery}"`,
+          );
+        }
+      } catch (err: any) {
+        console.error(
+          `[Geocoding] Error geocoding team ${team.name}:`,
+          err.message,
+        );
+      }
+
+      // Nominatim rate limiting policy is 1 request per second max
+      if (i < missingTeams.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      }
+    }
+    console.log('[Geocoding] Finished geocoding missing teams.');
   }
 
   async findAll(
@@ -89,7 +227,9 @@ export class RescueTeamService implements IRescueTeamService {
       limit: pagination.limit || 20,
     });
     if (result.items) {
-      result.items = result.items.map((team) => this.populateLogoFallback(team));
+      result.items = result.items.map((team) =>
+        this.populateLogoFallback(team),
+      );
     }
     return result;
   }
@@ -103,7 +243,46 @@ export class RescueTeamService implements IRescueTeamService {
   }
 
   async update(id: number, dto: UpdateRescueTeamDto): Promise<RescueTeam> {
-    const team = await this.teamRepo.update(id, dto);
+    const existing = await this.teamRepo.findById(id);
+    if (!existing) {
+      throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
+    }
+
+    let baseLocation = dto.baseLocation;
+
+    // Auto geocode if location fields changed and baseLocation is not explicitly provided
+    const isProvinceChanged =
+      dto.provinceId && dto.provinceId !== existing.provinceId;
+    const isAdminUnitChanged =
+      dto.adminUnitId && dto.adminUnitId !== existing.adminUnitId;
+
+    if ((isProvinceChanged || isAdminUnitChanged) && !baseLocation) {
+      const provinceId = dto.provinceId || existing.provinceId;
+      const adminUnitId = dto.adminUnitId || existing.adminUnitId;
+
+      const province = await this.provinceRepo.findById(provinceId);
+      const adminUnit = await this.wardRepo.findById(adminUnitId);
+
+      if (province && adminUnit) {
+        const addressQuery = `${adminUnit.name}, ${province.name}`;
+        try {
+          const coords = await fetchCoords(addressQuery);
+          if (coords) {
+            baseLocation = {
+              type: 'Point',
+              coordinates: [coords.lng, coords.lat],
+            };
+          }
+        } catch (e) {
+          console.error('Failed to geocode team address on update:', e);
+        }
+      }
+    }
+
+    const team = await this.teamRepo.update(id, {
+      ...dto,
+      ...(baseLocation && { baseLocation, currentLocation: baseLocation }),
+    });
     if (!team) {
       throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
@@ -139,10 +318,13 @@ export class RescueTeamService implements IRescueTeamService {
   private populateLogoFallback(team: RescueTeam): RescueTeam {
     if (!team) return team;
     if (!team.logoUrl) {
-      const pcccLogo = this.configService.get<string>('DEFAULT_LOGO_PCCC') || '';
+      const pcccLogo =
+        this.configService.get<string>('DEFAULT_LOGO_PCCC') || '';
       const yteLogo = this.configService.get<string>('DEFAULT_LOGO_YTE') || '';
-      const volunteerLogo = this.configService.get<string>('DEFAULT_LOGO_VOLUNTEER') || '';
-      const generalLogo = this.configService.get<string>('DEFAULT_LOGO_GENERAL') || '';
+      const volunteerLogo =
+        this.configService.get<string>('DEFAULT_LOGO_VOLUNTEER') || '';
+      const generalLogo =
+        this.configService.get<string>('DEFAULT_LOGO_GENERAL') || '';
 
       team.logoUrl =
         team.teamType === TeamType.PCCC

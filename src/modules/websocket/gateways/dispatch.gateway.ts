@@ -45,8 +45,8 @@ export class DispatchGateway
   }
 
   handleConnection(client: Socket) {
-    const provinceId = client.handshake.query['provinceId'];
-    const role = client.handshake.query['role'];
+    const provinceId = client.handshake.query['provinceId'] as string;
+    const role = client.handshake.query['role'] as string;
 
     if (provinceId) {
       (client as any).provinceId = provinceId;
@@ -55,7 +55,9 @@ export class DispatchGateway
         `🟢 [CONNECT] (Dispatch) Socket ID: ${client.id} | Province ID: ${provinceId} | Role: ${role} joined room province:${provinceId}`,
       );
     } else {
-      this.logger.log(`🟢 [CONNECT] (Dispatch) Socket ID: ${client.id} connected with no province scope`);
+      this.logger.log(
+        `🟢 [CONNECT] (Dispatch) Socket ID: ${client.id} connected with no province scope`,
+      );
     }
   }
 
@@ -66,7 +68,9 @@ export class DispatchGateway
         `🔴 [DISCONNECT] (Dispatch) Socket ID: ${client.id} | Province ID: ${provinceId} disconnected`,
       );
     } else {
-      this.logger.log(`🔴 [DISCONNECT] (Dispatch) Socket ID: ${client.id} disconnected`);
+      this.logger.log(
+        `🔴 [DISCONNECT] (Dispatch) Socket ID: ${client.id} disconnected`,
+      );
     }
   }
 
@@ -79,9 +83,9 @@ export class DispatchGateway
     @MessageBody() data: { teamId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    client.join(`team:${data.teamId}`);
+    void client.join(`team:${data.teamId}`);
     this.logger.log(`⚡ [${client.id}] joined team:${data.teamId}`);
-    client.emit('joined', { room: `team:${data.teamId}` });
+    void client.emit('joined', { room: `team:${data.teamId}` });
   }
 
   /**
@@ -90,7 +94,8 @@ export class DispatchGateway
    */
   @SubscribeMessage(DISPATCH_EVENTS.UPDATE_TEAM_LOCATION)
   handleTeamLocationUpdate(
-    @MessageBody() data: { teamId: number; longitude: number; latitude: number },
+    @MessageBody()
+    data: { teamId: number; longitude: number; latitude: number },
     @ConnectedSocket() client: Socket,
   ) {
     // Broadcast vị trí đội cho admin tỉnh (future: tracking map)

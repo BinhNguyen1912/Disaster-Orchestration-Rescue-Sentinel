@@ -10,6 +10,8 @@ import { UserRoleEntity } from '../entities/user-role.entity';
 import { TeamSpecializationEntity } from '../entities/team-specialization.entity';
 import { PermissionEntity } from '../entities/permission.entity';
 import { RolePermissionEntity } from '../entities/role-permission.entity';
+import { SystemSettingEntity } from '../entities/system-setting.entity';
+import { SystemCategoryEntity } from '../entities/system-category.entity';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -24,6 +26,8 @@ import { ConfigModule } from '@nestjs/config';
       TeamSpecializationEntity,
       PermissionEntity,
       RolePermissionEntity,
+      SystemSettingEntity,
+      SystemCategoryEntity,
     ]),
   ],
   providers: [SeederService, PermissionSeederService],
