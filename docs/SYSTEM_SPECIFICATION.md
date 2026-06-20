@@ -102,11 +102,13 @@ Mỗi module bên trong `modules/` đều được phân chia tối đa theo 4 l
 *   **Mật khẩu & Email OTP**:
     *   Hỗ trợ luồng quên mật khẩu: Người dùng nhập email nhận mã OTP gồm 6 chữ số có thời hạn 5 phút.
     *   Mã OTP được gửi qua SMTP Gmail thực tế nhờ Handlebars template đẹp mắt.
+*   **Đăng ký Admin (2026-06-20)**: Hỗ trợ thêm trường `adminUnitId` (đơn vị hành chính quản lý) và `addressDetail` (địa chỉ chi tiết) khi đăng ký tài khoản quản trị cấp tỉnh.
 
 ### 2.2 Module Người dùng (User Module)
 *   Quản lý thông tin cá nhân cơ bản của người dùng (Họ tên, SĐT, Email, Tỉnh/Thành quản lý).
 *   Lưu trữ điểm tin cậy (`trustScore`). Điểm này giúp lọc các báo cáo giả mạo từ người dân (người dùng có `trustScore` thấp sẽ bị hạn chế hoặc các tin SOS gửi lên cần xác minh kỹ hơn).
 *   Quản lý liên kết đa vai trò của người dùng trên các địa bàn tỉnh thành khác nhau.
+*   **Xử lý ngày sinh (2026-06-20)**: Tự động chuyển đổi chuỗi ngày sinh (`dateOfBirth`) sang đối tượng Date khi cập nhật profile và thông tin user bởi admin.
 
 ### 2.3 Module Phân quyền (Role Module)
 *   Quản lý các vai trò trong hệ thống (`SYSTEM_ADMIN`, `PROVINCE_ADMIN`, `RESCUE_TEAM_LEADER`, `USER`).
@@ -119,6 +121,7 @@ Mỗi module bên trong `modules/` đều được phân chia tối đa theo 4 l
 *   Cho phép tạo mới, cập nhật, hiển thị danh sách các đội cứu hộ.
 *   **Hỗ trợ đội cứu hộ tự phát**: Khi tạo đội với loại hình tự phát (`VOLUNTEER_SPONTANEOUS`), hệ thống sẽ bỏ qua các ràng buộc bắt buộc về loại hình chuyên môn (`teamType`) giúp đẩy nhanh tiến trình ghi nhận tổ chức cứu trợ nhân dân trong bão lũ.
 *   **Định vị không gian (Spatial Base Location)**: Lưu giữ tọa độ điểm đóng quân chính của đội cứu hộ bằng kiểu dữ liệu hình học `Point` trong PostGIS (hệ tọa độ WGS84 - SRID 4326), sẵn sàng tích hợp tìm kiếm không gian.
+*   **Tự động geocoding địa chỉ (2026-06-20)**: Khi tạo đội cứu hộ mà không cung cấp tọa độ `baseLocation`, hệ thống tự động geocoding địa chỉ qua Nominatim API (OpenStreetMap) dựa trên thông tin đơn vị hành chính và tỉnh. Khi khởi động server, hệ thống cũng tự động quét và bổ sung tọa độ cho các đội cứu hộ đang thiếu.
 
 ### 2.5 Module Thành viên Cứu hộ (Rescue Team Member Module)
 Quản lý nhân sự của mỗi đội cứu hộ. Tích hợp triết lý thiết kế **"Mở trước, Siết sau"** để tối ưu hóa nhân lực cứu hộ thực tế trong thiên tai:
@@ -152,7 +155,23 @@ Quản lý nhân sự của mỗi đội cứu hộ. Tích hợp triết lý thi
     *   **Giải phóng tài nguyên (Resource Release)**: Khi yêu cầu SOS được chuyển sang trạng thái hoàn thành (`RESOLVED`) hoặc hủy (`CANCELLED`), hệ thống tự động giảm số ca đang xử lý (`activeCasesCount`) của đội được gán đi 1 và cập nhật lại trạng thái đội về `AVAILABLE` nếu không còn ca nào khác (`BR-SOS-08`).
     *   **Thay đổi đội cứu hộ (Reassign)**: Cho phép chuyển giao nhiệm vụ cứu hộ sang đội khác, hệ thống tự động cập nhật giảm ca cho đội cũ và tăng ca, thiết lập trạng thái `BUSY` cho đội mới gán (`BR-DISPATCH-06`).
 
-### 2.9 Module Tải lên Phương tiện (Media Upload Module)
+### 2.9 Module Cấu hình Hệ thống (System Setting Module)
+*   **Hệ thống Key-Value động**: Cho phép lưu trữ và quản lý các cấu hình hệ thống dưới dạng cặp `key-value` trong database thay vì hard-code.
+*   **Nhóm cấu hình (Groups)**:
+    *   `general`: Tên hệ thống, ngôn ngữ, múi giờ, logo, bản quyền, hotline
+    *   `security`: Độ dài mật khẩu, số lần đăng nhập sai tối đa, khóa tài khoản, 2FA
+    *   `sos`: Thời gian hết hạn SOS, bán kính tìm kiếm, số đội tối đa, SLA theo mức độ nghiêm trọng
+    *   `dispatch`: Số đội tối đa tham gia, ưu tiên theo khoảng cách/chuyên môn, cho phép liên tỉnh
+    *   `map`: Hệ tọa độ, nhà cung cấp bản đồ, tần suất cập nhật GPS
+    *   `geofence`: Bật/tắt geofence, bán kính cảnh báo, khoảng cách vượt vùng an toàn
+*   **Danh mục hệ thống (System Categories)**: Quản lý các bảng tra cứu:
+    *   `RESCUE_TEAM_TYPE`: Loại hình đội cứu hộ (quân đội, tình nguyện, dân phòng, chữ thập đỏ)
+    *   `MISSION_TYPE`: Loại nhiệm vụ (di dời dân, vận chuyển nhu yếu phẩm, y tế, tìm kiếm cứu hộ)
+    *   `VEHICLE_TYPE`: Loại phương tiện (xuồng cao tốc, xuồng cao su, xe cứu thương, xe tải lội nước)
+    *   `EQUIPMENT_TYPE`: Loại thiết bị (áo phao, pao tròn, đèn pin, dây thừng)
+*   **Tự động khởi tạo**: Khi seed database, hệ thống tự động tạo các cấu hình mặc định nếu chưa tồn tại.
+
+### 2.10 Module Tải lên Phương tiện (Media Upload Module)
 *   **Tải lên đám mây trực tiếp**: Sử dụng thư viện AWS SDK S3 để kết nối và truyền dữ liệu (hình ảnh SOS, ảnh CCCD, ảnh thiệt hại...) trực tiếp lên Cloudflare R2 từ bộ nhớ đệm (in-memory stream) thay vì ghi xuống đĩa cứng máy chủ (`BR-UPLOAD-03`), trả về URL truy cập công khai.
 *   **Bộ lọc kiểm tra tệp (Multer Upload Helper)**:
     *   Tách biệt logic kiểm tra dữ liệu ra khỏi controller bằng helper tái sử dụng `upload.helper.ts`.
@@ -160,7 +179,7 @@ Quản lý nhân sự của mỗi đội cứu hộ. Tích hợp triết lý thi
     *   Chỉ chấp nhận các loại tệp hình ảnh (`image/jpeg`, `image/png`, `image/gif`, `image/webp`) và tài liệu PDF (`application/pdf`) (`BR-UPLOAD-01`).
 *   **Định danh tệp tin**: Tên tệp được đặt ngẫu nhiên kết hợp mốc thời gian `Date.now()` để tránh xung đột ghi đè tệp tin: `${folder}/${Date.now()}-${randomPart}${ext}` (`BR-UPLOAD-04`).
 
-### 2.10 Module WebSocket Real-time (2026-06-15)
+### 2.11 Module WebSocket Real-time (2026-06-15)
 
 Module tập trung quản lý toàn bộ kết nối WebSocket (Socket.io) của hệ thống. Áp dụng pattern **Gateway → Service** để tách biệt việc quản lý kết nối và logic emit event.
 
@@ -187,7 +206,7 @@ Hệ thống phân chia quyền lực dựa trên 5 cấp bậc tài khoản ch�
 | **Flood Report** | Toàn quyền kiểm soát và xóa | Xác minh, cập nhật báo cáo ngập | Gửi báo cáo / Xem báo cáo | Gửi báo cáo / Xem báo cáo | Gửi báo cáo ngập lụt tại khu vực |
 | **Disaster Event** | Quản lý và tạo sự kiện thiên tai | Cập nhật, theo dõi sự kiện của Tỉnh | Xem thông tin sự kiện | Xem thông tin sự kiện | Xem thông tin cảnh báo thiên tai |
 | **Donation** | Quản lý các chiến dịch toàn quốc | Quản lý chiến dịch nhận của Tỉnh | Xem / Đăng ký nhận nhu yếu phẩm | Xem chiến dịch / Gửi quyên góp | Xem chiến dịch / Gửi quyên góp |
-| **User & RBAC** | CRUD tài khoản / Gán quyền admin | Xem / Gán quyền Leader của Tỉnh | Xem thông tin cá nhân | Xem thông tin cá nhân | Xem thông tin cá nhân |
+| **User & RBAC** | CRUD tài khoản / Gán quyền admin | CRUD tài khoản / Gán quyền trong Tỉnh | Xem thông tin cá nhân | Xem thông tin cá nhân | Xem thông tin cá nhân |
 
 ### 🔍 Chi tiết Quyền hạn cụ thể:
 
@@ -205,6 +224,7 @@ Hệ thống phân chia quyền lực dựa trên 5 cấp bậc tài khoản ch�
     *   Gán quyền Đội trưởng cứu hộ (`RESCUE_TEAM_LEADER`) cho người dùng trong tỉnh.
     *   Xác minh các tin báo ngập lụt từ người dân gửi lên để hiển thị lên bản đồ cảnh báo chung của tỉnh.
     *   Điều phối thủ công các tin SOS cho các đội cứu hộ rảnh trong khu vực quản lý.
+    *   Quản lý (CRUD) tài khoản người dùng trong phạm vi tỉnh.
 
 #### 3. 🧑‍✈️ RESCUE_TEAM_LEADER (Đội trưởng Đội Cứu hộ)
 *   **Phạm vi**: Chỉ quản lý trực tiếp Đội cứu hộ mà mình làm đội trưởng.

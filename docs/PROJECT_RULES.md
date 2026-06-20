@@ -1636,8 +1636,21 @@ _(Giữ nguyên từ v1, bổ sung thêm)_
 - `BR-RBAC-09:` Admin chỉ có thể gán role có `level` ≤ level cao nhất của mình (không gán role ngang/trên mình).
 - `BR-RBAC-10:` Mọi thay đổi role/permission phải ghi `audit_logs`.
 - `BR-RBAC-11:` Permissions được cache trong Redis (TTL 5 phút) — clear cache khi thay đổi.
+- `BR-RBAC-12:` PROVINCE_ADMIN có toàn quyền (ALL) trên module USER — được phép CRUD tài khoản người dùng trong tỉnh.
 
-### 16.9 Rules về Bảo mật
+### 16.9 Rules về System Configuration (2026-06-20)
+
+- `BR-SYS-01:` System settings được lưu dưới dạng key-value trong `system_setting` table.
+- `BR-SYS-02:` Mỗi setting phải thuộc một group: `general`, `security`, `sos`, `dispatch`, `map`, `geofence`.
+- `BR-SYS-03:` System categories (danh mục tra cứu) được quản lý qua `system_category` table với các type: `RESCUE_TEAM_TYPE`, `MISSION_TYPE`, `VEHICLE_TYPE`, `EQUIPMENT_TYPE`.
+- `BR-SYS-04:` Khi seed database, hệ thống tự động tạo default settings và categories nếu chưa tồn tại.
+
+### 16.10 Rules về Rescue Team Geocoding (2026-06-20)
+
+- `BR-GEOCODE-01:` Khi tạo đội cứu hộ không có `baseLocation`, hệ thống tự động geocoding địa chỉ qua Nominatim API (OpenStreetMap).
+- `BR-GEOCODE-02:` Khi khởi động server, hệ thống tự động quét và bổ sung tọa độ cho các đội cứu hộ đang thiếu `baseLocation`.
+
+### 16.11 Rules về Bảo mật
 
 - `BR-SEC-01:` JWT payload chứa `userId`, `provinceId`, `permissions[]` — không chứa thông tin nhạy cảm.
 - `BR-SEC-02:` Không có endpoint public nào trả về thông tin cá nhân.
@@ -1645,7 +1658,7 @@ _(Giữ nguyên từ v1, bổ sung thêm)_
 - `BR-SEC-04:` Authorization bằng NestJS Guard + `@RequirePermissions()` Decorator — không if-else trong controller.
 - `BR-SEC-05:` CCCD, thông tin sức khỏe lưu mã hóa AES-256 at-rest.
 
-### 16.10 Rules về Upload phương tiện (Media Upload)
+### 16.12 Rules về Upload phương tiện (Media Upload)
 
 - `BR-UPLOAD-01:` Chỉ hỗ trợ tải các tệp hình ảnh (`image/jpeg`, `image/png`, `image/gif`, `image/webp`) và tài liệu PDF (`application/pdf`).
 - `BR-UPLOAD-02:` Kích thước tối đa cho mỗi tệp tải lên là 10MB.
@@ -2109,6 +2122,24 @@ Buoc 3 (App tu dong): GPS gan tren xuong tu dong cap nhat
 ---
 
 ## 21. CHANGELOG
+
+### 2026-06-20
+
+#### System Setting Module & Geocoding
+- Thêm module System Setting mới: lưu trữ cấu hình hệ thống dạng key-value trong database (`system_setting` entity).
+- Thêm entity System Category để quản lý danh mục tra cứu: `RESCUE_TEAM_TYPE`, `MISSION_TYPE`, `VEHICLE_TYPE`, `EQUIPMENT_TYPE`.
+- Seed database tự động tạo default settings và categories nếu chưa tồn tại (`BR-SYS-01`, `BR-SYS-03`, `BR-SYS-04`).
+- Tính năng tự động geocoding cho Rescue Team: Khi tạo đội không có `baseLocation`, hệ thống tự geocoding địa chỉ qua Nominatim API (`BR-GEOCODE-01`).
+- Khi khởi động server, tự động bổ sung tọa độ cho các đội cứu hộ đang thiếu (`BR-GEOCODE-02`).
+
+#### User Module Enhancements
+- Sửa lỗi xử lý ngày sinh (`dateOfBirth`): tự động convert string sang Date object khi cập nhật profile và thông tin user bởi admin.
+
+#### Admin Registration Enhancements
+- Thêm trường `adminUnitId` (đơn vị hành chính quản lý) và `addressDetail` (địa chỉ chi tiết) vào DTO đăng ký admin.
+
+#### Permission Updates
+- PROVINCE_ADMIN: cập nhật quyền trên module USER từ `MANAGE_READ` lên `ALL` — được phép CRUD tài khoản người dùng trong tỉnh (`BR-RBAC-12`).
 
 ### 2026-06-12
 
