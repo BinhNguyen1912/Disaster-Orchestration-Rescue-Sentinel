@@ -114,6 +114,40 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
         'ST_Distance(rt.currentLocation, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
         'ASC',
       )
+      .setParameters({ lat, lng })
       .getOne();
+  }
+
+  async findAvailableTeamsInRadius(
+    lat: number,
+    lng: number,
+    radiusMeters: number,
+    provinceId: number,
+  ): Promise<(RescueTeamEntity & { distance_meters: number })[]> {
+    const point = `ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)`;
+
+    const query = this.repo
+      .createQueryBuilder('rt')
+      .addSelect(
+        `ST_Distance(rt.currentLocation::geography, ${point}::geography)`,
+        'distance_meters',
+      )
+      .where('rt.provinceId = :provinceId', { provinceId })
+      .andWhere('rt.status IN (:...statuses)', {
+        statuses: ['AVAILABLE', 'STANDBY'],
+      })
+      .andWhere(
+        `ST_DWithin(rt.currentLocation::geography, ${point}::geography, :radiusMeters)`,
+      )
+      .orderBy(`rt.currentLocation <-> ${point}`)
+      .setParameters({ lat, lng, radiusMeters });
+
+    const rawAndEntities = await query.getRawAndEntities();
+
+    return rawAndEntities.entities.map((entity, index) => {
+      const raw = rawAndEntities.raw[index];
+      const distance_meters = parseFloat(raw.distance_meters || '0');
+      return Object.assign(entity, { distance_meters });
+    });
   }
 }

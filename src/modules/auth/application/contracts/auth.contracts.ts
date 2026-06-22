@@ -31,6 +31,7 @@ export interface RegisterInput {
   gender: Gender;
   provinceId: number;
   adminUnitId?: number;
+  addressDetail?: string;
   isVolunteer?: boolean;
   needsHelp?: boolean;
 }

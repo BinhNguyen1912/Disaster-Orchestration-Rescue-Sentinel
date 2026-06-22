@@ -256,7 +256,12 @@ describe('RescueTeamService', () => {
     });
 
     it('should return team with logoUrl populated from fallback if database logoUrl is null', async () => {
-      const team = { id: 1, name: 'Team Alpha', teamType: TeamType.Y_TE, logoUrl: null };
+      const team = {
+        id: 1,
+        name: 'Team Alpha',
+        teamType: TeamType.Y_TE,
+        logoUrl: null,
+      };
       mockTeamRepo.findById.mockResolvedValue(team);
 
       const result = await service.findById(1);

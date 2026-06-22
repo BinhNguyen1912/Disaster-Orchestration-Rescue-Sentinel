@@ -7,12 +7,14 @@ import { SosRequestController } from './presentation/controllers/sos-request.con
 import { SosRequestRepositoryImpl } from './infrastructure/persistence/repositories/sos-request.repository.impl';
 import { DistanceBasedDispatchStrategy } from './application/services/distance-based-dispatch.strategy';
 import { RescueTeamModule } from '../rescue-team/rescue-team.module';
+import { SystemSettingModule } from '../system-setting/system-setting.module';
 import { SosRequestService } from './application/services/sos-request.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([SosRequestEntity]),
     RescueTeamModule,
+    SystemSettingModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

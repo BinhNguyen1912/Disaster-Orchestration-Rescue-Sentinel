@@ -22,7 +22,10 @@ export interface IUserRepository {
     pagination: { page: number; limit: number },
   ): Promise<PaginatedResult<Omit<User, 'password'>>>;
   create(data: Partial<User>): Promise<User>;
-  update(id: number, data: Partial<User> & { roleId?: number }): Promise<User | null>;
+  update(
+    id: number,
+    data: Partial<User> & { roleId?: number },
+  ): Promise<User | null>;
   softDelete(id: number): Promise<boolean>;
   count(conditions: Partial<User>): Promise<number>;
   search(query: string): Promise<User[]>;

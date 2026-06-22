@@ -29,9 +29,7 @@ import { DeviceEntity } from '@infrastructure/database/entities/device.entity';
 import { NotificationEntity } from '@infrastructure/database/entities/notification.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([DeviceEntity, NotificationEntity]),
-  ],
+  imports: [TypeOrmModule.forFeature([DeviceEntity, NotificationEntity])],
   providers: [
     // Gateways (không export — chỉ dùng nội bộ để init)
     DispatchGateway,
@@ -41,9 +39,6 @@ import { NotificationEntity } from '@infrastructure/database/entities/notificati
     DispatchSocketService,
     NotificationSocketService,
   ],
-  exports: [
-    DispatchSocketService,
-    NotificationSocketService,
-  ],
+  exports: [DispatchSocketService, NotificationSocketService],
 })
 export class WebSocketModule {}

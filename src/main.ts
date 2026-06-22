@@ -13,7 +13,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(redisIoAdapter);
 
   app.enableCors({
-    origin: '*',
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
@@ -29,9 +29,10 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 8585);
   console.log(
-    'Application is running on: ' + `http://localhost:${process.env.PORT}`,
+    'Application is running on: ' +
+      `http://localhost:${process.env.PORT ?? 8585}`,
   );
 }
 bootstrap();

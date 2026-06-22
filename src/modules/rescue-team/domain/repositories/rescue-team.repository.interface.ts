@@ -29,4 +29,10 @@ export interface IRescueTeamRepository {
     lng: number,
     provinceId: number,
   ): Promise<RescueTeam | null>;
+  findAvailableTeamsInRadius(
+    lat: number,
+    lng: number,
+    radiusMeters: number,
+    provinceId: number,
+  ): Promise<(RescueTeam & { distance_meters: number })[]>;
 }

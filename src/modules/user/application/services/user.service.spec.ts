@@ -297,7 +297,7 @@ describe('UserService', () => {
       const userWithPassword = { ...mockUser, password: 'hashedOldPassword' };
       mockUserRepo.findById.mockResolvedValue(userWithPassword);
 
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
         service.changePassword(1, {
@@ -312,8 +312,8 @@ describe('UserService', () => {
       mockUserRepo.findById.mockResolvedValue(userWithPassword);
       mockUserRepo.update.mockResolvedValue(userWithPassword);
 
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedNewPassword');
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedNewPassword');
 
       await service.changePassword(1, {
         currentPassword: 'oldPassword',

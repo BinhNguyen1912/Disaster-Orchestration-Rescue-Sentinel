@@ -45,7 +45,9 @@ export class NotificationSocketService {
     // 1. Gửi thông báo qua Socket.io (Realtime)
     if (this.server) {
       this.server.to(`user:${userId}`).emit(NOTIFICATION_EVENTS.PUSH, payload);
-      this.logger.log(`📡 [Socket.io] Emitted notification to room user:${userId} type=${payload.type}`);
+      this.logger.log(
+        `📡 [Socket.io] Emitted notification to room user:${userId} type=${payload.type}`,
+      );
     }
 
     // 2. Lưu lịch sử thông báo vào Postgres DB
@@ -56,13 +58,18 @@ export class NotificationSocketService {
         title: payload.title,
         content: payload.body,
         type: payload.type,
-        referenceId: payload.data?.referenceId ? parseInt(payload.data.referenceId, 10) : undefined,
+        referenceId: payload.data?.referenceId
+          ? parseInt(payload.data.referenceId, 10)
+          : undefined,
         isRead: false,
       });
       await this.notificationRepository.save(notification);
       this.logger.log(`💾 Saved notification history in DB for user ${userId}`);
     } catch (dbErr) {
-      this.logger.error(`Failed to save notification history in DB for user ${userId}`, dbErr);
+      this.logger.error(
+        `Failed to save notification history in DB for user ${userId}`,
+        dbErr,
+      );
     }
 
     // 3. Kiểm tra trạng thái online/offline của user trên Redis
@@ -73,7 +80,10 @@ export class NotificationSocketService {
         isOnline = true;
       }
     } catch (redisErr) {
-      this.logger.error(`Failed to read presence from Redis for user ${userId}`, redisErr);
+      this.logger.error(
+        `Failed to read presence from Redis for user ${userId}`,
+        redisErr,
+      );
       // Fallback: nếu lỗi Redis, coi như offline để gửi FCM cho chắc
     }
 
@@ -82,7 +92,9 @@ export class NotificationSocketService {
     const isUrgent = ['sos_alert', 'rescue_assigned'].includes(payload.type);
 
     if (!isOnline || isUrgent) {
-      this.logger.log(`🔔 User ${userId} is ${isOnline ? 'ONLINE (URGENT)' : 'OFFLINE'}. Triggering FCM push notification fallback.`);
+      this.logger.log(
+        `🔔 User ${userId} is ${isOnline ? 'ONLINE (URGENT)' : 'OFFLINE'}. Triggering FCM push notification fallback.`,
+      );
       await this.triggerFcmPush(userId, payload);
     }
   }
@@ -90,7 +102,12 @@ export class NotificationSocketService {
   /** Gửi FCM cho tất cả thiết bị của User */
   private async triggerFcmPush(
     userId: number,
-    payload: { title: string; body: string; type: string; data?: Record<string, any> },
+    payload: {
+      title: string;
+      body: string;
+      type: string;
+      data?: Record<string, any>;
+    },
   ) {
     try {
       // Tìm các token FCM hoạt động của User
@@ -103,11 +120,15 @@ export class NotificationSocketService {
         .filter((token): token is string => !!token);
 
       if (fcmTokens.length === 0) {
-        this.logger.warn(`⚠️ No active FCM tokens found for user ${userId}. Cannot send push notification.`);
+        this.logger.warn(
+          `⚠️ No active FCM tokens found for user ${userId}. Cannot send push notification.`,
+        );
         return;
       }
 
-      this.logger.log(`Sending FCM Push to ${fcmTokens.length} devices for user ${userId}`);
+      this.logger.log(
+        `Sending FCM Push to ${fcmTokens.length} devices for user ${userId}`,
+      );
       for (const token of fcmTokens) {
         await this.sendFcmNotification(token, payload);
       }
@@ -119,7 +140,12 @@ export class NotificationSocketService {
   /** Giả lập gửi tin qua Firebase SDK */
   private async sendFcmNotification(
     fcmToken: string,
-    payload: { title: string; body: string; type: string; data?: Record<string, any> },
+    payload: {
+      title: string;
+      body: string;
+      type: string;
+      data?: Record<string, any>;
+    },
   ) {
     // TODO: Tích hợp thư viện firebase-admin để bắn FCM thật
     // admin.messaging().send({ token: fcmToken, notification: { title, body } })
