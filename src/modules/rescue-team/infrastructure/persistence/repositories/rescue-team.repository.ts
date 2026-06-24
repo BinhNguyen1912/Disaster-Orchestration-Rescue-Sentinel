@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder, EntityManager } from 'typeorm';
 import {
   IRescueTeamRepository,
   RescueTeamFilters,
@@ -111,7 +111,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
       .orderBy(
-        'ST_Distance(rt.currentLocation, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
+        'ST_Distance(rt."currentLocation", ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
         'ASC',
       )
       .setParameters({ lat, lng })
@@ -129,7 +129,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
     const query = this.repo
       .createQueryBuilder('rt')
       .addSelect(
-        `ST_Distance(rt.currentLocation::geography, ${point}::geography)`,
+        `ST_Distance(rt."currentLocation"::geography, ${point}::geography)`,
         'distance_meters',
       )
       .where('rt.provinceId = :provinceId', { provinceId })
@@ -137,9 +137,9 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
       .andWhere(
-        `ST_DWithin(rt.currentLocation::geography, ${point}::geography, :radiusMeters)`,
+        `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, :radiusMeters)`,
       )
-      .orderBy(`rt.currentLocation <-> ${point}`)
+      .orderBy(`rt."currentLocation" <-> ${point}`)
       .setParameters({ lat, lng, radiusMeters });
 
     const rawAndEntities = await query.getRawAndEntities();
@@ -149,5 +149,55 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       const distance_meters = parseFloat(raw.distance_meters || '0');
       return Object.assign(entity, { distance_meters });
     });
+  }
+
+  async findCandidatesInRadiusWithLock(
+    lat: number,
+    lng: number,
+    radiusMeters: number,
+    provinceId: number,
+    limit: number,
+  ): Promise<(RescueTeamEntity & { distance_meters: number })[]> {
+    const point = `ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)`;
+
+    const query = this.repo
+      .createQueryBuilder('rt')
+      .addSelect(
+        `ST_Distance(rt."currentLocation"::geography, ${point}::geography)`,
+        'distance_meters',
+      )
+      .where('rt.provinceId = :provinceId', { provinceId })
+      .andWhere('rt.status IN (:...statuses)', {
+        statuses: ['AVAILABLE', 'STANDBY'],
+      })
+      .andWhere(
+        `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, :radiusMeters)`,
+      ) //chỉ lấy các đội trong bán kính
+      .orderBy(`rt."currentLocation" <-> ${point}`) //sắp xếp theo khoảng cách
+      .limit(limit) //chỉ lấy số lượng đội tối đa
+      .setLock('pessimistic_write') //khóa bản ghi
+      .setOnLocked('skip_locked') //nếu đang có team khác xử lý thì bỏ qua
+      .setParameters({ lat, lng, radiusMeters });
+
+    const rawAndEntities = await query.getRawAndEntities();
+
+    return rawAndEntities.entities.map((entity, index) => {
+      const raw = rawAndEntities.raw[index];
+      const distance_meters = parseFloat(raw.distance_meters || '0');
+      return Object.assign(entity, { distance_meters });
+    });
+  }
+
+  async lockTeamForUpdate(
+    teamId: number,
+    manager: EntityManager,
+  ): Promise<RescueTeamEntity | null> {
+    const team = await manager
+      .createQueryBuilder(RescueTeamEntity, 'rt')
+      .setLock('pessimistic_write') //khóa bản ghi
+      .where('rt.id = :teamId', { teamId })
+      .getOne();
+
+    return team ?? null;
   }
 }

@@ -9,9 +9,10 @@ export interface CreateSosRequestDto {
   longitude: number;
   description?: string;
   severity: Severity;
-  provinceId: number;
-  adminUnitId: number;
+  provinceId?: number;
+  adminUnitId?: number;
   trappedPeopleCount: number;
   specialNeedsTags?: string[];
   imageUrls: string[];
+  requiresEquipment?: boolean;
 }

@@ -8,6 +8,9 @@ import { SosRequestType } from '@shared/core/enums/sosType.enum';
 import { SosSource } from '@shared/core/enums/sosSource.enum';
 import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
 import { SystemRoleId } from '@shared/common/constants/permissions.constant';
+import { LocationService } from '../../../location/application/services/location.service';
+import { DispatchSocketService } from '../../../websocket/services/dispatch-socket.service';
+import { DispatchOrchestratorService } from './dispatch-orchestrator.service';
 
 describe('SosRequestService', () => {
   let service: SosRequestService;
@@ -33,6 +36,24 @@ describe('SosRequestService', () => {
     assignTeam: jest.fn(),
   };
 
+  const mockLocationService = {
+    findUnitByCoordinates: jest.fn(),
+  };
+
+  const mockDispatchSocketService = {
+    broadcastNewSos: jest.fn(),
+    broadcastSosStatusUpdate: jest.fn(),
+    alertNoTeamAvailable: jest.fn(),
+    notifyTeamAssigned: jest.fn(),
+    notifyTeamReassigned: jest.fn(),
+  };
+
+  const mockDispatchOrchestrator = {
+    dispatch: jest.fn(),
+    releaseTeamAndResolveQueue: jest.fn(),
+    dispatchManual: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -40,6 +61,12 @@ describe('SosRequestService', () => {
         { provide: 'ISosRequestRepository', useValue: mockSosRepo },
         { provide: 'IRescueTeamRepository', useValue: mockTeamRepo },
         { provide: 'IDispatchStrategy', useValue: mockDispatchStrategy },
+        { provide: LocationService, useValue: mockLocationService },
+        { provide: DispatchSocketService, useValue: mockDispatchSocketService },
+        {
+          provide: DispatchOrchestratorService,
+          useValue: mockDispatchOrchestrator,
+        },
       ],
     }).compile();
 
@@ -229,10 +256,9 @@ describe('SosRequestService', () => {
       );
 
       expect(result.status).toBe(SosStatus.RESOLVED);
-      expect(mockTeamRepo.update).toHaveBeenCalledWith(10, {
-        activeCasesCount: 0,
-        status: TeamStatus.AVAILABLE,
-      });
+      expect(
+        mockDispatchOrchestrator.releaseTeamAndResolveQueue,
+      ).toHaveBeenCalledWith(10);
     });
   });
 
@@ -251,24 +277,24 @@ describe('SosRequestService', () => {
         activeCasesCount: 0,
       };
 
-      mockSosRepo.findById.mockResolvedValue(sosRequest);
-      mockDispatchStrategy.assignTeam.mockResolvedValue(22);
-      mockTeamRepo.findById.mockResolvedValue(team);
-      mockSosRepo.update.mockResolvedValue({
+      mockSosRepo.findById.mockResolvedValue({
         ...sosRequest,
         assignedTeamId: 22,
         status: SosStatus.DISPATCHED,
         dispatchMethod: DispatchMethod.AUTO,
+      });
+      mockDispatchOrchestrator.dispatch.mockResolvedValue({
+        type: 'dispatched',
+        assignedTeamId: 22,
       });
 
       const result = await service.assignTeam(1, {}, user);
 
       expect(result.assignedTeamId).toBe(22);
       expect(result.dispatchMethod).toBe(DispatchMethod.AUTO);
-      expect(mockTeamRepo.update).toHaveBeenCalledWith(22, {
-        activeCasesCount: 1,
-        status: TeamStatus.BUSY,
-      });
+      expect(mockDispatchOrchestrator.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 1 }),
+      );
     });
 
     it('should reassign from Team A to Team B, releasing Team A and busy-ing Team B', async () => {
@@ -297,32 +323,30 @@ describe('SosRequestService', () => {
         activeCasesCount: 0,
       };
 
-      mockSosRepo.findById.mockResolvedValue(sosRequest);
-      mockTeamRepo.findById.mockImplementation((id) => {
-        if (id === 10) return Promise.resolve(teamA);
-        if (id === 22) return Promise.resolve(teamB);
-        return Promise.resolve(null);
-      });
-      mockSosRepo.update.mockResolvedValue({
+      mockSosRepo.findById.mockResolvedValue({
         ...sosRequest,
         assignedTeamId: 22,
         status: SosStatus.DISPATCHED,
         dispatchMethod: DispatchMethod.MANUAL,
       });
+      mockTeamRepo.findById.mockImplementation((id) => {
+        if (id === 10) return Promise.resolve(teamA);
+        if (id === 22) return Promise.resolve(teamB);
+        return Promise.resolve(null);
+      });
+      mockDispatchOrchestrator.dispatchManual.mockResolvedValue({
+        type: 'dispatched',
+        assignedTeamId: 22,
+      });
 
       const result = await service.assignTeam(1, { teamId: 22 }, user);
 
       expect(result.assignedTeamId).toBe(22);
-      // Validate Team A was released
-      expect(mockTeamRepo.update).toHaveBeenCalledWith(10, {
-        activeCasesCount: 0,
-        status: TeamStatus.AVAILABLE,
-      });
-      // Validate Team B was assigned
-      expect(mockTeamRepo.update).toHaveBeenCalledWith(22, {
-        activeCasesCount: 1,
-        status: TeamStatus.BUSY,
-      });
+      expect(mockDispatchOrchestrator.dispatchManual).toHaveBeenCalledWith(
+        1,
+        22,
+        user.sub,
+      );
     });
 
     it('should fail manual assignment if team is busy', async () => {
@@ -369,10 +393,9 @@ describe('SosRequestService', () => {
       const result = await service.cancel(1, { reason: 'Safe' }, user);
 
       expect(result.status).toBe(SosStatus.CANCELLED);
-      expect(mockTeamRepo.update).toHaveBeenCalledWith(10, {
-        activeCasesCount: 0,
-        status: TeamStatus.AVAILABLE,
-      });
+      expect(
+        mockDispatchOrchestrator.releaseTeamAndResolveQueue,
+      ).toHaveBeenCalledWith(10);
     });
 
     it('should allow guest cancellation (no user token) if status is PENDING', async () => {

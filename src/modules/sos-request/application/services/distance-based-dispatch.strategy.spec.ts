@@ -92,7 +92,7 @@ describe('DistanceBasedDispatchStrategy', () => {
     );
 
     const result = await strategy.assignTeam(sampleSos);
-    expect(result).toBe(10);
+    expect(result?.bestTeamId).toBe(10);
     expect(mockTeamRepo.findAvailableTeamsInRadius).toHaveBeenCalledWith(
       10.7589,
       106.7004,
@@ -128,7 +128,7 @@ describe('DistanceBasedDispatchStrategy', () => {
     );
 
     const result = await strategy.assignTeam(sampleSos);
-    expect(result).toBe(20);
+    expect(result?.bestTeamId).toBe(20);
     expect(mockTeamRepo.findAvailableTeamsInRadius).toHaveBeenCalledTimes(2);
   });
 
@@ -193,7 +193,7 @@ describe('DistanceBasedDispatchStrategy', () => {
     // Lowest score is Team 3 (0.25) -> then Team 1 (0.29) -> then Team 2 (0.40)
     // So Team 3 should be selected!
     const result = await strategy.assignTeam(sampleSos);
-    expect(result).toBe(3);
+    expect(result?.bestTeamId).toBe(3);
   });
 
   it('should return null if no available teams are found in any radius', async () => {

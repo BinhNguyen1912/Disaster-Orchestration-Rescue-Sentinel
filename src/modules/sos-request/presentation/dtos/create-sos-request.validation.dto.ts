@@ -10,6 +10,7 @@ import {
   IsInt,
   IsArray,
   Matches,
+  IsBoolean,
 } from 'class-validator';
 import { SosRequestType } from '@shared/core/enums/sosType.enum';
 import { Severity } from '@shared/core/enums/level.enum';
@@ -57,17 +58,17 @@ export class CreateSosRequestValidationDto {
   @IsNotEmpty()
   severity: Severity;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, required: false })
   @IsInt()
   @Min(1)
-  @IsNotEmpty()
-  provinceId: number;
+  @IsOptional()
+  provinceId?: number;
 
-  @ApiProperty({ example: 12 })
+  @ApiProperty({ example: 12, required: false })
   @IsInt()
   @Min(1)
-  @IsNotEmpty()
-  adminUnitId: number;
+  @IsOptional()
+  adminUnitId?: number;
 
   @ApiProperty({ example: 3 })
   @IsInt()
@@ -86,4 +87,9 @@ export class CreateSosRequestValidationDto {
   @IsString({ each: true })
   @IsNotEmpty()
   imageUrls: string[];
+
+  @ApiProperty({ example: false, required: false })
+  @IsBoolean()
+  @IsOptional()
+  requiresEquipment?: boolean;
 }

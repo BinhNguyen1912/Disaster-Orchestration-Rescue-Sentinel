@@ -11,8 +11,8 @@ import { TeamType } from '@shared/core/enums/teamType.enum';
 
 export class CreateRescueTeamValidationDto {
   @IsInt()
-  @IsNotEmpty()
-  provinceId: number;
+  @IsOptional()
+  provinceId?: number;
 
   @IsString()
   @IsNotEmpty()
@@ -23,8 +23,8 @@ export class CreateRescueTeamValidationDto {
   teamType?: TeamType;
 
   @IsInt()
-  @IsNotEmpty()
-  adminUnitId: number;
+  @IsOptional()
+  adminUnitId?: number;
 
   @IsOptional()
   baseLocation?: { type: 'Point'; coordinates: [number, number] };

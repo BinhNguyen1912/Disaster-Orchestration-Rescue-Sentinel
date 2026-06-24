@@ -32,6 +32,10 @@ export interface SosRequest {
   resolvedBy?: number | null;
   resolutionNotes?: string | null;
   clusterId?: number | null;
+  requiresEquipment?: boolean;
+  specialistPending?: boolean;
+  specialistType?: string | null;
+  pendingSince?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -3,6 +3,7 @@ export * from './audit-log.entity';
 export * from './casualty.entity';
 export * from './device.entity';
 export * from './disaster-event.entity';
+export * from './dispatch-queue.entity';
 export * from './donation-campaign.entity';
 export * from './donation.entity';
 export * from './duty-log.entity';

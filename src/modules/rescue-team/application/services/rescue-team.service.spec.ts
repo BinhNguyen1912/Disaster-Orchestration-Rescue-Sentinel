@@ -4,6 +4,30 @@ import { RescueTeamService } from './rescue-team.service';
 import { TeamType } from '@shared/core/enums/teamType.enum';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { ConfigService } from '@nestjs/config';
+import { LocationService } from '../../../location/application/services/location.service';
+
+jest.mock('https', () => ({
+  get: jest.fn((url: string, options: any, cb?: any) => {
+    const callback = typeof options === 'function' ? options : cb;
+    const res = {
+      on: jest.fn((event: string, handler: any) => {
+        if (event === 'data') {
+          handler('[]');
+        }
+        if (event === 'end') {
+          handler();
+        }
+        return res;
+      }),
+    };
+    if (callback) {
+      callback(res);
+    }
+    return {
+      on: jest.fn(),
+    };
+  }),
+}));
 
 describe('RescueTeamService', () => {
   let service: RescueTeamService;
@@ -41,6 +65,10 @@ describe('RescueTeamService', () => {
     }),
   };
 
+  const mockLocationService = {
+    findUnitByCoordinates: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -50,6 +78,7 @@ describe('RescueTeamService', () => {
         { provide: 'IProvinceRepository', useValue: mockProvinceRepo },
         { provide: 'IWardRepository', useValue: mockWardRepo },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: LocationService, useValue: mockLocationService },
       ],
     }).compile();
 
@@ -322,7 +351,14 @@ describe('RescueTeamService', () => {
   // ========================================
   describe('update', () => {
     it('should update team successfully', async () => {
+      const existingTeam = {
+        id: 1,
+        name: 'Team Alpha',
+        provinceId: 1,
+        adminUnitId: 1,
+      };
       const updatedTeam = { id: 1, name: 'Updated Team' };
+      mockTeamRepo.findById.mockResolvedValue(existingTeam);
       mockTeamRepo.update.mockResolvedValue(updatedTeam);
 
       const result = await service.update(1, { name: 'Updated Team' });
@@ -331,6 +367,7 @@ describe('RescueTeamService', () => {
     });
 
     it('should throw NotFoundException when team not found', async () => {
+      mockTeamRepo.findById.mockResolvedValue(null);
       mockTeamRepo.update.mockResolvedValue(null);
 
       await expect(service.update(999, { name: 'Test' })).rejects.toThrow(

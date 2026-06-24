@@ -53,4 +53,34 @@ export class LocationService {
     const data = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(data);
   }
+
+  async findUnitByCoordinates(
+    lat: number,
+    lng: number,
+  ): Promise<AdministrativeUnitEntity | null> {
+    // 1. Try finding administrative unit that contains the point
+    const containingUnit = await this.wardRepo
+      .createQueryBuilder('unit')
+      .where(
+        'unit.boundary IS NOT NULL AND ST_Contains(unit.boundary, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
+        { lat, lng },
+      )
+      .getOne();
+
+    if (containingUnit) {
+      return containingUnit;
+    }
+
+    // 2. Fallback: Find the nearest administrative unit by centerPoint distance
+    const nearestUnit = await this.wardRepo
+      .createQueryBuilder('unit')
+      .where('unit.centerPoint IS NOT NULL')
+      .orderBy(
+        'ST_Distance(unit.centerPoint, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
+        'ASC',
+      )
+      .getOne();
+
+    return nearestUnit || null;
+  }
 }

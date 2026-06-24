@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateSosRequestDto } from '../dtos/create-sos-request.dto';
+import { LocationService } from '../../../location/application/services/location.service';
 import { QuerySosRequestDto } from '../dtos/query-sos-request.dto';
 import { UpdateSosStatusDto } from '../dtos/update-sos-status.dto';
 import { AssignTeamDto } from '../dtos/assign-team.dto';
@@ -17,6 +18,8 @@ import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
 import { SystemRoleId } from '@shared/common/constants/permissions.constant';
 import { PaginatedResult } from '@shared/common/dtos/pagination.dto';
+import { DispatchSocketService } from '../../../websocket/services/dispatch-socket.service';
+import { DispatchOrchestratorService } from './dispatch-orchestrator.service';
 
 import type {
   ISosRequestRepository,
@@ -35,6 +38,9 @@ export class SosRequestService implements ISosRequestService {
     private readonly teamRepo: IRescueTeamRepository,
     @Inject('IDispatchStrategy')
     private readonly dispatchStrategy: IDispatchStrategy,
+    private readonly locationService: LocationService,
+    private readonly dispatchSocketService: DispatchSocketService,
+    private readonly dispatchOrchestrator: DispatchOrchestratorService,
   ) {}
 
   async create(
@@ -63,9 +69,26 @@ export class SosRequestService implements ISosRequestService {
       ? dto.requesterPhone || null
       : dto.requesterPhone;
 
+    let provinceId = dto.provinceId;
+    let adminUnitId = dto.adminUnitId;
+
+    if (!provinceId || !adminUnitId) {
+      const resolvedUnit = await this.locationService.findUnitByCoordinates(
+        dto.latitude,
+        dto.longitude,
+      );
+      if (resolvedUnit) {
+        provinceId = resolvedUnit.provinceId;
+        adminUnitId = resolvedUnit.id;
+      } else {
+        provinceId = provinceId || 1;
+        adminUnitId = adminUnitId || 1;
+      }
+    }
+
     const sosData: Partial<SosRequest> = {
-      provinceId: dto.provinceId,
-      adminUnitId: dto.adminUnitId,
+      provinceId,
+      adminUnitId,
       requesterId,
       requesterName,
       requesterPhone,
@@ -81,9 +104,15 @@ export class SosRequestService implements ISosRequestService {
       imageUrls: dto.imageUrls || [],
       description: dto.description || '',
       source: user ? SosSource.APP : SosSource.WEB,
+      requiresEquipment: dto.requiresEquipment || false,
     };
 
-    return this.sosRepo.create(sosData);
+    const created = await this.sosRepo.create(sosData);
+
+    // 📡 Realtime: Notify admins in the same province about the new SOS request
+    this.dispatchSocketService.broadcastNewSos(created.provinceId, created);
+
+    return created;
   }
 
   async findAll(
@@ -172,21 +201,23 @@ export class SosRequestService implements ISosRequestService {
       sos.resolvedAt = new Date();
       sos.resolvedBy = user.sub;
 
-      // Release team workload
+      // Release team workload and resolve queue
       if (sos.assignedTeamId) {
-        const team = await this.teamRepo.findById(sos.assignedTeamId);
-        if (team) {
-          const activeCases = Math.max(0, (team.activeCasesCount || 0) - 1);
-          const updateData: any = { activeCasesCount: activeCases };
-          if (activeCases === 0 && team.status === TeamStatus.BUSY) {
-            updateData.status = TeamStatus.AVAILABLE;
-          }
-          await this.teamRepo.update(team.id, updateData);
-        }
+        await this.dispatchOrchestrator.releaseTeamAndResolveQueue(
+          sos.assignedTeamId,
+        );
       }
     }
 
     const updated = await this.sosRepo.update(id, sos);
+
+    // 📡 Realtime: broadcast status change to admin province room
+    this.dispatchSocketService.broadcastSosStatusUpdate(updated!.provinceId, {
+      sosId: updated!.id,
+      status: updated!.status,
+      assignedTeamId: updated!.assignedTeamId ?? undefined,
+    });
+
     return updated!;
   }
 
@@ -213,67 +244,88 @@ export class SosRequestService implements ISosRequestService {
     let method = DispatchMethod.MANUAL;
 
     if (!teamId) {
-      // Auto Dispatch
-      const autoTeamId = await this.dispatchStrategy.assignTeam(sos);
-      if (!autoTeamId) {
+      // Auto Dispatch via orchestrator
+      const outcome = await this.dispatchOrchestrator.dispatch(sos);
+
+      if (outcome.type === 'specialist_pending') {
+        const updated = await this.sosRepo.findById(id);
+        return updated!;
+      }
+
+      if (outcome.type === 'queued') {
+        const updated = await this.sosRepo.findById(id);
+        this.dispatchSocketService.broadcastSosStatusUpdate(sos.provinceId, {
+          sosId: sos.id,
+          status: SosStatus.PENDING,
+        });
+        return updated!;
+      }
+
+      if (!outcome.assignedTeamId) {
+        this.dispatchSocketService.alertNoTeamAvailable(sos.provinceId, sos.id);
         throw new BadRequestException(
           'Không tìm thấy đội cứu hộ nào phù hợp rảnh rỗi hoặc gần đây',
         );
       }
-      teamId = autoTeamId;
+
+      teamId = outcome.assignedTeamId;
       method = DispatchMethod.AUTO;
-    }
 
-    // Load team
-    const team = await this.teamRepo.findById(teamId);
-    if (!team) {
-      throw new NotFoundException(`Không tìm thấy đội cứu hộ với ID ${teamId}`);
-    }
+      if (outcome.type === 'dual_dispatched' && outcome.secondTeamId) {
+        const updated = await this.sosRepo.findById(id);
+        this.dispatchSocketService.broadcastSosStatusUpdate(sos.provinceId, {
+          sosId: sos.id,
+          status: SosStatus.DISPATCHED,
+          assignedTeamId: teamId,
+        });
+        this.dispatchSocketService.notifyTeamAssigned(teamId, updated!);
 
-    // BR-TENANT-04 / BR-DISPATCH-01: Same province, status AVAILABLE or STANDBY
-    if (team.provinceId !== user.provinceId && user.roleId !== 1) {
-      throw new BadRequestException(
-        'Không thể phân công đội cứu hộ thuộc tỉnh khác',
-      );
-    }
-
-    if (
-      team.status !== TeamStatus.AVAILABLE &&
-      team.status !== TeamStatus.STANDBY
-    ) {
-      throw new BadRequestException(
-        `Đội cứu hộ đang ở trạng thái ${team.status}, không thể nhận nhiệm vụ`,
-      );
-    }
-
-    // If already had a team assigned (transition team)
-    if (sos.assignedTeamId && sos.assignedTeamId !== team.id) {
-      const oldTeam = await this.teamRepo.findById(sos.assignedTeamId);
-      if (oldTeam) {
-        const oldActiveCases = Math.max(0, (oldTeam.activeCasesCount || 0) - 1);
-        const oldTeamUpdate: any = { activeCasesCount: oldActiveCases };
-        if (oldActiveCases === 0 && oldTeam.status === TeamStatus.BUSY) {
-          oldTeamUpdate.status = TeamStatus.AVAILABLE;
-        }
-        await this.teamRepo.update(oldTeam.id, oldTeamUpdate);
+        // Notify second team (specialist) queued
+        this.dispatchSocketService.notifyTeamAssigned(
+          outcome.secondTeamId,
+          updated!,
+        );
+        return updated!;
       }
+    } else {
+      // Manual Dispatch
+      const team = await this.teamRepo.findById(teamId);
+      if (!team) {
+        throw new NotFoundException(
+          `Không tìm thấy đội cứu hộ với ID ${teamId}`,
+        );
+      }
+      if (team.provinceId !== user.provinceId && user.roleId !== 1) {
+        throw new BadRequestException(
+          'Không thể phân công đội cứu hộ thuộc tỉnh khác',
+        );
+      }
+      if (
+        team.status !== TeamStatus.AVAILABLE &&
+        team.status !== TeamStatus.STANDBY
+      ) {
+        throw new BadRequestException(
+          `Đội cứu hộ đang ở trạng thái ${team.status}, không thể nhận nhiệm vụ`,
+        );
+      }
+
+      await this.dispatchOrchestrator.dispatchManual(sos.id, teamId, user.sub);
     }
 
-    // Update SOS request
-    sos.assignedTeamId = team.id;
-    sos.assignedAt = new Date();
-    sos.assignedBy = user.sub;
-    sos.status = SosStatus.DISPATCHED;
-    sos.dispatchMethod = method;
+    const updatedSos = await this.sosRepo.findById(id);
 
-    const updatedSos = await this.sosRepo.update(id, sos);
+    // 📡 Realtime: broadcast assignment to admin province room
+    this.dispatchSocketService.broadcastSosStatusUpdate(
+      updatedSos!.provinceId,
+      {
+        sosId: updatedSos!.id,
+        status: updatedSos!.status,
+        assignedTeamId: teamId,
+      },
+    );
 
-    // Update team workload
-    const activeCases = (team.activeCasesCount || 0) + 1;
-    await this.teamRepo.update(team.id, {
-      activeCasesCount: activeCases,
-      status: TeamStatus.BUSY,
-    });
+    // 📡 Realtime: notify the assigned rescue team directly
+    this.dispatchSocketService.notifyTeamAssigned(teamId, updatedSos!);
 
     return updatedSos!;
   }
@@ -325,20 +377,21 @@ export class SosRequestService implements ISosRequestService {
     sos.status = SosStatus.CANCELLED;
     sos.resolutionNotes = `Hủy yêu cầu: ${dto.reason}`;
 
-    // Release team if assigned
-    if (originalStatus === SosStatus.DISPATCHED && sos.assignedTeamId) {
-      const team = await this.teamRepo.findById(sos.assignedTeamId);
-      if (team) {
-        const activeCases = Math.max(0, (team.activeCasesCount || 0) - 1);
-        const updateData: any = { activeCasesCount: activeCases };
-        if (activeCases === 0 && team.status === TeamStatus.BUSY) {
-          updateData.status = TeamStatus.AVAILABLE;
-        }
-        await this.teamRepo.update(team.id, updateData);
-      }
+    // Release team if assigned and resolve queue
+    if (sos.assignedTeamId) {
+      await this.dispatchOrchestrator.releaseTeamAndResolveQueue(
+        sos.assignedTeamId,
+      );
     }
 
     const updated = await this.sosRepo.update(id, sos);
+
+    // 📡 Realtime: broadcast cancellation to admin province room
+    this.dispatchSocketService.broadcastSosStatusUpdate(updated!.provinceId, {
+      sosId: updated!.id,
+      status: SosStatus.CANCELLED,
+    });
+
     return updated!;
   }
 }

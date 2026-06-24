@@ -19,6 +19,7 @@ import type { IRescueTeamService } from '../interfaces/rescue-team.service.inter
 import type { IProvinceRepository } from '../../../location/domain/repositories/location.repository.interface';
 import type { IWardRepository } from '../../../location/domain/repositories/location.repository.interface';
 import { RescueTeam } from '../../domain/entities/rescue-team';
+import { LocationService } from '../../../location/application/services/location.service';
 import { APP_MESSAGES } from '@shared/index';
 import { ConfigService } from '@nestjs/config';
 import { TeamType } from '@shared/core/enums/teamType.enum';
@@ -77,20 +78,42 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
     @Inject('IWardRepository')
     private readonly wardRepo: IWardRepository,
     private readonly configService: ConfigService,
+    private readonly locationService: LocationService,
   ) {}
 
   async create(dto: CreateRescueTeamDto, userId: number): Promise<RescueTeam> {
-    const province = await this.provinceRepo.findById(dto.provinceId);
+    let provinceId = dto.provinceId;
+    let adminUnitId = dto.adminUnitId;
+
+    if ((!provinceId || !adminUnitId) && dto.baseLocation?.coordinates) {
+      const [lng, lat] = dto.baseLocation.coordinates;
+      const resolvedUnit = await this.locationService.findUnitByCoordinates(
+        lat,
+        lng,
+      );
+      if (resolvedUnit) {
+        provinceId = resolvedUnit.provinceId;
+        adminUnitId = resolvedUnit.id;
+      }
+    }
+
+    if (!provinceId) {
+      throw new BadRequestException(APP_MESSAGES.RESCUE.INVALID_PROVINCE);
+    }
+    const province = await this.provinceRepo.findById(provinceId);
     if (!province) {
       throw new BadRequestException(APP_MESSAGES.RESCUE.INVALID_PROVINCE);
     }
 
-    const adminUnit = await this.wardRepo.findById(dto.adminUnitId);
+    if (!adminUnitId) {
+      throw new BadRequestException(APP_MESSAGES.RESCUE.INVALID_ADMIN_UNIT);
+    }
+    const adminUnit = await this.wardRepo.findById(adminUnitId);
     if (!adminUnit) {
       throw new BadRequestException(APP_MESSAGES.RESCUE.INVALID_ADMIN_UNIT);
     }
 
-    if (adminUnit.provinceId !== dto.provinceId) {
+    if (adminUnit.provinceId !== provinceId) {
       throw new BadRequestException(
         APP_MESSAGES.RESCUE.ADMIN_UNIT_NOT_IN_PROVINCE,
       );
@@ -133,6 +156,8 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
 
     const createdTeam = await this.teamRepo.create({
       ...dto,
+      provinceId,
+      adminUnitId,
       createdBy: userId,
       specializations,
       baseLocation,

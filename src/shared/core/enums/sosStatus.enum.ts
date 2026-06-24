@@ -4,4 +4,5 @@ export enum SosStatus {
   ON_SITE = 'ON_SITE', // Đội đến hiện trường
   RESOLVED = 'RESOLVED', // Đã xử lý xong
   CANCELLED = 'CANCELLED', // Bị hủy
+  PENDING_SPECIALIST = 'PENDING_SPECIALIST', // Chờ đội chuyên môn (Fallback cấp 3)
 }
