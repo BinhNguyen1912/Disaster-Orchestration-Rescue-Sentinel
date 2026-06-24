@@ -12,6 +12,7 @@ import {
 import { ProvinceEntity } from '@infrastructure/database/entities/province.entity';
 import { AdministrativeUnitEntity } from '@infrastructure/database/entities/administrative-unit.entity';
 import { TeamSpecializationModule } from '../team-specialization/team-specialization.module';
+import { LocationModule } from '../location/location.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TeamSpecializationModule } from '../team-specialization/team-specializa
       AdministrativeUnitEntity,
     ]),
     TeamSpecializationModule,
+    LocationModule,
   ],
   controllers: [RescueTeamController],
   providers: [

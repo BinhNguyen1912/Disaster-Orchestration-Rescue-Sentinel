@@ -104,12 +104,15 @@ export class UserRepositoryImpl implements IUserRepository {
     return (await this.repo.save(user)) as unknown as User;
   }
 
-  async update(id: number, data: Partial<User> & { roleId?: number }): Promise<User | null> {
+  async update(
+    id: number,
+    data: Partial<User> & { roleId?: number },
+  ): Promise<User | null> {
     const existing = await this.repo.findOne({
       where: { id, deletedAt: IsNull() },
     });
     if (!existing) return null;
-    
+
     const { roleId, ...userData } = data;
     Object.assign(existing, userData);
     await this.repo.save(existing);

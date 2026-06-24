@@ -312,6 +312,8 @@ export class AuthService {
       provinceId: user.provinceId,
       email: user.email,
       roleId: user.getActiveRoleId(),
+      fullName: user.fullName,
+      phone: user.phone,
     };
     const refreshPayload: RefreshTokenPayload = {
       sub: user.id,

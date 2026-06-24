@@ -42,12 +42,16 @@ export class NotificationGateway
   afterInit(server: Server) {
     // ✅ Gán server cho service ngay khi gateway khởi tạo
     this.notificationSocketService.setServer(server);
-    this.logger.log('🚀 NotificationGateway initialized — namespace: /notification');
+    this.logger.log(
+      '🚀 NotificationGateway initialized — namespace: /notification',
+    );
   }
 
   async handleConnection(client: Socket) {
     const userId = client.handshake.query['userId'] as string;
-    const deviceType = (client.handshake.query['device'] || client.handshake.query['deviceType'] || 'web') as string;
+    const deviceType = (client.handshake.query['device'] ||
+      client.handshake.query['deviceType'] ||
+      'web') as string;
 
     if (userId) {
       (client as any).userId = userId;
@@ -66,35 +70,55 @@ export class NotificationGateway
           lastActive: Math.floor(Date.now() / 1000).toString(),
         });
       } catch (err) {
-        this.logger.error(`Failed to update presence for user ${userId} on connection`, err);
+        this.logger.error(
+          `Failed to update presence for user ${userId} on connection`,
+          err,
+        );
       }
     } else {
-      this.logger.warn(`⚠️ [CONNECT WARNING] Socket ID: ${client.id} connected without userId`);
+      this.logger.warn(
+        `⚠️ [CONNECT WARNING] Socket ID: ${client.id} connected without userId`,
+      );
     }
   }
 
   async handleDisconnect(client: Socket) {
     const userId = (client as any).userId;
     if (userId) {
-      this.logger.log(`🔴 [DISCONNECT] Socket ID: ${client.id} | User ID: ${userId} disconnected`);
+      this.logger.log(
+        `🔴 [DISCONNECT] Socket ID: ${client.id} | User ID: ${userId} disconnected`,
+      );
       const redisKey = `user:status:${userId}`;
       try {
-        const count = await this.redisService.hincrby(redisKey, 'connectionCount', -1);
+        const count = await this.redisService.hincrby(
+          redisKey,
+          'connectionCount',
+          -1,
+        );
         if (count <= 0) {
           await this.redisService.hsetAll(redisKey, {
             status: 'offline',
             connectionCount: '0', // ensure it doesn't stay negative
             lastActive: Math.floor(Date.now() / 1000).toString(),
           });
-          this.logger.log(`👤 User ${userId} is now offline (all connections closed)`);
+          this.logger.log(
+            `👤 User ${userId} is now offline (all connections closed)`,
+          );
         } else {
-          this.logger.log(`🔌 remaining connections for user ${userId}: ${count}`);
+          this.logger.log(
+            `🔌 remaining connections for user ${userId}: ${count}`,
+          );
         }
       } catch (err) {
-        this.logger.error(`Failed to update presence for user ${userId} on disconnect`, err);
+        this.logger.error(
+          `Failed to update presence for user ${userId} on disconnect`,
+          err,
+        );
       }
     } else {
-      this.logger.log(`🔌 [DISCONNECT] Socket ID: ${client.id} disconnected (no userId associated)`);
+      this.logger.log(
+        `🔌 [DISCONNECT] Socket ID: ${client.id} disconnected (no userId associated)`,
+      );
     }
   }
 

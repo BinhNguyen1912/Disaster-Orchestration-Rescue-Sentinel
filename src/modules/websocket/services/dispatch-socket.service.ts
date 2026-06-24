@@ -26,20 +26,27 @@ export class DispatchSocketService {
     this.server
       ?.to(`province:${provinceId}`)
       .emit(DISPATCH_EVENTS.SOS_CREATED, sos);
-    this.logger.log(`📡 [province:${provinceId}] ${DISPATCH_EVENTS.SOS_CREATED}`);
+    this.logger.log(
+      `📡 [province:${provinceId}] ${DISPATCH_EVENTS.SOS_CREATED}`,
+    );
   }
 
   /** Cập nhật trạng thái SOS cho admin tỉnh */
-  broadcastSosStatusUpdate(provinceId: number, payload: {
-    sosId: number;
-    status: string;
-    assignedTeamId?: number;
-    distanceMeters?: number;
-  }) {
+  broadcastSosStatusUpdate(
+    provinceId: number,
+    payload: {
+      sosId: number;
+      status: string;
+      assignedTeamId?: number;
+      distanceMeters?: number;
+    },
+  ) {
     this.server
       ?.to(`province:${provinceId}`)
       .emit(DISPATCH_EVENTS.SOS_STATUS_UPDATED, payload);
-    this.logger.log(`📡 [province:${provinceId}] ${DISPATCH_EVENTS.SOS_STATUS_UPDATED} sosId=${payload.sosId}`);
+    this.logger.log(
+      `📡 [province:${provinceId}] ${DISPATCH_EVENTS.SOS_STATUS_UPDATED} sosId=${payload.sosId}`,
+    );
   }
 
   /** Alert admin khi không tìm được đội nào */
@@ -50,23 +57,25 @@ export class DispatchSocketService {
         sosId,
         message: 'Không tìm được đội cứu hộ phù hợp — cần điều phối thủ công',
       });
-    this.logger.warn(`⚠️ [province:${provinceId}] No team available for sos=${sosId}`);
+    this.logger.warn(
+      `⚠️ [province:${provinceId}] No team available for sos=${sosId}`,
+    );
   }
 
   // ── Rescue team room ─────────────────────────────────────────────────────
 
   /** Notify rescue team được assign nhiệm vụ */
   notifyTeamAssigned(teamId: number, sos: any) {
-    this.server
-      ?.to(`team:${teamId}`)
-      .emit(DISPATCH_EVENTS.TEAM_ASSIGNED, {
-        sosId: sos.id,
-        location: sos.location,
-        severity: sos.severity,
-        requestType: sos.requestType,
-        description: sos.description,
-      });
-    this.logger.log(`📡 [team:${teamId}] ${DISPATCH_EVENTS.TEAM_ASSIGNED} sosId=${sos.id}`);
+    this.server?.to(`team:${teamId}`).emit(DISPATCH_EVENTS.TEAM_ASSIGNED, {
+      sosId: sos.id,
+      location: sos.location,
+      severity: sos.severity,
+      requestType: sos.requestType,
+      description: sos.description,
+    });
+    this.logger.log(
+      `📡 [team:${teamId}] ${DISPATCH_EVENTS.TEAM_ASSIGNED} sosId=${sos.id}`,
+    );
   }
 
   /** Notify rescue team bị đổi nhiệm vụ */

@@ -16,6 +16,31 @@ export class LocationController {
     };
   }
 
+  @Get('resolve')
+  async resolveLocation(@Query('lat') lat: string, @Query('lng') lng: string) {
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return {
+        success: true,
+        data: null,
+      };
+    }
+    const unit = await this.locationService.findUnitByCoordinates(
+      latitude,
+      longitude,
+    );
+    return {
+      success: true,
+      data: unit
+        ? {
+            provinceId: unit.provinceId,
+            adminUnitId: unit.id,
+          }
+        : null,
+    };
+  }
+
   @Get('provinces/:id')
   async getProvinceById(@Param('id', ParseIntPipe) id: number) {
     const province = await this.locationService.getProvinceById(id);

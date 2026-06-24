@@ -502,7 +502,9 @@ async function bootstrap() {
     [PROVINCE_ID],
   );
   const validAdminUnitIds = adminUnits.map((row: any) => row.id);
-  console.log(`🔑 Found ${validAdminUnitIds.length} valid administrative units for provinceId = ${PROVINCE_ID}`);
+  console.log(
+    `🔑 Found ${validAdminUnitIds.length} valid administrative units for provinceId = ${PROVINCE_ID}`,
+  );
 
   for (const userData of mockUsers) {
     const existing = await userRepo.findOne({
@@ -518,9 +520,10 @@ async function bootstrap() {
     const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
 
     // Dynamically assign a valid adminUnitId if units exist for this province
-    const assignedAdminUnitId = validAdminUnitIds.length > 0
-      ? validAdminUnitIds[createdCount % validAdminUnitIds.length]
-      : null;
+    const assignedAdminUnitId =
+      validAdminUnitIds.length > 0
+        ? validAdminUnitIds[createdCount % validAdminUnitIds.length]
+        : null;
 
     const user = userRepo.create({
       ...userData,

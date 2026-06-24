@@ -3,6 +3,8 @@ export interface AccessTokenPayload {
   provinceId: number;
   roleId?: number;
   email?: string;
+  fullName?: string;
+  phone?: string;
   exp?: number;
   iat?: number;
 }

@@ -1,0 +1,86 @@
+# Nâng cấp thuật toán Auto-Dispatch: R-Tree (GiST) + Expanding Radius + Multi-factor Scoring
+
+Tài liệu này mô tả kế hoạch triển khai từng bước thuật toán tự động điều phối (Auto-dispatch) cho các yêu cầu SOS dựa trên khoảng cách quét tăng dần và chấm điểm ưu tiên của đội cứu hộ.
+
+## Tóm tắt luồng hoạt động đề xuất (Proposed Flow)
+
+```mermaid
+graph TD
+    A[SOS Request được tạo] --> B[Kích hoạt Auto Dispatch]
+    B --> C[Thiết lập danh sách bán kính: 5km, 10km, 20km, 40km, 50km]
+    C --> D[Bắt đầu với Bán kính R = 5km]
+    D --> E{Tìm đội AVAILABLE/STANDBY cùng Tỉnh trong bán kính R?}
+    E -- Có --> F[Tính điểm cho từng đội: Score = Dist*0.5 + Cases*0.3 + Mismatch*0.2]
+    F --> G[Sắp xếp đội theo Score tăng dần]
+    G --> H[Chọn đội có Score thấp nhất để phân công]
+    E -- Không --> I{R là mốc bán kính cuối cùng (50km)?}
+    I -- Chưa --> J[Mở rộng bán kính tiếp theo]
+    J --> E
+    I -- Rồi --> K[Trả về null -> Alert hệ thống chuyển sang phân công Thủ công]
+```
+
+---
+
+## Các bước triển khai chi tiết (Step-by-step Steps)
+
+### Bước 1: Khai báo ánh xạ chuyên môn giữa SOS và Đội cứu hộ (Skill Mapping)
+Để tính toán `skill_mismatch` (Độ lệch kỹ năng/chuyên môn):
+*   Cần ánh xạ giữa loại cứu hộ (`SosRequestType`) và nhóm đội phù hợp (`TeamType`).
+*   Bảng ánh xạ dự kiến:
+    *   `FLOOD` -> Đội phù hợp: `DAN_PHONG`, `QUAN_SU`, `TONG_HOP`
+    *   `FIRE_FIGHTING` -> Đội phù hợp: `PCCC`, `TONG_HOP`
+    *   `TRAFFIC_ACCIDENT` -> Đội phù hợp: `Y_TE`, `PCCC`, `TONG_HOP`
+    *   `MEDICAL_EMERGENCY` -> Đội phù hợp: `Y_TE`, `TONG_HOP`
+    *   `NATURAL_DISASTER` -> Đội phù hợp: `QUAN_SU`, `TONG_HOP`
+    *   `OTHER` -> Mọi đội đều phù hợp (`skill_mismatch = 0`).
+
+---
+
+### Bước 2: Cập nhật hàm truy vấn trong `RescueTeamRepository`
+Hiện tại hàm `findNearestAvailable` chỉ lấy đội gần nhất mà không giới hạn bán kính. Chúng ta cần cập nhật hoặc thêm một hàm mới trong [rescue-team.repository.ts](file:///d:/DoAn/DOAN/be/src/modules/rescue-team/infrastructure/persistence/repositories/rescue-team.repository.ts):
+*   **Hàm mới**: `findTeamsInRadius(lat, lng, provinceId, radiusMeters)`
+*   **Mô tả**: Sử dụng hàm `ST_DWithin` của PostGIS để tìm tất cả các đội cứu hộ có trạng thái `AVAILABLE` hoặc `STANDBY` trong bán kính xác định, cùng tỉnh, kèm theo khoảng cách thực tế (bằng mét, sử dụng `geography` cast).
+
+---
+
+### Bước 3: Triển khai công thức chấm điểm (Scoring) & Chuẩn hóa dữ liệu (Normalization)
+Vì khoảng cách (mét) và số vụ việc đang xử lý (số nguyên) có thang đo khác nhau, ta cần chuẩn hóa chúng về khoảng từ `0` đến `1` trước khi áp dụng công thức:
+1.  **Khoảng cách (`distance`)**: Chuẩn hóa bằng tỷ lệ so với bán kính tối đa của vòng quét hiện tại: 
+    $$\text{distance\_norm} = \frac{\text{distance}}{\text{radius}}$$
+2.  **Số ca đang xử lý (`active_cases`)**: Giả định số ca tối đa mà một đội có thể xử lý song song là 5 ca (hoặc lấy giá trị max thực tế của các đội tìm thấy):
+    $$\text{active\_cases\_norm} = \frac{\min(\text{activeCasesCount}, 5)}{5}$$
+3.  **Lệch chuyên môn (`skill_mismatch`)**:
+    *   Nếu `SosRequestType` của ca SOS thuộc danh sách đội cứu hộ đáp ứng được -> `skill_mismatch_norm = 0`.
+    *   Ngược lại -> `skill_mismatch_norm = 1`.
+4.  **Tính điểm**:
+    $$\text{Score} = \text{distance\_norm} \times 0.5 + \text{active\_cases\_norm} \times 0.3 + \text{skill\_mismatch\_norm} \times 0.2$$
+    *(Đội có điểm Score thấp nhất là đội phù hợp nhất)*.
+
+---
+
+### Bước 4: Viết vòng lặp Quét mở rộng bán kính (Expanding Radius)
+Cập nhật trong [DistanceBasedDispatchStrategy](file:///d:/DoAn/DOAN/be/src/modules/sos-request/application/services/distance-based-dispatch.strategy.ts):
+*   Mảng bán kính: `[5000, 10000, 20000, 40000, 50000]` (mét).
+*   Chạy vòng lặp `for` qua từng bán kính.
+*   Gọi repository lấy tất cả các đội trong bán kính đó.
+*   Nếu tìm thấy đội:
+    *   Tính toán Score cho từng đội.
+    *   Sắp xếp tăng dần theo Score.
+    *   Trả về ID của đội tốt nhất.
+*   Nếu chạy hết vòng lặp mà không có đội nào -> trả về `null`.
+
+---
+
+### Bước 5: Viết Unit Test và kiểm tra thực tế
+*   Viết test case kiểm tra tính đúng đắn của việc tìm kiếm theo vòng lặp bán kính.
+*   Kiểm tra thuật toán có chọn đúng đội có điểm Score thấp nhất không.
+
+---
+
+## Ý kiến của bạn
+
+> [!IMPORTANT]
+> Hãy xem xét luồng hoạt động trên:
+> 1. Bạn thấy mảng bán kính `[5km, 10km, 20km, 40km, 50km]` đã phù hợp chưa?
+> 2. Các quy tắc ánh xạ chuyên môn (Skill Mapping) ở Bước 1 đã đúng ý bạn chưa?
+> 3. Hãy duyệt kế hoạch này để chúng ta bắt đầu thực hiện Bước 1.

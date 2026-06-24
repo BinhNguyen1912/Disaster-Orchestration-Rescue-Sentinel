@@ -451,6 +451,42 @@ export class SeederService {
         group: 'sos',
         description: 'Cho phép điều động đội liên tỉnh',
       },
+      {
+        key: 'dispatch.radius_steps',
+        value: '5000,10000,20000,40000,50000',
+        group: 'dispatch',
+        description:
+          'Các mốc bán kính quét tìm kiếm đội cứu hộ (mét, ngăn cách bởi dấu phẩy)',
+      },
+      {
+        key: 'dispatch.weight_distance',
+        value: '0.5',
+        group: 'dispatch',
+        description:
+          'Trọng số khoảng cách khi tính điểm phù hợp của đội cứu hộ (0 đến 1)',
+      },
+      {
+        key: 'dispatch.weight_active_cases',
+        value: '0.3',
+        group: 'dispatch',
+        description:
+          'Trọng số ca đang xử lý khi tính điểm phù hợp của đội cứu hộ (0 đến 1)',
+      },
+      {
+        key: 'dispatch.weight_skill_mismatch',
+        value: '0.2',
+        group: 'dispatch',
+        description:
+          'Trọng số độ lệch chuyên ngành khi tính điểm phù hợp của đội cứu hộ (0 đến 1)',
+      },
+      {
+        key: 'dispatch.skill_mapping',
+        value:
+          '{"FLOOD":["DAN_PHONG","QUAN_SU","TONG_HOP"],"FIRE_FIGHTING":["PCCC","TONG_HOP"],"TRAFFIC_ACCIDENT":["Y_TE","PCCC","TONG_HOP"],"MEDICAL_EMERGENCY":["Y_TE","TONG_HOP"],"NATURAL_DISASTER":["QUAN_SU","TONG_HOP"],"OTHER":["DAN_PHONG","PCCC","QUAN_SU","TINH_NGUYEN","Y_TE","TONG_HOP"]}',
+        group: 'dispatch',
+        description:
+          'Ánh xạ chuyên môn giữa loại sự cố SOS và loại đội cứu hộ (định dạng JSON)',
+      },
 
       {
         key: 'severity.critical',

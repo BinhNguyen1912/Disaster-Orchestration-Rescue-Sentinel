@@ -95,6 +95,20 @@ export class SosRequestEntity {
   @Column({ type: 'int', nullable: true })
   clusterId?: number;
 
+  // ── Fallback cấp 3: Chờ đội chuyên môn ──────────────────────────────────
+
+  @Column({ type: 'boolean', default: false })
+  requiresEquipment: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  specialistPending: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  specialistType?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  pendingSince?: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

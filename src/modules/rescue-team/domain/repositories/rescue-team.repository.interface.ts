@@ -1,5 +1,6 @@
 import { PaginatedResult } from '../../../../shared/common/dtos/pagination.dto';
 import { RescueTeam } from '../entities/rescue-team';
+import type { EntityManager } from 'typeorm';
 
 export interface PaginationOptions {
   page: number;
@@ -28,5 +29,28 @@ export interface IRescueTeamRepository {
     lat: number,
     lng: number,
     provinceId: number,
+  ): Promise<RescueTeam | null>;
+  findAvailableTeamsInRadius(
+    lat: number,
+    lng: number,
+    radiusMeters: number,
+    provinceId: number,
+  ): Promise<(RescueTeam & { distance_meters: number })[]>;
+
+  // Tìm ứng viên trong bán kính với SKIP LOCKED — đội đang bị lock bởi
+  // transaction khác sẽ bị bỏ qua (tránh blocking trong bão SOS đồng thời).
+  findCandidatesInRadiusWithLock(
+    lat: number,
+    lng: number,
+    radiusMeters: number,
+    provinceId: number,
+    limit: number,
+  ): Promise<(RescueTeam & { distance_meters: number })[]>;
+
+  // Lock 1 đội cụ thể bằng FOR UPDATE trong transaction ngắn (Pha commit).
+  // Trả null nếu đội không tồn tại.
+  lockTeamForUpdate(
+    teamId: number,
+    manager: EntityManager,
   ): Promise<RescueTeam | null>;
 }

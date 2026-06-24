@@ -54,6 +54,5 @@ export const APP_MESSAGES = {
     UPLOAD_ERROR_FILE_TYPE: 'Định dạng tệp tin không được hỗ trợ.',
     UPLOAD_ERROR_MAX_SIZE: 'Tệp tin vượt quá kích thước tối đa.',
     UPLOAD_SUCCESS: 'Tải tệp lên thành công',
-
-  }
+  },
 } as const;

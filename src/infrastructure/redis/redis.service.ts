@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
 
@@ -10,8 +15,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit() {
-    const redisUrl = this.configService.get<string>('REDIS_URL', 'redis://localhost:6379');
-    this.client = createClient({ url: redisUrl }) as RedisClientType;
+    const redisUrl = this.configService.get<string>(
+      'REDIS_URL',
+      'redis://localhost:6379',
+    );
+    this.client = createClient({ url: redisUrl });
 
     this.client.on('error', (err) => {
       this.logger.error('Redis Client Error', err);
@@ -50,7 +58,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   // Wrapper for HINCRBY
-  async hincrby(key: string, field: string, increment: number): Promise<number> {
+  async hincrby(
+    key: string,
+    field: string,
+    increment: number,
+  ): Promise<number> {
     return await this.client.hIncrBy(key, field, increment);
   }
 
