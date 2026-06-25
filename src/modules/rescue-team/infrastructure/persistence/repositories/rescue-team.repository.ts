@@ -111,10 +111,9 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
       .orderBy(
-        'ST_Distance(rt."currentLocation", ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
+        `ST_Distance(rt."currentLocation", ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))`,
         'ASC',
       )
-      .setParameters({ lat, lng })
       .getOne();
   }
 
@@ -124,7 +123,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
     radiusMeters: number,
     provinceId: number,
   ): Promise<(RescueTeamEntity & { distance_meters: number })[]> {
-    const point = `ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)`;
+    const point = `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`;
 
     const query = this.repo
       .createQueryBuilder('rt')
@@ -137,10 +136,9 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
       .andWhere(
-        `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, :radiusMeters)`,
+        `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, ${radiusMeters})`,
       )
-      .orderBy(`rt."currentLocation" <-> ${point}`)
-      .setParameters({ lat, lng, radiusMeters });
+      .orderBy(`rt."currentLocation" <-> ${point}`);
 
     const rawAndEntities = await query.getRawAndEntities();
 
@@ -158,7 +156,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
     provinceId: number,
     limit: number,
   ): Promise<(RescueTeamEntity & { distance_meters: number })[]> {
-    const point = `ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)`;
+    const point = `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)`;
 
     const query = this.repo
       .createQueryBuilder('rt')
@@ -171,13 +169,12 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
       .andWhere(
-        `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, :radiusMeters)`,
+        `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, ${radiusMeters})`,
       ) //chỉ lấy các đội trong bán kính
       .orderBy(`rt."currentLocation" <-> ${point}`) //sắp xếp theo khoảng cách
       .limit(limit) //chỉ lấy số lượng đội tối đa
       .setLock('pessimistic_write') //khóa bản ghi
-      .setOnLocked('skip_locked') //nếu đang có team khác xử lý thì bỏ qua
-      .setParameters({ lat, lng, radiusMeters });
+      .setOnLocked('skip_locked'); //nếu đang có team khác xử lý thì bỏ qua
 
     const rawAndEntities = await query.getRawAndEntities();
 

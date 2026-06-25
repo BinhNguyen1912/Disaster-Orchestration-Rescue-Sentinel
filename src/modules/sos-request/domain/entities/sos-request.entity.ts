@@ -38,4 +38,8 @@ export interface SosRequest {
   pendingSince?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  province?: any;
+  adminUnit?: any;
+  user?: any;
+  assignedTeam?: any;
 }

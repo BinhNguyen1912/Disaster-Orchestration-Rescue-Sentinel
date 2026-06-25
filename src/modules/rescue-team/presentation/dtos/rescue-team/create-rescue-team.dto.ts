@@ -44,4 +44,20 @@ export class CreateRescueTeamValidationDto {
   @IsOptional()
   @IsString()
   logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  foundingDate?: string;
+
+  @IsOptional()
+  @IsString()
+  baseLocationAddress?: string;
+
+  @IsOptional()
+  @IsNumber()
+  coverageAreaSize?: number;
 }

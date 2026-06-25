@@ -12,4 +12,8 @@ export interface UpdateRescueTeamDto {
   provinceId?: number;
   adminUnitId?: number;
   baseLocation?: { type: 'Point'; coordinates: [number, number] };
+  email?: string;
+  foundingDate?: Date | string;
+  baseLocationAddress?: string;
+  coverageAreaSize?: number;
 }

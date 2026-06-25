@@ -101,6 +101,18 @@ export class RescueTeamEntity {
   @Column({ type: 'int', default: 0 })
   totalHoursActive: number;
 
+  @Column({ type: 'varchar', nullable: true })
+  email?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  foundingDate?: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  baseLocationAddress?: string;
+
+  @Column({ type: 'float', nullable: true })
+  coverageAreaSize?: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

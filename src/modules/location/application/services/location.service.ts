@@ -58,7 +58,6 @@ export class LocationService {
     lat: number,
     lng: number,
   ): Promise<AdministrativeUnitEntity | null> {
-    // 1. Try finding administrative unit that contains the point
     const containingUnit = await this.wardRepo
       .createQueryBuilder('unit')
       .where(
@@ -71,12 +70,11 @@ export class LocationService {
       return containingUnit;
     }
 
-    // 2. Fallback: Find the nearest administrative unit by centerPoint distance
     const nearestUnit = await this.wardRepo
       .createQueryBuilder('unit')
       .where('unit.centerPoint IS NOT NULL')
       .orderBy(
-        'ST_Distance(unit.centerPoint, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))',
+        `ST_Distance(unit.centerPoint, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))`,
         'ASC',
       )
       .getOne();

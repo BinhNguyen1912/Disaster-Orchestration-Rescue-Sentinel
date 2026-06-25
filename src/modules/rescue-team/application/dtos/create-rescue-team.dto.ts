@@ -10,4 +10,8 @@ export interface CreateRescueTeamDto {
   maxCapacity?: number;
   specializationIds?: number[];
   logoUrl?: string;
+  email?: string;
+  foundingDate?: Date | string;
+  baseLocationAddress?: string;
+  coverageAreaSize?: number;
 }

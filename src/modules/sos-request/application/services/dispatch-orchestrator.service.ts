@@ -5,12 +5,17 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SosRequest } from '../../domain/entities/sos-request.entity';
 import { RescueTeam } from '../../../rescue-team/domain/entities/rescue-team';
 import { SosRequestEntity } from '@infrastructure/database/entities/sos-request.entity';
 import { RescueTeamEntity } from '@infrastructure/database/entities/rescue-team.entity';
 import { DispatchQueueEntity } from '@infrastructure/database/entities/dispatch-queue.entity';
+import {
+  SosStatusHistoryEntity,
+  SosHistoryEventType,
+} from '@infrastructure/database/entities/sos-status-history.entity';
 import { SosStatus } from '@shared/core/enums/sosStatus.enum';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
@@ -47,6 +52,8 @@ export class DispatchOrchestratorService {
     private readonly dispatchQueueRepo: IDispatchQueueRepository,
     private readonly systemSettingService: SystemSettingService,
     private readonly dispatchSocketService: DispatchSocketService,
+    @InjectRepository(SosStatusHistoryEntity)
+    private readonly historyRepo: Repository<SosStatusHistoryEntity>,
   ) {}
 
   /**
@@ -79,6 +86,16 @@ export class DispatchOrchestratorService {
         sosRequest.provinceId,
         sosRequest.id,
       );
+
+      // 📝 History: Specialist pending
+      this.recordHistory({
+        sosRequestId: sosRequest.id,
+        eventType: SosHistoryEventType.SPECIALIST_PENDING,
+        fromStatus: SosStatus.PENDING,
+        toStatus: SosStatus.PENDING_SPECIALIST,
+        note: 'Không tìm thấy đội nào phù hợp. Chuyển sang chờ đội chuyên môn.',
+      });
+
       return { type: 'specialist_pending' };
     }
 
@@ -149,6 +166,17 @@ export class DispatchOrchestratorService {
           dbSos.assignedTeamId = undefined;
           await manager.save(SosRequestEntity, dbSos);
         }
+
+        // 📝 History: Queued
+        this.recordHistory({
+          sosRequestId: sosRequest.id,
+          eventType: SosHistoryEventType.QUEUED,
+          fromStatus: SosStatus.PENDING,
+          toStatus: SosStatus.PENDING,
+          teamId: bestQueueTeam.teamId,
+          dispatchMethod: DispatchMethod.AUTO,
+          note: `Yêu cầu được xếp hàng chờ đội cứu hộ #${bestQueueTeam.teamId}.`,
+        });
 
         return {
           type: 'queued',
@@ -228,6 +256,17 @@ export class DispatchOrchestratorService {
                 manager,
               );
 
+              // 📝 History: Dual dispatch - primary team
+              this.recordHistory({
+                sosRequestId: sosRequest.id,
+                eventType: SosHistoryEventType.TEAM_ASSIGNED,
+                fromStatus: SosStatus.PENDING,
+                toStatus: SosStatus.DISPATCHED,
+                teamId: selectedTeam.id,
+                dispatchMethod: DispatchMethod.AUTO,
+                note: `Tự động phân công đội cứu hộ #${selectedTeam.id}. Đội chuyên môn #${busySpecialistCand.teamId} đang chờ sẵn.`,
+              });
+
               return {
                 type: 'dual_dispatched',
                 assignedTeamId: selectedTeam.id,
@@ -241,6 +280,17 @@ export class DispatchOrchestratorService {
           }
         }
       }
+
+      // 📝 History: Single auto-dispatch
+      this.recordHistory({
+        sosRequestId: sosRequest.id,
+        eventType: SosHistoryEventType.TEAM_ASSIGNED,
+        fromStatus: SosStatus.PENDING,
+        toStatus: SosStatus.DISPATCHED,
+        teamId: selectedTeam.id,
+        dispatchMethod: DispatchMethod.AUTO,
+        note: `Tự động phân công đội cứu hộ #${selectedTeam.id}.`,
+      });
 
       return {
         type: 'dispatched',
@@ -306,6 +356,17 @@ export class DispatchOrchestratorService {
 
         // Xóa hàng chờ trong DB
         await this.dispatchQueueRepo.deleteById(nextInQueue.id, manager);
+
+        // 📝 History: Handoff - team gán ca tiếp theo từ queue
+        this.recordHistory({
+          sosRequestId: nextInQueue.sosRequestId,
+          eventType: SosHistoryEventType.TEAM_ASSIGNED,
+          fromStatus: SosStatus.PENDING,
+          toStatus: SosStatus.DISPATCHED,
+          teamId: team.id,
+          dispatchMethod: DispatchMethod.AUTO,
+          note: `Đội cứu hộ #${team.id} vừa hoàn thành ca trước, chuyển sang ca tiếp theo.`,
+        });
       } else {
         // 3b. Không còn hàng chờ -> Giải phóng đội về AVAILABLE
         this.logger.log(
@@ -393,6 +454,24 @@ export class DispatchOrchestratorService {
       team.activeCasesCount = (team.activeCasesCount || 0) + 1;
       await manager.save(RescueTeamEntity, team);
 
+      // 📝 History: Manual dispatch trong orchestrator (reassign)
+      const isReassign = !!sos.assignedTeamId && sos.assignedTeamId !== team.id;
+      this.recordHistory({
+        sosRequestId: sosRequestId,
+        eventType: isReassign
+          ? SosHistoryEventType.TEAM_REASSIGNED
+          : SosHistoryEventType.TEAM_ASSIGNED,
+        fromStatus: SosStatus.PENDING,
+        toStatus: SosStatus.DISPATCHED,
+        changedById: userId,
+        teamId: team.id,
+        previousTeamId: isReassign ? (sos.assignedTeamId ?? null) : null,
+        dispatchMethod: DispatchMethod.MANUAL,
+        note: isReassign
+          ? `Chuyển đội cứu hộ từ #${sos.assignedTeamId} sang #${team.id}.`
+          : `Thủ công phân công đội cứu hộ #${team.id}.`,
+      });
+
       return {
         type: 'dispatched',
         assignedTeamId: team.id,
@@ -465,5 +544,38 @@ export class DispatchOrchestratorService {
 
     const currentCount = parseInt(result?.cnt ?? '0', 10);
     return currentCount < maxDual;
+  }
+
+  /**
+   * Fire-and-forget helper để ghi lịch sử (non-fatal).
+   */
+  private recordHistory(opts: {
+    sosRequestId: number;
+    eventType: SosHistoryEventType;
+    fromStatus?: SosStatus | null;
+    toStatus?: SosStatus | null;
+    changedById?: number | null;
+    teamId?: number | null;
+    previousTeamId?: number | null;
+    dispatchMethod?: DispatchMethod | null;
+    note?: string | null;
+  }): void {
+    const entry = this.historyRepo.create({
+      sosRequestId: opts.sosRequestId,
+      eventType: opts.eventType,
+      fromStatus: opts.fromStatus ?? null,
+      toStatus: opts.toStatus ?? null,
+      changedById: opts.changedById ?? null,
+      teamId: opts.teamId ?? null,
+      previousTeamId: opts.previousTeamId ?? null,
+      dispatchMethod: opts.dispatchMethod ?? null,
+      note: opts.note ?? null,
+    });
+    this.historyRepo.save(entry).catch((err) => {
+      this.logger.error(
+        '[DispatchOrchestrator] Failed to record SOS history:',
+        err,
+      );
+    });
   }
 }

@@ -22,6 +22,10 @@ export interface RescueTeam {
   totalMissions: number;
   totalRescued: number;
   totalHoursActive: number;
+  email?: string;
+  foundingDate?: Date;
+  baseLocationAddress?: string;
+  coverageAreaSize?: number;
   createdAt?: Date;
   updatedAt?: Date;
   createdBy?: number;
