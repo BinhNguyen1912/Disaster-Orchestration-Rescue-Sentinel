@@ -39,4 +39,6 @@ export interface ISosRequestService {
     dto: CancelSosRequestDto,
     user?: AccessTokenPayload,
   ): Promise<SosRequest>;
+  findById(id: number): Promise<SosRequest>;
+  getTimeline(id: number): Promise<any[]>;
 }

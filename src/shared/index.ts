@@ -28,6 +28,7 @@ export * from './core/enums/sosType.enum';
 export * from './core/enums/targetType.enum';
 export * from './core/enums/teamStatus.enum';
 export * from './core/enums/teamType.enum';
+export * from './core/enums/equipmentStatus.enum';
 export * from './core/enums/weatherAlertType.enum';
 export * from './core/enums/weatherSource.enum';
 

@@ -130,6 +130,33 @@ export class SosRequestController {
     return this.service.assignTeam(parseInt(id, 10), dto, req.user);
   }
 
+  @ApiOperation({ summary: 'Lấy chi tiết yêu cầu SOS' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Chi tiết yêu cầu SOS' })
+  @Get(':id')
+  @RequirePermissions(Permissions.SOS_READ)
+  async findById(@Param('id') id: string) {
+    return this.service.findById(parseInt(id, 10));
+  }
+
+  @ApiOperation({ summary: 'Lấy lịch sử xử lý (timeline) của yêu cầu SOS' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Lịch sử xử lý' })
+  @Get(':id/timeline')
+  @RequirePermissions(Permissions.SOS_READ)
+  async getTimeline(@Param('id') id: string) {
+    return this.service.getTimeline(parseInt(id, 10));
+  }
+
+  @ApiOperation({ summary: 'Lấy lịch sử thay đổi trạng thái & đội của SOS' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Lịch sử trạng thái SOS' })
+  @Get(':id/history')
+  @RequirePermissions(Permissions.SOS_READ)
+  async getHistory(@Param('id') id: string) {
+    return this.service.getTimeline(parseInt(id, 10));
+  }
+
   @ApiOperation({ summary: 'Hủy yêu cầu cứu hộ (Self-cancellation)' })
   @Delete(':id')
   @Public()

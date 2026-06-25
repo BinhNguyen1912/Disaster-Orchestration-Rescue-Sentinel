@@ -482,7 +482,7 @@ export class SeederService {
       {
         key: 'dispatch.skill_mapping',
         value:
-          '{"FLOOD":["DAN_PHONG","QUAN_SU","TONG_HOP"],"FIRE_FIGHTING":["PCCC","TONG_HOP"],"TRAFFIC_ACCIDENT":["Y_TE","PCCC","TONG_HOP"],"MEDICAL_EMERGENCY":["Y_TE","TONG_HOP"],"NATURAL_DISASTER":["QUAN_SU","TONG_HOP"],"OTHER":["DAN_PHONG","PCCC","QUAN_SU","TINH_NGUYEN","Y_TE","TONG_HOP"]}',
+          '{"FLOOD":{"DAN_PHONG":0.0,"QUAN_SU":0.0,"TONG_HOP":0.2,"PCCC":0.6,"Y_TE":0.8,"TINH_NGUYEN":0.5},"FIRE_FIGHTING":{"PCCC":0.0,"TONG_HOP":0.3,"QUAN_SU":0.5,"DAN_PHONG":0.8,"Y_TE":0.9,"TINH_NGUYEN":0.7},"TRAFFIC_ACCIDENT":{"Y_TE":0.0,"PCCC":0.2,"TONG_HOP":0.3,"DAN_PHONG":0.6,"QUAN_SU":0.7,"TINH_NGUYEN":0.5},"MEDICAL_EMERGENCY":{"Y_TE":0.0,"TONG_HOP":0.3,"DAN_PHONG":0.7,"PCCC":0.8,"QUAN_SU":0.8,"TINH_NGUYEN":0.6},"NATURAL_DISASTER":{"QUAN_SU":0.0,"DAN_PHONG":0.2,"TONG_HOP":0.2,"PCCC":0.5,"Y_TE":0.6,"TINH_NGUYEN":0.4},"OTHER":{"DAN_PHONG":0.2,"PCCC":0.2,"QUAN_SU":0.2,"TINH_NGUYEN":0.2,"Y_TE":0.2,"TONG_HOP":0.0}}',
         group: 'dispatch',
         description:
           'Ánh xạ chuyên môn giữa loại sự cố SOS và loại đội cứu hộ (định dạng JSON)',

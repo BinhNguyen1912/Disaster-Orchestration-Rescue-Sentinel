@@ -29,7 +29,6 @@ function fetchCoords(
   query: string,
 ): Promise<{ lat: number; lng: number } | null> {
   return new Promise((resolve) => {
-    // Remove administrative terms to make Nominatim queries more accurate
     const cleanedQuery = query
       .replace(/^(Xã|Phường|Thị trấn|Quận|Huyện|Thành phố|Tỉnh)\s+/gi, '')
       .replace(/,\s*(Xã|Phường|Thị trấn|Quận|Huyện|Thành phố|Tỉnh)\s+/gi, ', ');
@@ -125,7 +124,11 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
       dto.specializationIds.length > 0
     ) {
       const specs = await this.specRepo.findByIds(dto.specializationIds);
-      const invalid = specs.filter((s) => s.teamType !== dto.teamType);
+      const invalid = specs.filter((s) => {
+        if (dto.teamType === TeamType.TONG_HOP) return false;
+        if (s.teamType === TeamType.TONG_HOP) return false;
+        return s.teamType !== dto.teamType;
+      });
       if (invalid.length > 0) {
         throw new BadRequestException(
           APP_MESSAGES.RESCUE.INVALID_SPECIALIZATION_FOR_TEAM_TYPE,
@@ -154,8 +157,10 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
       }
     }
 
+    const { foundingDate, ...restDto } = dto;
     const createdTeam = await this.teamRepo.create({
-      ...dto,
+      ...restDto,
+      foundingDate: foundingDate ? new Date(foundingDate) : undefined,
       provinceId,
       adminUnitId,
       createdBy: userId,
@@ -304,8 +309,34 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
       }
     }
 
+    let specializations: any = undefined;
+    if (dto.specializationIds) {
+      const teamType = dto.teamType || existing.teamType;
+      if (dto.specializationIds.length > 0) {
+        const specs = await this.specRepo.findByIds(dto.specializationIds);
+        const invalid = specs.filter((s) => {
+          if (teamType === TeamType.TONG_HOP) return false;
+          if (s.teamType === TeamType.TONG_HOP) return false;
+          return s.teamType !== teamType;
+        });
+        if (invalid.length > 0) {
+          throw new BadRequestException(
+            APP_MESSAGES.RESCUE.INVALID_SPECIALIZATION_FOR_TEAM_TYPE,
+          );
+        }
+        specializations = specs;
+      } else {
+        specializations = [];
+      }
+    }
+
+    const { foundingDate, ...restDto } = dto;
     const team = await this.teamRepo.update(id, {
-      ...dto,
+      ...restDto,
+      ...(foundingDate !== undefined && {
+        foundingDate: foundingDate ? new Date(foundingDate) : undefined,
+      }),
+      ...(specializations !== undefined && { specializations }),
       ...(baseLocation && { baseLocation, currentLocation: baseLocation }),
     });
     if (!team) {

@@ -25,7 +25,9 @@ import * as Entities from './entities';
         database: configService
           .get<string>('DB_NAME', 'rescue_system')
           .replace(/"/g, ''),
-        entities: Object.values(Entities),
+        entities: (Object.values(Entities) as any[]).filter(
+          (v) => typeof v === 'function',
+        ),
         synchronize: true,
       }),
     }),
