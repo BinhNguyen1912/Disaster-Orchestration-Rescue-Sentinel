@@ -96,22 +96,17 @@ export class GlobalCacheInterceptor implements NestInterceptor {
     reqPath: string,
     request: any,
   ): CacheRule | null {
-    // Clean up trailing slash and prepend / if missing
     let cleanPath = reqPath.endsWith('/') ? reqPath.slice(0, -1) : reqPath;
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
-
-    // Check if the current controller route matches directly
     const routePath = request.route?.path;
 
     for (const rule of CACHE_RULES) {
       if (rule.method !== method) continue;
 
-      // Match by exact route path (Express route definition) if available
       if (routePath && routePath === rule.routePattern) {
         return rule;
       }
 
-      // Fallback: Regex matching on request path
       if (this.matchRoutePattern(rule.routePattern, cleanPath)) {
         return rule;
       }
@@ -120,11 +115,7 @@ export class GlobalCacheInterceptor implements NestInterceptor {
     return null;
   }
 
-  /**
-   * Helper to check if a request path matches a route pattern (e.g. /locations/:id matches /locations/12)
-   */
   private matchRoutePattern(pattern: string, path: string): boolean {
-    // Replace Express-style route parameters e.g. :id or :type with regex groups
     const regexStr = pattern
       .replace(/:[a-zA-Z0-9_]+/g, '[a-zA-Z0-9_\\-]+')
       .replace(/\//g, '\\/');
@@ -132,9 +123,6 @@ export class GlobalCacheInterceptor implements NestInterceptor {
     return regex.test(path);
   }
 
-  /**
-   * Handles automatic cache invalidation on database write operations (POST, PUT, PATCH, DELETE)
-   */
   private async handleInvalidation(
     method: string,
     reqPath: string,
@@ -142,7 +130,6 @@ export class GlobalCacheInterceptor implements NestInterceptor {
     for (const rule of INVALIDATION_RULES) {
       if (!rule.methods.includes(method as any)) continue;
 
-      // Match invalidation path using start prefix match or pattern regex
       const isMatch =
         reqPath.startsWith(rule.routePattern) ||
         this.matchRoutePattern(rule.routePattern, reqPath);
@@ -153,7 +140,6 @@ export class GlobalCacheInterceptor implements NestInterceptor {
 
         for (const keyPattern of rule.keysToInvalidate) {
           try {
-            // Find all matching keys in Redis
             const matchedKeys = await this.redisService.keys(keyPattern);
             if (matchedKeys && matchedKeys.length > 0) {
               this.logger.debug(

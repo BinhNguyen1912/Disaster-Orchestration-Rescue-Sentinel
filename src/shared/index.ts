@@ -38,6 +38,7 @@ export * from './domain/entities/team-specialization.entity';
 // Constants
 export * from './common/constants/messages.constant';
 export * from './common/constants/permissions.constant';
+export * from './common/constants/cache.constant';
 
 // Middlewares
 export * from './common/middlewares/logger.middleware';
