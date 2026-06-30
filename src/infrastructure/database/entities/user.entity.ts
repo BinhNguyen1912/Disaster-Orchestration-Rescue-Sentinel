@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ProvinceEntity } from './province.entity';
@@ -37,6 +38,8 @@ import { PermissionEntity } from './permission.entity';
 import { Gender } from '@shared/core/enums/gender.enum';
 
 @Entity('user')
+@Unique('UQ_USER_PHONE_PROVINCE', ['phone', 'provinceId'])
+@Unique('UQ_USER_EMAIL_PROVINCE', ['email', 'provinceId'])
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -62,13 +65,13 @@ export class UserEntity {
   @Column({ type: 'enum', enum: Gender })
   gender: Gender;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar' })
   phone: string;
 
   @Column({ type: 'boolean', default: true })
   phoneVerified: boolean;
 
-  @Column({ type: 'varchar', unique: true, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   email?: string;
 
   @Column({ type: 'boolean', default: true })

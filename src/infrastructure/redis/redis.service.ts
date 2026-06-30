@@ -75,4 +75,31 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async hget(key: string, field: string): Promise<string | null> {
     return await this.client.hGet(key, field);
   }
+
+  // Wrapper for GET
+  async get(key: string): Promise<string | null> {
+    return await this.client.get(key);
+  }
+
+  // Wrapper for SET with optional TTL
+  async set(
+    key: string,
+    value: string,
+    ttlSeconds?: number,
+  ): Promise<string | null> {
+    if (ttlSeconds) {
+      return await this.client.set(key, value, { EX: ttlSeconds });
+    }
+    return await this.client.set(key, value);
+  }
+
+  // Wrapper for DEL
+  async del(key: string): Promise<number> {
+    return await this.client.del(key);
+  }
+
+  // Wrapper for KEYS (pattern matching)
+  async keys(pattern: string): Promise<string[]> {
+    return await this.client.keys(pattern);
+  }
 }

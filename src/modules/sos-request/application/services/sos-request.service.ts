@@ -21,10 +21,12 @@ import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
 import { SystemRoleId } from '@shared/common/constants/permissions.constant';
 import { PaginatedResult } from '@shared/common/dtos/pagination.dto';
+import { INTERNAL_EVENTS } from '@shared/common/constants/events.constant';
 import { DispatchSocketService } from '../../../websocket/services/dispatch-socket.service';
 import { DispatchOrchestratorService } from './dispatch-orchestrator.service';
 import { SosHistoryService } from './sos-history.service';
 import { SosHistoryEventType } from '@infrastructure/database/entities/sos-status-history.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import type {
   ISosRequestRepository,
@@ -49,6 +51,7 @@ export class SosRequestService implements ISosRequestService {
     private readonly sosHistoryService: SosHistoryService,
     @InjectRepository(AuditLogEntity)
     private readonly auditLogRepo: Repository<AuditLogEntity>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private async logAction(
@@ -111,8 +114,14 @@ export class SosRequestService implements ISosRequestService {
         provinceId = resolvedUnit.provinceId;
         adminUnitId = resolvedUnit.id;
       } else {
-        provinceId = provinceId || 1;
-        adminUnitId = adminUnitId || 1;
+        const defaultUnit = await this.locationService.findFirstUnit();
+        if (defaultUnit) {
+          provinceId = defaultUnit.provinceId;
+          adminUnitId = defaultUnit.id;
+        } else {
+          provinceId = provinceId || 1;
+          adminUnitId = adminUnitId || 1;
+        }
       }
     }
 
@@ -138,6 +147,9 @@ export class SosRequestService implements ISosRequestService {
     };
 
     const created = await this.sosRepo.create(sosData);
+
+    // 📡 Emit internal event for async dispatch processing
+    this.eventEmitter.emit(INTERNAL_EVENTS.SOS_CREATED, { sosId: created.id });
 
     // 📡 Realtime: Notify admins in the same province about the new SOS request
     this.dispatchSocketService.broadcastNewSos(created.provinceId, created);
@@ -526,11 +538,15 @@ export class SosRequestService implements ISosRequestService {
   }
 
   async getTimeline(id: number): Promise<any[]> {
-    // Ưu tiên dùng sos_status_history (bảng chuyên biệt)
+    const sos = await this.sosRepo.findById(id);
+    if (!sos) {
+      throw new NotFoundException(`Không tìm thấy yêu cầu SOS với ID ${id}`);
+    }
+
     const history = await this.sosHistoryService.getHistory(id);
 
     if (history.length > 0) {
-      return history.map((entry) => {
+      const mapped = history.map((entry) => {
         let title = 'Cập nhật hoạt động';
 
         switch (entry.eventType) {
@@ -587,6 +603,77 @@ export class SosRequestService implements ISosRequestService {
           dispatchMethod: entry.dispatchMethod,
         };
       });
+
+      // ── Synthesize missing CREATED and TEAM_ASSIGNED events for legacy/seeded data ──
+      const hasCreated = mapped.some(
+        (item) =>
+          (item.eventType as string) ===
+          (SosHistoryEventType.CREATED as string),
+      );
+      if (!hasCreated && sos.createdAt) {
+        mapped.unshift({
+          id: -1, // Synthetic ID
+          time: sos.createdAt,
+          title: 'SOS được tạo',
+          desc:
+            sos.source === SosSource.WEB
+              ? 'Khách gửi yêu cầu khẩn cấp qua cổng web.'
+              : 'Người dùng gửi yêu cầu khẩn cấp qua ứng dụng di động.',
+          eventType: SosHistoryEventType.CREATED,
+          fromStatus: null,
+          toStatus: SosStatus.PENDING,
+          teamId: null,
+          teamName: null,
+          changedById: sos.requesterId ?? null,
+          changedByName: sos.requesterName ?? null,
+          dispatchMethod: null,
+        });
+      }
+
+      const hasAssigned = mapped.some(
+        (item) =>
+          (item.eventType as string) ===
+            (SosHistoryEventType.TEAM_ASSIGNED as string) ||
+          (item.eventType as string) ===
+            (SosHistoryEventType.TEAM_REASSIGNED as string),
+      );
+      if (!hasAssigned && (sos.assignedTeamId || sos.assignedAt)) {
+        const assignTime = sos.assignedAt || sos.createdAt;
+        const insertIndex = mapped.findIndex(
+          (item) =>
+            new Date(item.time).getTime() > new Date(assignTime).getTime(),
+        );
+
+        const assignedItem = {
+          id: -2, // Synthetic ID
+          time: assignTime,
+          title: 'Đã tiếp nhận & phân công',
+          desc: sos.assignedTeam
+            ? `Điều phối viên đã phân công đội cứu hộ: ${sos.assignedTeam.name}`
+            : 'Điều phối viên đã tiếp nhận và phân công.',
+          eventType: SosHistoryEventType.TEAM_ASSIGNED,
+          fromStatus: SosStatus.PENDING,
+          toStatus: SosStatus.DISPATCHED,
+          teamId: sos.assignedTeamId ?? null,
+          teamName: sos.assignedTeam?.name || null,
+          changedById: sos.assignedBy ?? null,
+          changedByName: sos.assigner?.fullName ?? null,
+          dispatchMethod: sos.dispatchMethod ?? null,
+        };
+
+        if (insertIndex === -1) {
+          mapped.push(assignedItem);
+        } else {
+          mapped.splice(insertIndex, 0, assignedItem);
+        }
+      }
+
+      // Sort chronological to be absolutely sure
+      mapped.sort(
+        (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+      );
+
+      return mapped;
     }
 
     // Fallback: nếu chưa có data history (SOS cũ), suy diễn từ audit log

@@ -11,6 +11,10 @@ import { SystemRoleId } from '@shared/common/constants/permissions.constant';
 import { LocationService } from '../../../location/application/services/location.service';
 import { DispatchSocketService } from '../../../websocket/services/dispatch-socket.service';
 import { DispatchOrchestratorService } from './dispatch-orchestrator.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { AuditLogEntity } from '@infrastructure/database/entities/audit-log.entity';
+import { SosHistoryService } from './sos-history.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('SosRequestService', () => {
   let service: SosRequestService;
@@ -54,6 +58,19 @@ describe('SosRequestService', () => {
     dispatchManual: jest.fn(),
   };
 
+  const mockSosHistoryService = {
+    record: jest.fn(),
+  };
+
+  const mockAuditLogRepo = {
+    save: jest.fn(),
+    create: jest.fn(),
+  };
+
+  const mockEventEmitter = {
+    emit: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -67,6 +84,12 @@ describe('SosRequestService', () => {
           provide: DispatchOrchestratorService,
           useValue: mockDispatchOrchestrator,
         },
+        { provide: SosHistoryService, useValue: mockSosHistoryService },
+        {
+          provide: getRepositoryToken(AuditLogEntity),
+          useValue: mockAuditLogRepo,
+        },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 

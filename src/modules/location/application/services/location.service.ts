@@ -5,6 +5,7 @@ import { ProvinceEntity } from '@infrastructure/database/entities/province.entit
 import { AdministrativeUnitEntity } from '@infrastructure/database/entities/administrative-unit.entity';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as https from 'https';
 
 @Injectable()
 export class LocationService {
@@ -38,6 +39,52 @@ export class LocationService {
 
   async getWardById(id: number) {
     return this.wardRepo.findOne({ where: { id } });
+  }
+
+  async queryGeocoding(
+    query: string,
+    limit: number = 6,
+    viewbox?: string,
+  ): Promise<any[]> {
+    return new Promise((resolve) => {
+      const cleanedQuery = query
+        .replace(/^(Xã|Phường|Thị trấn|Quận|Huyện|Thành phố|Tỉnh)\s+/gi, '')
+        .replace(
+          /,\s*(Xã|Phường|Thị trấn|Quận|Huyện|Thành phố|Tỉnh)\s+/gi,
+          ', ',
+        );
+
+      let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        cleanedQuery + ', Vietnam',
+      )}&limit=${limit}&addressdetails=1`;
+
+      if (viewbox) {
+        url += `&viewbox=${encodeURIComponent(viewbox)}&bounded=1`;
+      }
+
+      const options = {
+        headers: {
+          'User-Agent': 'RescueSystem/1.0',
+          'Accept-Language': 'vi',
+        },
+      };
+
+      https
+        .get(url, options, (res) => {
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => {
+            try {
+              const results = JSON.parse(data);
+              resolve(results);
+            } catch (e) {
+              resolve([]);
+            }
+          });
+          res.on('error', () => resolve([]));
+        })
+        .on('error', () => resolve([]));
+    });
   }
 
   getProvinceCenters(): { provinceCode: number; lat: number; lng: number }[] {
@@ -80,5 +127,9 @@ export class LocationService {
       .getOne();
 
     return nearestUnit || null;
+  }
+
+  async findFirstUnit(): Promise<AdministrativeUnitEntity | null> {
+    return this.wardRepo.findOne({ where: {} });
   }
 }

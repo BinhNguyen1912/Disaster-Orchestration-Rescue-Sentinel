@@ -13,6 +13,7 @@ export interface AuthUserResponse {
   email?: string;
   phone: string;
   provinceId: number;
+  role?: string;
 }
 
 export interface AuthLoginResponse {
@@ -41,11 +42,14 @@ export interface AdminRegisterInput extends RegisterInput {
 }
 
 export function toAuthUserResponse(user: User): AuthUserResponse {
+  const activeRole = user.userRoles?.find((ur) => ur.isActive && ur.role);
+  const role = activeRole ? activeRole.role?.name : undefined;
   return {
     id: user.id,
     fullName: user.fullName,
     email: user.email,
     phone: user.phone,
     provinceId: user.provinceId,
+    role,
   };
 }

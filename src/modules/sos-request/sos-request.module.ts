@@ -17,7 +17,9 @@ import { SystemSettingModule } from '../system-setting/system-setting.module';
 import { LocationModule } from '../location/location.module';
 import { SosRequestService } from './application/services/sos-request.service';
 import { SosHistoryService } from './application/services/sos-history.service';
+import { DispatchRetryService } from './application/services/dispatch-retry.service';
 import { WebSocketModule } from '../websocket/websocket.module';
+import { SosDispatchListener } from './application/listeners/sos-dispatch.listener';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { WebSocketModule } from '../websocket/websocket.module';
     SosHistoryService,
     DispatchOrchestratorService,
     DispatchConfigValidatorService,
+    DispatchRetryService,
+    SosDispatchListener,
     {
       provide: 'ISosRequestRepository',
       useClass: SosRequestRepositoryImpl,

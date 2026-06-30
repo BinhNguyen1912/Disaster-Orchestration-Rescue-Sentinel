@@ -12,6 +12,8 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { LoggerMiddleware } from '@shared/common/middlewares/logger.middleware';
 import { DatabaseModule } from '@infrastructure/database/database.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
+import { CacheModule } from './infrastructure/cache/cache.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from '@modules/auth/auth.module';
 import { HealthModule } from '@modules/health/health.module';
 import { RescueTeamModule } from '@modules/rescue-team/rescue-team.module';
@@ -25,9 +27,11 @@ import { UploadModule } from './modules/upload/upload.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
 import { SystemSettingModule } from './modules/system-setting/system-setting.module';
 import { RescueEquipmentModule } from './modules/rescue-equipment/rescue-equipment.module';
+import { RoutingModule } from './modules/routing/routing.module';
 import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
 import { Public } from '@shared/common/decorators/public.decorator';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @ApiTags('Root')
 @Controller()
@@ -44,8 +48,16 @@ export class AppController {
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
     RedisModule,
+    CacheModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     AuthModule,
     HealthModule,
     RescueTeamModule,
@@ -59,10 +71,15 @@ export class AppController {
     WebSocketModule,
     SystemSettingModule,
     RescueEquipmentModule,
+    RoutingModule,
   ],
 
   controllers: [AppController],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: AccessGuard,

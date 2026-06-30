@@ -33,12 +33,21 @@ export class UserRepositoryImpl
     return ormEntity;
   }
 
-  async findByIdentifier(identifier: string): Promise<User | null> {
+  async findByIdentifier(
+    identifier: string,
+    provinceId?: number,
+  ): Promise<User | null> {
+    const whereConditions: any[] = [
+      { email: identifier, deletedAt: IsNull() },
+      { phone: identifier, deletedAt: IsNull() },
+    ];
+    if (provinceId !== undefined) {
+      whereConditions.forEach((cond) => {
+        cond.provinceId = provinceId;
+      });
+    }
     const entity = await this.userRepository.findOne({
-      where: [
-        { email: identifier, deletedAt: IsNull() },
-        { phone: identifier, deletedAt: IsNull() },
-      ],
+      where: whereConditions,
       relations: ['userRoles', 'userRoles.role'],
     });
 

@@ -2,7 +2,10 @@ import { User } from '@modules/auth/domain/entities/user';
 import { IBaseRepository } from './base.repository.interface';
 
 export interface IUserRepository extends IBaseRepository<User> {
-  findByIdentifier(identifier: string): Promise<User | null>;
+  findByIdentifier(
+    identifier: string,
+    provinceId?: number,
+  ): Promise<User | null>;
   findByNationalId(nationalId: string): Promise<User | null>;
   findByResetToken(resetToken: string): Promise<User | null>;
   assignRole(

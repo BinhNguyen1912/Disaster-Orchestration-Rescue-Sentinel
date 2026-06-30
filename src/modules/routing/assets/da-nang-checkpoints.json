@@ -1,0 +1,156 @@
+{
+  "provinceId": 3,
+  "provinceName": "Đà Nẵng",
+  "nodes": [
+    { "id": "n1", "lat": 16.0544, "lng": 108.2022, "name": "Ngã tư Nguyễn Văn Linh - Bạch Đằng (Đuôi Cầu Rồng phía Tây)" },
+    { "id": "n2", "lat": 16.0600, "lng": 108.2200, "name": "Đường Bạch Đằng - Cầu Sông Hàn phía Tây" },
+    { "id": "n3", "lat": 16.0500, "lng": 108.2000, "name": "Đường Bạch Đằng - Cầu Trần Thị Lý phía Tây" },
+    { "id": "n4", "lat": 16.0610, "lng": 108.2270, "name": "Đường Ngô Quyền - Đầu Cầu Rồng phía Đông" },
+    { "id": "n5", "lat": 16.0680, "lng": 108.2300, "name": "Đường Ngô Quyền - Đầu Cầu Sông Hàn phía Đông" },
+    { "id": "n6", "lat": 16.0480, "lng": 108.2250, "name": "Đường Ngô Quyền - Đầu Cầu Trần Thị Lý phía Đông" },
+    { "id": "n7", "lat": 16.0680, "lng": 108.2120, "name": "Đường Bạch Đằng Bắc (Khu Cảng Sông Hàn)" },
+    { "id": "n8", "lat": 16.0420, "lng": 108.2020, "name": "Đường 2 Tháng 9 phía Nam" },
+    { "id": "n9", "lat": 16.0680, "lng": 108.2450, "name": "Bãi biển Phạm Văn Đồng" },
+    { "id": "n10", "lat": 16.0480, "lng": 108.2450, "name": "Bãi biển Mỹ Khê (Đường Nguyễn Văn Thoại)" },
+    { "id": "n11", "lat": 16.0380, "lng": 108.2250, "name": "Đường Ngũ Hành Sơn" },
+    { "id": "n12", "lat": 16.0750, "lng": 108.2320, "name": "Đường Ngô Quyền Bắc (Sơn Trà)" },
+    { "id": "n13", "lat": 16.0550, "lng": 108.1855, "name": "Cổng sân bay Đà Nẵng (Nguyễn Văn Linh)" },
+    { "id": "n14", "lat": 16.0650, "lng": 108.1855, "name": "Ngã tư Nguyễn Tri Phương - Điện Biên Phủ" },
+    { "id": "n15", "lat": 16.0420, "lng": 108.1855, "name": "Ngã tư Nguyễn Tri Phương - Nguyễn Hữu Thọ" }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "startNodeId": "n1",
+      "endNodeId": "n2",
+      "length": 0.7,
+      "geometry": [[16.0544, 108.2022], [16.0570, 108.2100], [16.0600, 108.2200]]
+    },
+    {
+      "id": "e2",
+      "startNodeId": "n1",
+      "endNodeId": "n3",
+      "length": 0.6,
+      "geometry": [[16.0544, 108.2022], [16.0520, 108.2010], [16.0500, 108.2000]]
+    },
+    {
+      "id": "e3",
+      "startNodeId": "n1",
+      "endNodeId": "n4",
+      "length": 0.5,
+      "geometry": [[16.0544, 108.2022], [16.0580, 108.2150], [16.0610, 108.2270]]
+    },
+    {
+      "id": "e4",
+      "startNodeId": "n2",
+      "endNodeId": "n5",
+      "length": 0.5,
+      "geometry": [[16.0600, 108.2200], [16.0640, 108.2250], [16.0680, 108.2300]]
+    },
+    {
+      "id": "e5",
+      "startNodeId": "n3",
+      "endNodeId": "n6",
+      "length": 0.6,
+      "geometry": [[16.0500, 108.2000], [16.0490, 108.2120], [16.0480, 108.2250]]
+    },
+    {
+      "id": "e6",
+      "startNodeId": "n4",
+      "endNodeId": "n5",
+      "length": 0.7,
+      "geometry": [[16.0610, 108.2270], [16.0650, 108.2285], [16.0680, 108.2300]]
+    },
+    {
+      "id": "e7",
+      "startNodeId": "n4",
+      "endNodeId": "n6",
+      "length": 0.6,
+      "geometry": [[16.0610, 108.2270], [16.0550, 108.2260], [16.0480, 108.2250]]
+    },
+    {
+      "id": "e8",
+      "startNodeId": "n5",
+      "endNodeId": "n9",
+      "length": 1.5,
+      "geometry": [[16.0680, 108.2300], [16.0680, 108.2380], [16.0680, 108.2450]]
+    },
+    {
+      "id": "e9",
+      "startNodeId": "n6",
+      "endNodeId": "n10",
+      "length": 1.6,
+      "geometry": [[16.0480, 108.2250], [16.0480, 108.2350], [16.0480, 108.2450]]
+    },
+    {
+      "id": "e10",
+      "startNodeId": "n9",
+      "endNodeId": "n10",
+      "length": 1.2,
+      "geometry": [[16.0680, 108.2450], [16.0580, 108.2450], [16.0480, 108.2450]]
+    },
+    {
+      "id": "e11",
+      "startNodeId": "n1",
+      "endNodeId": "n13",
+      "length": 1.6,
+      "geometry": [[16.0544, 108.2022], [16.0547, 108.1940], [16.0550, 108.1855]]
+    },
+    {
+      "id": "e12",
+      "startNodeId": "n13",
+      "endNodeId": "n14",
+      "length": 1.1,
+      "geometry": [[16.0550, 108.1855], [16.0600, 108.1855], [16.0650, 108.1855]]
+    },
+    {
+      "id": "e13",
+      "startNodeId": "n13",
+      "endNodeId": "n15",
+      "length": 1.1,
+      "geometry": [[16.0550, 108.1855], [16.0485, 108.1855], [16.0420, 108.1855]]
+    },
+    {
+      "id": "e14",
+      "startNodeId": "n14",
+      "endNodeId": "n7",
+      "length": 1.4,
+      "geometry": [[16.0650, 108.1855], [16.0665, 108.1990], [16.0680, 108.2120]]
+    },
+    {
+      "id": "e15",
+      "startNodeId": "n15",
+      "endNodeId": "n8",
+      "length": 1.5,
+      "geometry": [[16.0420, 108.1855], [16.0420, 108.1940], [16.0420, 108.2020]]
+    },
+    {
+      "id": "e16",
+      "startNodeId": "n5",
+      "endNodeId": "n12",
+      "length": 1.1,
+      "geometry": [[16.0680, 108.2300], [16.0710, 108.2310], [16.0750, 108.2320]]
+    },
+    {
+      "id": "e17",
+      "startNodeId": "n6",
+      "endNodeId": "n11",
+      "length": 1.2,
+      "geometry": [[16.0480, 108.2250], [16.0430, 108.2250], [16.0380, 108.2250]]
+    },
+    {
+      "id": "e18",
+      "startNodeId": "n7",
+      "endNodeId": "n2",
+      "length": 0.9,
+      "geometry": [[16.0680, 108.2120], [16.0640, 108.2160], [16.0600, 108.2200]]
+    },
+    {
+      "id": "e19",
+      "startNodeId": "n8",
+      "endNodeId": "n3",
+      "length": 0.9,
+      "geometry": [[16.0420, 108.2020], [16.0460, 108.2010], [16.0500, 108.2000]]
+    }
+  ]
+}

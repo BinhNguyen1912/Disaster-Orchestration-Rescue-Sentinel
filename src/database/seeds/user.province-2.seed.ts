@@ -5,13 +5,10 @@ import * as bcrypt from 'bcrypt';
 
 const SALT_ROUNDS = 10;
 
-// 10 giá trị adminUnitId được phân bổ luân phiên cho 30 user
-const ADMIN_UNIT_IDS = [
-  5152, 5112, 5111, 5135, 5165, 5045, 5110, 5171, 5059, 5096,
-];
+const PROVINCE_ID = 2; // TP. Hồ Chí Minh
 
 const mockUsers = [
-  // === SUPER_ADMIN / PROVINCE_ADMIN ===
+  // === PROVINCE_ADMIN ===
   {
     fullName: 'Nguyễn Văn Minh',
     nationalId: '079201001234',
@@ -19,10 +16,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123456',
     email: 'minh.nv@admin.gov.vn',
-    password: 'Admin@123',
+    password: '123456',
     addressDetail: '123 Nguyễn Trãi, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[0],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Trần Thị Lan',
@@ -31,10 +27,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123457',
     email: 'lan.tt@admin.gov.vn',
-    password: 'Admin@123',
+    password: '123456',
     addressDetail: '45 Lê Lợi, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[1],
+    provinceId: PROVINCE_ID,
   },
 
   // === COORDINATOR ===
@@ -45,10 +40,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123458',
     email: 'nam.lh@coordinator.gov.vn',
-    password: 'Coord@123',
+    password: '123456',
     addressDetail: '78 Pasteur, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[2],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Phạm Thu Hà',
@@ -57,10 +51,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123459',
     email: 'ha.pt@coordinator.gov.vn',
-    password: 'Coord@123',
+    password: '123456',
     addressDetail: '56 Hai Bà Trưng, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[3],
+    provinceId: PROVINCE_ID,
   },
 
   // === AREA_OFFICER ===
@@ -71,10 +64,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123460',
     email: 'anh.hd@area.gov.vn',
-    password: 'Area@123',
+    password: '123456',
     addressDetail: '12 Nguyễn Huệ, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[4],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Vũ Thị Mai',
@@ -83,10 +75,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123461',
     email: 'mai.vt@area.gov.vn',
-    password: 'Area@123',
+    password: '123456',
     addressDetail: '34 Đồng Khởi, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[5],
+    provinceId: PROVINCE_ID,
   },
 
   // === TEAM_LEADER ===
@@ -97,10 +88,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123462',
     email: 'tuan.dm@team.gov.vn',
-    password: 'Team@123',
+    password: '123456',
     addressDetail: '90 Lý Tự Trọng, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[6],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Ngô Thị Hương',
@@ -109,10 +99,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123463',
     email: 'huong.nt@team.gov.vn',
-    password: 'Team@123',
+    password: '123456',
     addressDetail: '23 Trần Hưng Đạo, Quận 1',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[7],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Bùi Quang Huy',
@@ -121,10 +110,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123464',
     email: 'huy.bq@team.gov.vn',
-    password: 'Team@123',
+    password: '123456',
     addressDetail: '67 Điện Biên Phủ, Quận 3',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[8],
+    provinceId: PROVINCE_ID,
   },
 
   // === RESCUE_MEMBER ===
@@ -135,10 +123,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123465',
     email: 'phuong.dt@rescue.gov.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '15 Võ Văn Tần, Quận 3',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[9],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Lý Thanh Sơn',
@@ -147,10 +134,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123466',
     email: 'son.lt@rescue.gov.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '42 Võ Thị Sáu, Quận 3',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[0],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Trịnh Minh Đức',
@@ -159,10 +145,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123467',
     email: 'duc.tm@rescue.gov.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '88 Bà Hạnh, Quận 5',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[1],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Phan Thị Thảo',
@@ -171,10 +156,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123468',
     email: 'thao.pt@rescue.gov.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '19 An Dương Vương, Quận 5',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[2],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Võ Thanh Hùng',
@@ -183,10 +167,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123469',
     email: 'hung.vt@rescue.gov.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '55 Trần Nhân Tôn, Quận 5',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[3],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Lê Thị Hồng Nga',
@@ -195,10 +178,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123470',
     email: 'nga.lth@rescue.gov.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '33 Lê Hồng Phong, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[4],
+    provinceId: PROVINCE_ID,
   },
 
   // === RESIDENT ===
@@ -209,10 +191,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123471',
     email: 'tam.tv@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '7 Ngô Gia Tự, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[5],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Nguyễn Thị Bảy',
@@ -221,10 +202,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123472',
     email: 'bay.nt@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '14 Lý Thường Kiệt, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[6],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Lê Quốc Bảo',
@@ -233,10 +213,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123473',
     email: 'bao.lq@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '61 Sư Vạn Hạnh, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[7],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Phạm Thị Lan Chi',
@@ -245,10 +224,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123474',
     email: 'chi.ptl@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '28 Nguyễn Chí Thanh, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[8],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Hoàng Văn Độ',
@@ -257,10 +235,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123475',
     email: 'do.hv@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '92 Tô Hiến Thành, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[9],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Trương Thị Hạnh',
@@ -269,10 +246,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123476',
     email: 'hanh.tt@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '36 Bạch Đằng, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[0],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Nguyễn Thanh Sáng',
@@ -281,11 +257,11 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123477',
     email: 'sang.nt@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '80 Trần Phú, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[1],
+    provinceId: PROVINCE_ID,
   },
+  //ĐÂY NÈ
   {
     fullName: 'Phan Văn Minh Đức',
     nationalId: '079201001256',
@@ -293,10 +269,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123478',
     email: 'duc.pvm@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '44 Cao Thắng, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[2],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Đinh Thị Hồng',
@@ -305,10 +280,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123479',
     email: 'hong.dt@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '66 Hòa Hảo, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[3],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Trần Đình Khôi',
@@ -317,10 +291,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123480',
     email: 'khoi.td@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '21 Hùng Vương, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[4],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Lý Thị Hồng Thắm',
@@ -329,10 +302,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123481',
     email: 'tham.lth@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '99 Lê Lai, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[5],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Châu Văn Thành',
@@ -341,10 +313,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123482',
     email: 'thanh.cv@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '53 Minh Phụng, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[6],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Nguyễn Thị Mỹ Duyên',
@@ -353,10 +324,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123483',
     email: 'duyen.ntm@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '71 Số1, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[7],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Trịnh Văn Phong',
@@ -365,10 +335,9 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123484',
     email: 'phong.tv@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '38 Nguyễn Văn Bảo, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[8],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Bùi Thị Hồng Gấm',
@@ -377,10 +346,9 @@ const mockUsers = [
     gender: Gender.FEMALE,
     phone: '0903123485',
     email: 'gam.bth@resident.vn',
-    password: 'Resident@123',
+    password: '123456',
     addressDetail: '84 Thành Thái, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[9],
+    provinceId: PROVINCE_ID,
   },
   {
     fullName: 'Đặng Văn Toàn',
@@ -389,17 +357,18 @@ const mockUsers = [
     gender: Gender.MALE,
     phone: '0903123486',
     email: 'toan.dv@resident.vn',
-    password: 'Rescue@123',
+    password: '123456',
     addressDetail: '16 Tân Phú, Quận 10',
-    provinceId: 2,
-    adminUnitId: ADMIN_UNIT_IDS[0],
+    provinceId: PROVINCE_ID,
   },
 ];
 
 export async function seedUsers(dataSource: DataSource): Promise<void> {
   const userRepo = dataSource.getRepository(UserEntity);
 
-  console.log('🌱 Seeding 30 mock users for provinceId = 2...');
+  console.log(
+    `🌱 Seeding ${mockUsers.length} mock users for provinceId = ${PROVINCE_ID}...`,
+  );
 
   for (const userData of mockUsers) {
     const existing = await userRepo.findOne({
@@ -420,7 +389,7 @@ export async function seedUsers(dataSource: DataSource): Promise<void> {
 
     await userRepo.save(user);
     console.log(
-      `  ✅ Created: ${userData.fullName} | adminUnitId=${userData.adminUnitId}`,
+      `  ✅ Created: ${userData.fullName} | Email: ${userData.email}`,
     );
   }
 

@@ -85,4 +85,27 @@ export class DispatchSocketService {
       .emit(DISPATCH_EVENTS.TEAM_REASSIGNED, newSos);
     this.logger.log(`📡 [team:${teamId}] ${DISPATCH_EVENTS.TEAM_REASSIGNED}`);
   }
+
+  /** Gửi lời mời nhận việc tới Đội trưởng (phòng teamId:leader) */
+  broadcastSosOffer(teamId: number, offer: any) {
+    this.server
+      ?.to(`team:${teamId}:leader`)
+      .emit(DISPATCH_EVENTS.SOS_OFFER, offer);
+    this.logger.log(
+      `📡 [team:${teamId}:leader] ${DISPATCH_EVENTS.SOS_OFFER} for sosId=${offer.sosId}`,
+    );
+  }
+
+  /** Phát tin báo đã nhận việc thành công (phòng provinceId) */
+  broadcastSosOfferClaimed(
+    provinceId: number,
+    payload: { sosId: number; assignedTeamId: number },
+  ) {
+    this.server
+      ?.to(`province:${provinceId}`)
+      .emit(DISPATCH_EVENTS.SOS_OFFER_CLAIMED, payload);
+    this.logger.log(
+      `📡 [province:${provinceId}] ${DISPATCH_EVENTS.SOS_OFFER_CLAIMED} for sosId=${payload.sosId} assigned to team=${payload.assignedTeamId}`,
+    );
+  }
 }

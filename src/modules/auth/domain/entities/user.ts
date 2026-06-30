@@ -4,6 +4,10 @@ export interface UserRole {
   roleId: number;
   provinceId: number;
   isActive: boolean;
+  role?: {
+    id: number;
+    name: string;
+  };
 }
 
 export class User {

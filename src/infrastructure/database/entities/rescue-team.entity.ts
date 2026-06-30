@@ -134,7 +134,7 @@ export class RescueTeamEntity {
   @JoinColumn({ name: 'leaderId' })
   leader?: UserEntity | null;
 
-  @OneToMany(() => RescueTeamMemberEntity, (entity) => entity)
+  @OneToMany(() => RescueTeamMemberEntity, (entity) => entity.team)
   members: RescueTeamMemberEntity[];
 
   @OneToMany(() => DutyLogEntity, (entity) => entity.team)

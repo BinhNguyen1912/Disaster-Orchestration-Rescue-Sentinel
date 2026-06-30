@@ -16,6 +16,24 @@ export class LocationController {
     };
   }
 
+  @Get('geocode')
+  async geocode(
+    @Query('q') q: string,
+    @Query('limit') limit?: string,
+    @Query('viewbox') viewbox?: string,
+  ) {
+    const limitNum = limit ? parseInt(limit, 10) : 6;
+    const results = await this.locationService.queryGeocoding(
+      q,
+      limitNum,
+      viewbox,
+    );
+    return {
+      success: true,
+      data: results,
+    };
+  }
+
   @Get('resolve')
   async resolveLocation(@Query('lat') lat: string, @Query('lng') lng: string) {
     const latitude = parseFloat(lat);

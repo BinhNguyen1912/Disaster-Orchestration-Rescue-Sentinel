@@ -19,7 +19,13 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
   async findById(id: number): Promise<RescueTeamEntity | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['province', 'adminUnit', 'leader', 'specializations'],
+      relations: [
+        'province',
+        'adminUnit',
+        'leader',
+        'specializations',
+        'members',
+      ],
     });
   }
 
@@ -34,7 +40,8 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .createQueryBuilder('rt')
       .leftJoinAndSelect('rt.province', 'province')
       .leftJoinAndSelect('rt.adminUnit', 'adminUnit')
-      .leftJoinAndSelect('rt.specializations', 'specializations');
+      .leftJoinAndSelect('rt.specializations', 'specializations')
+      .leftJoinAndSelect('rt.members', 'members');
 
     queryBuilder = this.applyFilters(queryBuilder, filters);
 

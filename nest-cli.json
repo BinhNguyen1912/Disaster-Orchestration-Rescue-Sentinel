@@ -12,6 +12,10 @@
       {
         "include": "infrastructure/database/seeds/data/**/*.json",
         "watchAssets": true
+      },
+      {
+        "include": "modules/routing/assets/**/*.json",
+        "watchAssets": true
       }
     ]
   }

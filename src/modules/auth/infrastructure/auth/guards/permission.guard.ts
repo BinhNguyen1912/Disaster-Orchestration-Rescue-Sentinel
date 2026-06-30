@@ -37,12 +37,12 @@ export class PermissionGuard implements CanActivate {
 
     const userPermissions =
       await this.permissionRepository.findPermissionNamesByRoleId(user.roleId);
-    console.log(
-      `PermissionGuard: roleId = ${user.roleId}, userPermissions =`,
-      userPermissions,
-      `required =`,
-      requiredPermissions,
-    );
+    // console.log(
+    //   `PermissionGuard: roleId = ${user.roleId}, userPermissions =`,
+    //   userPermissions,
+    //   `required =`,
+    //   requiredPermissions,
+    // );
 
     const hasAllPermissions = requiredPermissions.every((perm) =>
       userPermissions.includes(perm),

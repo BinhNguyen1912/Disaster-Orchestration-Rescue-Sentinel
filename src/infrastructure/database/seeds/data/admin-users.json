@@ -5,8 +5,8 @@
     "phone": "0900000000",
     "nationalId": "000000000000",
     "password": "Admin@123",
-    "provinceCode": 1,
-    "roleName": "SYSTEM_ADMIN"
+    "roleName": "SYSTEM_ADMIN",
+    "provinceId": 1
   },
   {
     "fullName": "Admin Hà Nội",
@@ -14,8 +14,8 @@
     "phone": "0900000001",
     "nationalId": "001000000001",
     "password": "Admin@123",
-    "provinceCode": 1,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 1
   },
   {
     "fullName": "Admin Cao Bằng",
@@ -23,8 +23,8 @@
     "phone": "0900000004",
     "nationalId": "001000000004",
     "password": "Admin@123",
-    "provinceCode": 4,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 8
   },
   {
     "fullName": "Admin Tuyên Quang",
@@ -32,8 +32,8 @@
     "phone": "0900000008",
     "nationalId": "001000000008",
     "password": "Admin@123",
-    "provinceCode": 8,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 7
   },
   {
     "fullName": "Admin Điện Biên",
@@ -41,8 +41,8 @@
     "phone": "0900000011",
     "nationalId": "001000000011",
     "password": "Admin@123",
-    "provinceCode": 11,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 40
   },
   {
     "fullName": "Admin Lai Châu",
@@ -50,8 +50,8 @@
     "phone": "0900000012",
     "nationalId": "001000000012",
     "password": "Admin@123",
-    "provinceCode": 12,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 9
   },
   {
     "fullName": "Admin Sơn La",
@@ -59,8 +59,8 @@
     "phone": "0900000014",
     "nationalId": "001000000014",
     "password": "Admin@123",
-    "provinceCode": 14,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 13
   },
   {
     "fullName": "Admin Lào Cai",
@@ -68,8 +68,8 @@
     "phone": "0900000015",
     "nationalId": "001000000015",
     "password": "Admin@123",
-    "provinceCode": 15,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 41
   },
   {
     "fullName": "Admin Thái Nguyên",
@@ -77,8 +77,8 @@
     "phone": "0900000019",
     "nationalId": "001000000019",
     "password": "Admin@123",
-    "provinceCode": 19,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 10
   },
   {
     "fullName": "Admin Lạng Sơn",
@@ -86,8 +86,8 @@
     "phone": "0900000020",
     "nationalId": "001000000020",
     "password": "Admin@123",
-    "provinceCode": 20,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 12
   },
   {
     "fullName": "Admin Quảng Ninh",
@@ -95,8 +95,8 @@
     "phone": "0900000022",
     "nationalId": "001000000022",
     "password": "Admin@123",
-    "provinceCode": 22,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 16
   },
   {
     "fullName": "Admin Bắc Ninh",
@@ -104,8 +104,8 @@
     "phone": "0900000024",
     "nationalId": "001000000024",
     "password": "Admin@123",
-    "provinceCode": 24,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 15
   },
   {
     "fullName": "Admin Phú Thọ",
@@ -113,8 +113,8 @@
     "phone": "0900000025",
     "nationalId": "001000000025",
     "password": "Admin@123",
-    "provinceCode": 25,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 14
   },
   {
     "fullName": "Admin Hải Phòng",
@@ -122,8 +122,8 @@
     "phone": "0900000031",
     "nationalId": "001000000031",
     "password": "Admin@123",
-    "provinceCode": 31,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 3
   },
   {
     "fullName": "Admin Hưng Yên",
@@ -131,8 +131,8 @@
     "phone": "0900000033",
     "nationalId": "001000000033",
     "password": "Admin@123",
-    "provinceCode": 33,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 17
   },
   {
     "fullName": "Admin Ninh Bình",
@@ -140,8 +140,8 @@
     "phone": "0900000037",
     "nationalId": "001000000037",
     "password": "Admin@123",
-    "provinceCode": 37,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 18
   },
   {
     "fullName": "Admin Thanh Hóa",
@@ -149,8 +149,8 @@
     "phone": "0900000038",
     "nationalId": "001000000038",
     "password": "Admin@123",
-    "provinceCode": 38,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 19
   },
   {
     "fullName": "Admin Nghệ An",
@@ -158,8 +158,8 @@
     "phone": "0900000040",
     "nationalId": "001000000040",
     "password": "Admin@123",
-    "provinceCode": 40,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 20
   },
   {
     "fullName": "Admin Hà Tĩnh",
@@ -167,8 +167,8 @@
     "phone": "0900000042",
     "nationalId": "001000000042",
     "password": "Admin@123",
-    "provinceCode": 42,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 21
   },
   {
     "fullName": "Admin Quảng Trị",
@@ -176,8 +176,8 @@
     "phone": "0900000044",
     "nationalId": "001000000044",
     "password": "Admin@123",
-    "provinceCode": 44,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 22
   },
   {
     "fullName": "Admin Huế",
@@ -185,8 +185,8 @@
     "phone": "0900000046",
     "nationalId": "001000000046",
     "password": "Admin@123",
-    "provinceCode": 46,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 5
   },
   {
     "fullName": "Admin Đà Nẵng",
@@ -194,8 +194,8 @@
     "phone": "0900000048",
     "nationalId": "001000000048",
     "password": "Admin@123",
-    "provinceCode": 48,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 4
   },
   {
     "fullName": "Admin Quảng Ngãi",
@@ -203,8 +203,8 @@
     "phone": "0900000051",
     "nationalId": "001000000051",
     "password": "Admin@123",
-    "provinceCode": 51,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 23
   },
   {
     "fullName": "Admin Gia Lai",
@@ -212,8 +212,8 @@
     "phone": "0900000052",
     "nationalId": "001000000052",
     "password": "Admin@123",
-    "provinceCode": 52,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 42
   },
   {
     "fullName": "Admin Khánh Hòa",
@@ -221,8 +221,8 @@
     "phone": "0900000056",
     "nationalId": "001000000056",
     "password": "Admin@123",
-    "provinceCode": 56,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 26
   },
   {
     "fullName": "Admin Đắk Lắk",
@@ -230,8 +230,8 @@
     "phone": "0900000066",
     "nationalId": "001000000066",
     "password": "Admin@123",
-    "provinceCode": 66,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 25
   },
   {
     "fullName": "Admin Lâm Đồng",
@@ -239,8 +239,8 @@
     "phone": "0900000068",
     "nationalId": "001000000068",
     "password": "Admin@123",
-    "provinceCode": 68,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 27
   },
   {
     "fullName": "Admin Đồng Nai",
@@ -248,8 +248,8 @@
     "phone": "0900000075",
     "nationalId": "001000000075",
     "password": "Admin@123",
-    "provinceCode": 75,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 28
   },
   {
     "fullName": "Admin TP.Hồ Chí Minh",
@@ -257,8 +257,8 @@
     "phone": "0900000079",
     "nationalId": "001000000079",
     "password": "Admin@123",
-    "provinceCode": 79,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 2
   },
   {
     "fullName": "Admin Tây Ninh",
@@ -266,8 +266,8 @@
     "phone": "0900000080",
     "nationalId": "001000000080",
     "password": "Admin@123",
-    "provinceCode": 80,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 43
   },
   {
     "fullName": "Admin Đồng Tháp",
@@ -275,8 +275,8 @@
     "phone": "0900000082",
     "nationalId": "001000000082",
     "password": "Admin@123",
-    "provinceCode": 82,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 44
   },
   {
     "fullName": "Admin Vĩnh Long",
@@ -284,8 +284,8 @@
     "phone": "0900000086",
     "nationalId": "001000000086",
     "password": "Admin@123",
-    "provinceCode": 86,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 32
   },
   {
     "fullName": "Admin An Giang",
@@ -293,8 +293,8 @@
     "phone": "0900000091",
     "nationalId": "001000000091",
     "password": "Admin@123",
-    "provinceCode": 91,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 45
   },
   {
     "fullName": "Admin Cần Thơ",
@@ -302,8 +302,8 @@
     "phone": "0900000092",
     "nationalId": "001000000092",
     "password": "Admin@123",
-    "provinceCode": 92,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 6
   },
   {
     "fullName": "Admin Cà Mau",
@@ -311,7 +311,7 @@
     "phone": "0900000096",
     "nationalId": "001000000096",
     "password": "Admin@123",
-    "provinceCode": 96,
-    "roleName": "PROVINCE_ADMIN"
+    "roleName": "PROVINCE_ADMIN",
+    "provinceId": 33
   }
 ]

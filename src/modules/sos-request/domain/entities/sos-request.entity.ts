@@ -42,4 +42,6 @@ export interface SosRequest {
   adminUnit?: any;
   user?: any;
   assignedTeam?: any;
+  assigner?: any;
+  resolver?: any;
 }

@@ -42,8 +42,15 @@ export class AuthService {
   ) {}
 
   //XÁC THỰC (dùng bởi LocalStrategy)
-  async validateUser(identifier: string, pass: string): Promise<User | null> {
-    const user = await this.userRepository.findByIdentifier(identifier);
+  async validateUser(
+    identifier: string,
+    pass: string,
+    provinceId?: number,
+  ): Promise<User | null> {
+    const user = await this.userRepository.findByIdentifier(
+      identifier,
+      provinceId,
+    );
     if (user && user.password) {
       const isMatch = await bcrypt.compare(pass, user.password);
       if (isMatch) {
@@ -119,10 +126,15 @@ export class AuthService {
       await this.userRepository.assignRole(newUser.id, 5, newUser.provinceId);
     }
 
+    const userWithRole = await this.userRepository.findByIdentifier(
+      newUser.phone,
+      newUser.provinceId,
+    );
+
     return {
       statusCode: 201,
       message: APP_MESSAGES.AUTH.REGISTER_SUCCESS,
-      data: toAuthUserResponse(newUser),
+      data: toAuthUserResponse(userWithRole || newUser),
     };
   }
 

@@ -1,0 +1,134 @@
+{
+  "provinceId": 2,
+  "provinceName": "Thành phố Hồ Chí Minh",
+  "nodes": [
+    { "id": "n1", "lat": 10.7725, "lng": 106.6980, "name": "Vòng xoay Quách Thị Trang (Trước Chợ Bến Thành)" },
+    { "id": "n2", "lat": 10.7758, "lng": 106.7022, "name": "Ngã tư Nguyễn Huệ - Lê Lợi" },
+    { "id": "n3", "lat": 10.7712, "lng": 106.7042, "name": "Đường Hàm Nghi - Tháp Bitexco" },
+    { "id": "n4", "lat": 10.7825, "lng": 106.6980, "name": "Công trường Công xã Paris (Nhà thờ Đức Bà)" },
+    { "id": "n5", "lat": 10.7900, "lng": 106.6900, "name": "Ngã tư Đinh Tiên Hoàng - Điện Biên Phủ (Đa Kao)" },
+    { "id": "n6", "lat": 10.7795, "lng": 106.7085, "name": "Bến Bạch Đằng (Đường Tôn Đức Thắng)" },
+    { "id": "n7", "lat": 10.7675, "lng": 106.6920, "name": "Ngã tư Nguyễn Văn Cừ - Trần Hưng Đạo" },
+    { "id": "n8", "lat": 10.7620, "lng": 106.6820, "name": "Ngã sáu Cộng Hòa (Nguyễn Tri Phương - Nguyễn Trãi)" },
+    { "id": "n9", "lat": 10.7725, "lng": 106.6780, "name": "Vòng xoay Dân Chủ (Cách Mạng Tháng 8 - Ba Tháng Hai)" },
+    { "id": "n10", "lat": 10.7850, "lng": 106.6850, "name": "Ngã tư Tú Xương - Cách Mạng Tháng 8 (Quận 3)" },
+    { "id": "n11", "lat": 10.7825, "lng": 106.7115, "name": "Cầu Ba Son phía Tây (Đường Tôn Đức Thắng)" },
+    { "id": "n12", "lat": 10.7750, "lng": 106.7215, "name": "Cầu Ba Son phía Đông (Khu đô thị Thủ Thiêm)" },
+    { "id": "n13", "lat": 10.7660, "lng": 106.7080, "name": "Đầu Cầu Khánh Hội phía Tây (Quận 1)" },
+    { "id": "n14", "lat": 10.7610, "lng": 106.7090, "name": "Đầu Cầu Khánh Hội phía Đông (Quận 4 - Nguyễn Tất Thành)" }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "startNodeId": "n1",
+      "endNodeId": "n2",
+      "length": 0.5,
+      "geometry": [[10.7725, 106.6980], [10.7740, 106.7000], [10.7758, 106.7022]]
+    },
+    {
+      "id": "e2",
+      "startNodeId": "n2",
+      "endNodeId": "n3",
+      "length": 0.6,
+      "geometry": [[10.7758, 106.7022], [10.7730, 106.7030], [10.7712, 106.7042]]
+    },
+    {
+      "id": "e3",
+      "startNodeId": "n2",
+      "endNodeId": "n4",
+      "length": 0.8,
+      "geometry": [[10.7758, 106.7022], [10.7790, 106.7000], [10.7825, 106.6980]]
+    },
+    {
+      "id": "e4",
+      "startNodeId": "n4",
+      "endNodeId": "n5",
+      "length": 1.0,
+      "geometry": [[10.7825, 106.6980], [10.7860, 106.6940], [10.7900, 106.6900]]
+    },
+    {
+      "id": "e5",
+      "startNodeId": "n2",
+      "endNodeId": "n6",
+      "length": 0.7,
+      "geometry": [[10.7758, 106.7022], [10.7780, 106.7050], [10.7795, 106.7085]]
+    },
+    {
+      "id": "e6",
+      "startNodeId": "n3",
+      "endNodeId": "n6",
+      "length": 0.6,
+      "geometry": [[10.7712, 106.7042], [10.7750, 106.7065], [10.7795, 106.7085]]
+    },
+    {
+      "id": "e7",
+      "startNodeId": "n1",
+      "endNodeId": "n7",
+      "length": 1.2,
+      "geometry": [[10.7725, 106.6980], [10.7700, 106.6950], [10.7675, 106.6920]]
+    },
+    {
+      "id": "e8",
+      "startNodeId": "n7",
+      "endNodeId": "n8",
+      "length": 1.3,
+      "geometry": [[10.7675, 106.6920], [10.7645, 106.6870], [10.7620, 106.6820]]
+    },
+    {
+      "id": "e9",
+      "startNodeId": "n1",
+      "endNodeId": "n9",
+      "length": 1.8,
+      "geometry": [[10.7725, 106.6980], [10.7725, 106.6880], [10.7725, 106.6780]]
+    },
+    {
+      "id": "e10",
+      "startNodeId": "n9",
+      "endNodeId": "n10",
+      "length": 1.0,
+      "geometry": [[10.7725, 106.6780], [10.7790, 106.6810], [10.7850, 106.6850]]
+    },
+    {
+      "id": "e11",
+      "startNodeId": "n10",
+      "endNodeId": "n4",
+      "length": 0.9,
+      "geometry": [[10.7850, 106.6850], [10.7835, 106.6910], [10.7825, 106.6980]]
+    },
+    {
+      "id": "e12",
+      "startNodeId": "n6",
+      "endNodeId": "n11",
+      "length": 0.8,
+      "geometry": [[10.7795, 106.7085], [10.7810, 106.7100], [10.7825, 106.7115]]
+    },
+    {
+      "id": "e13",
+      "startNodeId": "n11",
+      "endNodeId": "n12",
+      "length": 1.0,
+      "geometry": [[10.7825, 106.7115], [10.7790, 106.7160], [10.7750, 106.7215]]
+    },
+    {
+      "id": "e14",
+      "startNodeId": "n3",
+      "endNodeId": "n13",
+      "length": 0.7,
+      "geometry": [[10.7712, 106.7042], [10.7686, 106.7061], [10.7660, 106.7080]]
+    },
+    {
+      "id": "e15",
+      "startNodeId": "n13",
+      "endNodeId": "n14",
+      "length": 0.6,
+      "geometry": [[10.7660, 106.7080], [10.7635, 106.7085], [10.7610, 106.7090]]
+    },
+    {
+      "id": "e16",
+      "startNodeId": "n7",
+      "endNodeId": "n9",
+      "length": 1.5,
+      "geometry": [[10.7675, 106.6920], [10.7700, 106.6850], [10.7725, 106.6780]]
+    }
+  ]
+}

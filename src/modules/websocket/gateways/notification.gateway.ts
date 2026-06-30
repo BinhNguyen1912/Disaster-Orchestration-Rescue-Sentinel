@@ -43,7 +43,7 @@ export class NotificationGateway
     // ✅ Gán server cho service ngay khi gateway khởi tạo
     this.notificationSocketService.setServer(server);
     this.logger.log(
-      '🚀 NotificationGateway initialized — namespace: /notification',
+      'NotificationGateway initialized — namespace: /notification',
     );
   }
 
@@ -57,7 +57,7 @@ export class NotificationGateway
       (client as any).userId = userId;
       client.join(`user:${userId}`);
       this.logger.log(
-        `🟢 [CONNECT] Socket ID: ${client.id} | User ID: ${userId} | Device: ${deviceType} joined room user:${userId}`,
+        `[CONNECT] Socket ID: ${client.id} | User ID: ${userId} | Device: ${deviceType} joined room user:${userId}`,
       );
 
       // Redis presence tracking: increment connection count and set online status
@@ -77,7 +77,7 @@ export class NotificationGateway
       }
     } else {
       this.logger.warn(
-        `⚠️ [CONNECT WARNING] Socket ID: ${client.id} connected without userId`,
+        `[CONNECT WARNING] Socket ID: ${client.id} connected without userId`,
       );
     }
   }
@@ -86,7 +86,7 @@ export class NotificationGateway
     const userId = (client as any).userId;
     if (userId) {
       this.logger.log(
-        `🔴 [DISCONNECT] Socket ID: ${client.id} | User ID: ${userId} disconnected`,
+        `[DISCONNECT] Socket ID: ${client.id} | User ID: ${userId} disconnected`,
       );
       const redisKey = `user:status:${userId}`;
       try {
@@ -117,7 +117,7 @@ export class NotificationGateway
       }
     } else {
       this.logger.log(
-        `🔌 [DISCONNECT] Socket ID: ${client.id} disconnected (no userId associated)`,
+        `[DISCONNECT] Socket ID: ${client.id} disconnected (no userId associated)`,
       );
     }
   }
@@ -132,6 +132,6 @@ export class NotificationGateway
     @ConnectedSocket() client: Socket,
   ) {
     // TODO: Cập nhật isRead trong DB
-    this.logger.log(`✅ Notification ${data.notificationId} marked as read`);
+    this.logger.log(`Notification ${data.notificationId} marked as read`);
   }
 }

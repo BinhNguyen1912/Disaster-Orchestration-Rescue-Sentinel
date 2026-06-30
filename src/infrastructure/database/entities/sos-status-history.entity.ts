@@ -14,15 +14,15 @@ import { SosStatus } from '@shared/core/enums/sosStatus.enum';
 import { DispatchMethod } from '@shared/core/enums/dispatchMethod.enum';
 
 export enum SosHistoryEventType {
-  CREATED = 'CREATED',
-  STATUS_CHANGED = 'STATUS_CHANGED',
-  TEAM_ASSIGNED = 'TEAM_ASSIGNED',
-  TEAM_REASSIGNED = 'TEAM_REASSIGNED',
-  TEAM_RELEASED = 'TEAM_RELEASED',
-  CANCELLED = 'CANCELLED',
-  RESOLVED = 'RESOLVED',
-  QUEUED = 'QUEUED',
-  SPECIALIST_PENDING = 'SPECIALIST_PENDING',
+  CREATED = 'CREATED', // Tạo SOS
+  STATUS_CHANGED = 'STATUS_CHANGED', // Thay đổi trạng thái
+  TEAM_ASSIGNED = 'TEAM_ASSIGNED', // Được giao team
+  TEAM_REASSIGNED = 'TEAM_REASSIGNED', // Được giao lại team
+  TEAM_RELEASED = 'TEAM_RELEASED', // Bị hủy giao team
+  CANCELLED = 'CANCELLED', // Bị hủy
+  RESOLVED = 'RESOLVED', // Đã xử lý
+  QUEUED = 'QUEUED', // Đang chờ chuyên gia
+  SPECIALIST_PENDING = 'SPECIALIST_PENDING', // Đang chờ chuyên gia
 }
 
 @Entity('sos_status_history')
@@ -46,11 +46,9 @@ export class SosStatusHistoryEntity {
   @Column({ type: 'int', nullable: true })
   changedById?: number | null;
 
-  /** Đội cứu hộ được gán (nếu có thay đổi đội) */
   @Column({ type: 'int', nullable: true })
   teamId?: number | null;
 
-  /** Đội cũ bị thay thế (chỉ dùng khi TEAM_REASSIGNED) */
   @Column({ type: 'int', nullable: true })
   previousTeamId?: number | null;
 
@@ -62,8 +60,6 @@ export class SosStatusHistoryEntity {
 
   @CreateDateColumn()
   createdAt: Date;
-
-  // ── Relations ────────────────────────────────────────────────────────────────
 
   @ManyToOne(() => SosRequestEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sosRequestId' })

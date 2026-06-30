@@ -1,5 +1,11 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  IsInt,
+  IsOptional,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class LoginDto {
   @ApiProperty({
@@ -19,4 +25,12 @@ export class LoginDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'ID tỉnh/thành phố',
+  })
+  @IsInt()
+  @IsNotEmpty({ message: 'Vui lòng chọn Tỉnh / Thành Phố.' })
+  provinceId: number;
 }

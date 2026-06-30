@@ -9,6 +9,7 @@ import {
   Min,
   MinLength,
   Matches,
+  IsObject,
 } from 'class-validator';
 import { Gender } from '@shared/core/enums/gender.enum';
 
@@ -75,4 +76,11 @@ export class AdminRegisterDto {
   @IsString()
   @IsOptional()
   addressDetail?: string;
+
+  @ApiPropertyOptional({
+    description: 'Vị trí nhà riêng (GeoJSON Point)',
+  })
+  @IsOptional()
+  @IsObject()
+  homeLocation?: any;
 }

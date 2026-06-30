@@ -2,211 +2,211 @@
   {
     "email": "admin@system.com",
     "roleName": "SYSTEM_ADMIN",
-    "provinceCode": 1,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 1
   },
   {
     "email": "admin.hanoi@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 1,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 1
   },
   {
     "email": "admin.caobang@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 4,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 8
   },
   {
     "email": "admin.tuyenquang@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 8,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 7
   },
   {
     "email": "admin.dienbien@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 11,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 40
   },
   {
     "email": "admin.laichau@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 12,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 9
   },
   {
     "email": "admin.sonla@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 14,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 13
   },
   {
     "email": "admin.laocai@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 15,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 41
   },
   {
     "email": "admin.thainguyen@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 19,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 10
   },
   {
     "email": "admin.langson@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 20,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 12
   },
   {
     "email": "admin.quangninh@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 22,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 16
   },
   {
     "email": "admin.bacninh@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 24,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 15
   },
   {
     "email": "admin.phutho@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 25,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 14
   },
   {
     "email": "admin.haiphong@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 31,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 3
   },
   {
     "email": "admin.hungyen@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 33,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 17
   },
   {
     "email": "admin.ninhbinh@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 37,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 18
   },
   {
     "email": "admin.thanhhoa@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 38,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 19
   },
   {
     "email": "admin.nghean@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 40,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 20
   },
   {
     "email": "admin.hatinh@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 42,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 21
   },
   {
     "email": "admin.quangtri@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 44,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 22
   },
   {
     "email": "admin.hue@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 46,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 5
   },
   {
     "email": "admin.danang@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 48,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 4
   },
   {
     "email": "admin.quangngai@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 51,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 23
   },
   {
     "email": "admin.gialai@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 52,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 42
   },
   {
     "email": "admin.khanhhoa@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 56,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 26
   },
   {
     "email": "admin.daklak@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 66,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 25
   },
   {
     "email": "admin.lamdong@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 68,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 27
   },
   {
     "email": "admin.dongnai@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 75,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 28
   },
   {
     "email": "admin.hcm@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 79,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 2
   },
   {
     "email": "admin.tayninh@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 80,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 43
   },
   {
     "email": "admin.dongthap@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 82,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 44
   },
   {
     "email": "admin.vinhlong@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 86,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 32
   },
   {
     "email": "admin.angiang@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 91,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 45
   },
   {
     "email": "admin.cantho@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 92,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 6
   },
   {
     "email": "admin.camau@rescue.gov.vn",
     "roleName": "PROVINCE_ADMIN",
-    "provinceCode": 96,
-    "isActive": true
+    "isActive": true,
+    "provinceId": 33
   }
 ]

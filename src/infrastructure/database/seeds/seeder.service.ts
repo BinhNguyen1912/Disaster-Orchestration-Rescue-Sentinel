@@ -187,7 +187,7 @@ export class SeederService {
     const admins = JSON.parse(rawData);
 
     for (const adminData of admins) {
-      const { password, provinceCode, roleName, ...userData } = adminData;
+      const { password, provinceId, roleName, ...userData } = adminData;
 
       let user = await this.userRepo.findOne({
         where: [
@@ -199,11 +199,11 @@ export class SeederService {
 
       if (!user) {
         const province = await this.provinceRepo.findOne({
-          where: { code: provinceCode },
+          where: { id: provinceId },
         });
         if (!province) {
           this.logger.warn(
-            `Province with code ${provinceCode} not found for admin ${userData.email}`,
+            `Province with ID ${provinceId} not found for admin ${userData.email}`,
           );
           continue;
         }
@@ -236,6 +236,17 @@ export class SeederService {
           }),
         )) as unknown as UserEntity;
         this.logger.debug(`Inserted Admin: ${userData.email}`);
+      } else {
+        const province = await this.provinceRepo.findOne({
+          where: { id: provinceId },
+        });
+        if (province && user.provinceId !== province.id) {
+          user.provinceId = province.id;
+          await this.userRepo.save(user);
+          this.logger.debug(
+            `Synchronized Admin provinceId for ${userData.email} to province ID ${provinceId}`,
+          );
+        }
       }
 
       // Tạo user_role record nếu chưa có
@@ -247,7 +258,7 @@ export class SeederService {
       if (!role) continue;
 
       const province = await this.provinceRepo.findOne({
-        where: { code: provinceCode },
+        where: { id: provinceId },
       });
       if (!province) continue;
 
@@ -256,6 +267,11 @@ export class SeederService {
       });
 
       if (!existingUserRole) {
+        await this.userRoleRepo.delete({
+          userId: user.id,
+          roleId: role.id,
+        });
+
         await this.userRoleRepo.save(
           this.userRoleRepo.create({
             userId: user.id,
@@ -265,7 +281,7 @@ export class SeederService {
           }),
         );
         this.logger.debug(
-          `Assigned role ${roleName} to ${userData.email} in province ${provinceCode}`,
+          `Assigned role ${roleName} to ${userData.email} in province ID ${provinceId}`,
         );
       }
     }

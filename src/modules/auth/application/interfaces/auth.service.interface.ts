@@ -1,7 +1,11 @@
 import { User } from '@modules/auth/domain/entities/user';
 
 export interface IAuthService {
-  validateUser(identifier: string, pass: string): Promise<User | null>;
+  validateUser(
+    identifier: string,
+    pass: string,
+    provinceId?: number,
+  ): Promise<User | null>;
   login(user: User, ipAddress?: string, userAgent?: string): Promise<any>;
   register(dto: any): Promise<any>;
   adminRegister(dto: any, createdBy: number): Promise<any>;
