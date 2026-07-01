@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10;
 
 // Lấy provinceId từ command line argument
-const PROVINCE_ID = parseInt(process.argv[2] || '2', 10);
+const PROVINCE_ID = 2;
 
 // Định nghĩa Gender enum cục bộ để tránh lỗi @shared path alias
 enum Gender {

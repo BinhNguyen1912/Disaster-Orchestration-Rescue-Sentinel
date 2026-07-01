@@ -192,6 +192,15 @@ export class DispatchOrchestratorService {
       const dbSos = await manager.findOne(SosRequestEntity, {
         where: { id: sosRequest.id },
       });
+
+      const candidateInfo = result.rankedCandidates.find((c) => c.teamId === selectedTeam!.id);
+      const etaFields = candidateInfo ? {
+        etaIdealMinutes: candidateInfo.etaIdealMinutes,
+        etaRealisticMinutes: candidateInfo.etaRealisticMinutes,
+        trafficDelayMinutes: candidateInfo.trafficDelayMinutes,
+        trafficNote: candidateInfo.trafficNote,
+      } : {};
+
       if (dbSos) {
         dbSos.assignedTeamId = selectedTeam.id;
         dbSos.assignedAt = new Date();
@@ -201,6 +210,14 @@ export class DispatchOrchestratorService {
         dbSos.specialistPending = false;
         dbSos.specialistType = undefined;
         dbSos.pendingSince = undefined;
+
+        if (candidateInfo) {
+          dbSos.etaIdealMinutes = candidateInfo.etaIdealMinutes;
+          dbSos.etaRealisticMinutes = candidateInfo.etaRealisticMinutes;
+          dbSos.trafficDelayMinutes = candidateInfo.trafficDelayMinutes;
+          dbSos.trafficNote = candidateInfo.trafficNote;
+        }
+
         await manager.save(SosRequestEntity, dbSos);
       }
 
@@ -271,6 +288,7 @@ export class DispatchOrchestratorService {
                 type: 'dual_dispatched',
                 assignedTeamId: selectedTeam.id,
                 secondTeamId: busySpecialistCand.teamId,
+                ...etaFields,
               };
             } else {
               this.logger.log(
@@ -295,6 +313,7 @@ export class DispatchOrchestratorService {
       return {
         type: 'dispatched',
         assignedTeamId: selectedTeam.id,
+        ...etaFields,
       };
     });
   }

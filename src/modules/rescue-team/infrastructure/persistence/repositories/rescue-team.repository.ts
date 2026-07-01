@@ -41,7 +41,8 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .leftJoinAndSelect('rt.province', 'province')
       .leftJoinAndSelect('rt.adminUnit', 'adminUnit')
       .leftJoinAndSelect('rt.specializations', 'specializations')
-      .leftJoinAndSelect('rt.members', 'members');
+      .leftJoinAndSelect('rt.members', 'members')
+      .leftJoinAndSelect('rt.leader', 'leader');
 
     queryBuilder = this.applyFilters(queryBuilder, filters);
 

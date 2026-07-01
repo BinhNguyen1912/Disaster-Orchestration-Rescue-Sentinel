@@ -54,24 +54,28 @@ describe('RoutingController', () => {
       profile: 'car',
     };
 
-    it('should return primary route, dijkstra route and isIsolated = false', async () => {
+    it('should return primary route, dijkstra route = null and isIsolated = false', async () => {
       const response = await controller.calculateRoute(dto);
 
       expect(response.success).toBe(true);
       expect(response.data.primary).toBeDefined();
-      expect(response.data.dijkstra).toBeDefined();
+      expect(response.data.dijkstra).toBeNull();
       expect(response.data.isIsolated).toBe(false);
 
       expect(mockOrsRoutingProvider.calculateRoute).toHaveBeenCalled();
-      expect(mockDijkstraRoutingProvider.calculateRoute).toHaveBeenCalled();
     });
 
-    it('should set isIsolated = true when Dijkstra throws an isolation error', async () => {
-      mockDijkstraRoutingProvider.calculateRoute.mockRejectedValue(
-        new BadRequestException(
-          'Hiện trường bị cô lập hoàn toàn bằng đường bộ.',
-        ),
+    it('should set isIsolated = true when route with avoidPolygons fails but route without avoidPolygons succeeds', async () => {
+      // First call (with avoidPolygons) fails
+      mockOrsRoutingProvider.calculateRoute.mockRejectedValueOnce(
+        new BadRequestException('Không tìm thấy đường tránh ngập.'),
       );
+      // Second call (without avoidPolygons) succeeds
+      mockOrsRoutingProvider.calculateRoute.mockResolvedValueOnce({
+        coordinates: [{ latitude: 10.0, longitude: 106.0 }],
+        distanceKm: 5,
+        durationMin: 10,
+      });
 
       const response = await controller.calculateRoute(dto);
 

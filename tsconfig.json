@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
@@ -14,7 +15,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "src",
-    "incremental": true,
+    "incremental": false,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": false,
@@ -38,6 +39,6 @@
       "@seeds/*": ["infrastructure/database/seeds/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "scratch"]
+  "exclude": ["node_modules", "dist", "scratch", "test", "scripts", "**/*spec.ts"]
 }
 

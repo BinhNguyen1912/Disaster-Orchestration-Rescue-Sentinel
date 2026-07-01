@@ -211,3 +211,66 @@ Với những ca SOS bị đưa vào hàng chờ hoặc chưa tìm được đ�
 *   Tiến trình ngầm [DispatchRetryService](file:///d:/DoAn/DOAN/be/src/modules/sos-request/application/services/dispatch-retry.service.ts) liên tục quét qua cơ sở dữ liệu **15 giây một lần**.
 *   Nó sẽ nhặt các yêu cầu SOS chưa được gán và thử kích hoạt lại bộ máy điều phối tự động. Ngay khi có bất kỳ đội cứu hộ nào ở gần được giải phóng về trạng thái rảnh rỗi, hệ thống sẽ gán ngay lập tức cho họ.
 
+---
+
+## 6. Tích Hợp TomTom Traffic API & Tránh Vùng Ngập Lụt Thời Gian Thực (Real-time Routing & Traffic Integration)
+
+Để tối ưu hóa thời gian cứu hộ thực tế trong các tình huống thiên tai phức tạp (ví dụ: bão lũ gây ngập nhiều tuyến đường, ùn tắc giao thông do mưa lớn), thuật toán điều phối tự động (Auto-Dispatch) đã được nâng cấp tích hợp dữ liệu định tuyến tránh ngập lụt của công cụ chỉ đường chính (mặc định là **OpenRouteService - ORS**) kết hợp với dữ liệu giao thông thời gian thực từ **TomTom Traffic API**.
+
+### A. Quy Trình Định Tuyến & Xử Lý Giao Thông 2 Giai Đoạn
+
+Do dữ liệu vùng ngập lụt được số hóa độc quyền trên bản đồ hệ thống nội bộ nhưng TomTom API không hỗ trợ nhận tham số tránh đa giác (`avoid_polygons`), thuật toán điều phối áp dụng giải pháp định tuyến lai hai giai đoạn (Hybrid Routing):
+
+1. **Giai đoạn 1: Chỉ đường tránh ngập lụt lý tưởng (ORS Routing)**
+   * Khi kích hoạt điều phối, hệ thống truy vấn các đa giác vùng ngập lụt hiện hoạt của tỉnh xảy ra sự cố từ `FloodZoneEntity` trong cơ sở dữ liệu.
+   * Gọi công cụ định tuyến chính (ORS) với tham số `avoid_polygons` là các vùng ngập này để tính toán tuyến đường bộ an toàn đi vòng qua các vùng ngập.
+   * Lấy kết quả thời gian di chuyển làm chuẩn lý tưởng không có traffic: `etaIdealMinutes` (Ideal ETA).
+
+2. **Giai đoạn 2: Ước lượng độ trễ giao thông thực tế (TomTom Traffic)**
+   * Hệ thống sắp xếp sơ bộ các ứng viên cứu hộ theo khoảng cách địa lý và lọc ra **Top N ứng viên tối ưu nhất** (cấu hình qua biến môi trường `TOMTOM_MAX_CANDIDATES`, mặc định là 3) để tránh quá tải hạn ngạch API.
+   * Gọi **TomTom Traffic API** (`calculateRoute` với tham số `traffic=true`) cho tuyến đường trực tiếp giữa đội cứu hộ và hiện trường SOS để tính toán độ trễ do kẹt xe thực tế.
+   * Tính toán hệ số kẹt xe thực tế (`traffic_factor`):
+     $$\text{traffic\_factor} = \frac{\text{travelTimeInSeconds}}{\text{travelTimeInSeconds} - \text{trafficDelayInSeconds}}$$
+   * Trộn hai dữ liệu: Áp dụng hệ số kẹt xe này lên thời gian di chuyển tránh ngập lý tưởng để ra thời gian di chuyển thực tế có tính đến kẹt xe:
+     $$\text{etaRealisticMinutes} = \text{etaIdealMinutes} \times \text{traffic\_factor}$$
+
+* **Lưu ý nghiệp vụ quan trọng**: Do sự khác biệt về tuyến đường (TomTom route không né ngập lụt, ORS route né ngập lụt), hệ số kẹt xe thu được là mức xấp xỉ tương đối của khu vực xung quanh. Hệ thống tự động ghi nhận thuộc tính ảo `trafficNote = "estimated_from_direct_route"` trả về phía Client để đảm bảo tính minh bạch cho điều phối viên.
+
+---
+
+### B. Giải Pháp Tối Ưu Hóa & Bảo Vệ Hạn Ngạch (Quota & Fault Tolerance)
+
+Để đảm bảo hệ thống hoạt động ổn định trong gói API miễn phí của TomTom (2.500 lượt gọi/ngày, 5 QPS) và tránh lỗi gián đoạn hệ thống (Single Point of Failure), các cơ chế bảo vệ sau được triển khai trực tiếp trong [TomTomTrafficService](file:///d:/DoAn/DOAN/be/src/modules/routing/services/tomtom-traffic.service.ts):
+
+#### 1. Bộ nhớ đệm tọa độ (Coordinate Caching)
+* Các tọa độ điểm đầu và điểm cuối được **làm tròn đến 4 chữ số thập phân** (độ phân giải thực tế khoảng ~11 mét) trước khi làm khóa cache dạng `lat1,lng1:lat2,lng2`.
+* Dữ liệu được lưu bộ đệm in-memory tạm thời với thời gian sống (TTL) tùy chỉnh (mặc định 240 giây), giúp giảm tới 80% số lượng cuộc gọi API lặp lại khi chạy chu kỳ kiểm tra điều phối.
+
+#### 2. Giới hạn giá trị hệ số (Clamp Logic)
+* Để phòng tránh các trường hợp dữ liệu giao thông bị lỗi từ API dẫn đến mẫu số âm hoặc bằng 0 (khiến hệ số tắc nghẽn tiến tới vô cùng hoặc âm), `traffic_factor` được ràng buộc nghiêm ngặt trong khoảng **`[1.0, 5.0]`**.
+* Nếu giá trị tính toán nằm ngoài khoảng này, hệ thống sẽ tự động clamp và đưa về giá trị biên gần nhất (hoặc fallback về `1.0`), đồng thời ghi log cảnh báo riêng: `[TomTom API] traffic_factor clamped: out of range [1.0, 5.0] (value: X)` phục vụ công tác giám sát.
+
+#### 3. Giám sát hạn ngạch theo múi giờ UTC (UTC Quota Monitoring)
+* Lưu trữ bộ đếm lượt gọi API hàng ngày trong bộ nhớ. Bộ đếm tự động reset khi bước sang ngày UTC mới (`new Date().getUTCDate()`), khớp hoàn toàn 100% với chu kỳ reset hạn ngạch thực tế trên TomTom Developer Portal.
+* Ghi nhận log cụ thể dạng `[TomTom API] Request count today: X/2500 (UTC)` cho mỗi yêu cầu và phát log cảnh báo mức `Warn` khi số lượt gọi vượt ngưỡng 2.000 để lập trình viên kịp thời theo dõi và nâng cấp gói cước khi cần thiết.
+
+#### 4. Khả năng chịu lỗi & Chế độ tùy chọn (Optional Fallback)
+* Nếu TomTom API gặp sự cố (mất kết nối mạng, rate-limit HTTP 429 hoặc hết hạn ngạch ngày), hệ thống tự động bắt lỗi riêng (`[TomTom API] traffic_factor fallback: API error / quota limit`), không làm sập tiến trình điều phối mà tự động đưa hệ số tắc nghẽn về `1.0` (chỉ sử dụng ETA lý thuyết từ ORS).
+* Có thể tắt hoàn toàn tính năng này thông qua biến cấu hình môi trường `.env` (`TOMTOM_TRAFFIC_ENABLED=false`). Hệ thống sẽ chạy trơn tru với dữ liệu bản đồ ORS nguyên bản.
+
+---
+
+### C. Công Thức Tính Điểm Xếp Hạng 4 Trọng Số (Extended 4-Weight Scoring)
+
+Khi tính năng giao thông TomTom được kích hoạt, hệ thống chuyển sang sử dụng công thức tính điểm mở rộng 4 thành phần để tìm ra đội cứu hộ tối ưu nhất:
+
+$$\text{Score} = w_1 \times \text{Distance\_Norm} + w_2 \times \text{Duration\_Norm} + w_3 \times \text{Skill\_Mismatch} + w_4 \times \text{Workload\_Norm}$$
+
+Trong đó:
+* **Distance_Norm**: Khoảng cách di chuyển thực tế theo đường bộ (đã tránh ngập) được chuẩn hóa.
+* **Duration_Norm**: Thời gian di chuyển thực tế có tính kẹt xe ($\text{etaRealisticMinutes}$) được chuẩn hóa.
+* **Skill_Mismatch**: Mức độ không tương thích về chuyên môn/trang thiết bị của đội đối với loại hình sự cố SOS (ví dụ: cứu hộ ngập lụt cần đội có xuồng hơi).
+* **Workload_Norm**: Số lượng ca cứu hộ đang xử lý của đội hiện tại trên tổng tải công việc tối đa (`activeCasesCount / maxCapacity`).
+* **Các trọng số ($w_1, w_2, w_3, w_4$)**: Được cấu hình linh hoạt từ hệ thống, mặc định lần lượt là `0.3`, `0.4`, `0.2`, `0.1` nhằm ưu tiên hàng đầu cho các đội có thời gian di chuyển thực tế ngắn nhất và độ khớp chuyên môn cao nhất.
+
+

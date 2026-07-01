@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { DistanceBasedDispatchStrategy } from './distance-based-dispatch.strategy';
 import { SosRequest } from '../../domain/entities/sos-request.entity';
 import { SosRequestType } from '@shared/core/enums/sosType.enum';
@@ -8,6 +10,8 @@ import { SosSource } from '@shared/core/enums/sosSource.enum';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { TeamType } from '@shared/core/enums/teamType.enum';
 import { SystemSettingService } from '../../../system-setting/application/services/system-setting.service';
+import { FloodZoneEntity } from '@infrastructure/database/entities/flood-zone.entity';
+import { TomTomTrafficService } from '../../../routing/services/tomtom-traffic.service';
 
 describe('DistanceBasedDispatchStrategy', () => {
   let strategy: DistanceBasedDispatchStrategy;
@@ -21,12 +25,44 @@ describe('DistanceBasedDispatchStrategy', () => {
     getAllSettings: jest.fn(),
   };
 
+  const mockRoutingProvider = {
+    calculateRoute: jest.fn().mockResolvedValue({
+      distanceKm: 5,
+      durationMin: 10,
+    }),
+  };
+
+  const mockTomTomTrafficService = {
+    getTrafficData: jest.fn().mockResolvedValue({
+      travelTimeInSeconds: 600,
+      trafficDelayInSeconds: 120,
+      lengthInMeters: 5000,
+      trafficFactor: 1.2,
+    }),
+  };
+
+  const mockFloodZoneRepo = {
+    find: jest.fn().mockResolvedValue([]),
+  };
+
+  const mockConfigService = {
+    get: jest.fn((key: string, defaultValue?: any) => {
+      if (key === 'TOMTOM_MAX_CANDIDATES') return 3;
+      if (key === 'TOMTOM_TRAFFIC_ENABLED') return true;
+      return defaultValue;
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DistanceBasedDispatchStrategy,
         { provide: 'IRescueTeamRepository', useValue: mockTeamRepo },
         { provide: SystemSettingService, useValue: mockSystemSettingService },
+        { provide: 'IRoutingProvider', useValue: mockRoutingProvider },
+        { provide: TomTomTrafficService, useValue: mockTomTomTrafficService },
+        { provide: getRepositoryToken(FloodZoneEntity), useValue: mockFloodZoneRepo },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 

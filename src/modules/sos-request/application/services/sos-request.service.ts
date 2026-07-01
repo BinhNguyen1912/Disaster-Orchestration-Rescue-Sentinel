@@ -336,10 +336,12 @@ export class SosRequestService implements ISosRequestService {
 
     let teamId = dto.teamId;
     let method = DispatchMethod.MANUAL;
+    let autoDispatchOutcome: any = null;
 
     if (!teamId) {
       // Auto Dispatch via orchestrator
       const outcome = await this.dispatchOrchestrator.dispatch(sos);
+      autoDispatchOutcome = outcome;
 
       if (outcome.type === 'specialist_pending') {
         const updated = await this.sosRepo.findById(id);
@@ -367,6 +369,12 @@ export class SosRequestService implements ISosRequestService {
 
       if (outcome.type === 'dual_dispatched' && outcome.secondTeamId) {
         const updated = await this.sosRepo.findById(id);
+        if (updated && outcome.etaIdealMinutes !== undefined) {
+          updated.etaIdealMinutes = outcome.etaIdealMinutes;
+          updated.etaRealisticMinutes = outcome.etaRealisticMinutes;
+          updated.trafficDelayMinutes = outcome.trafficDelayMinutes;
+          updated.trafficNote = outcome.trafficNote;
+        }
         this.dispatchSocketService.broadcastSosStatusUpdate(sos.provinceId, {
           sosId: sos.id,
           status: SosStatus.DISPATCHED,
@@ -407,6 +415,12 @@ export class SosRequestService implements ISosRequestService {
     }
 
     const updatedSos = await this.sosRepo.findById(id);
+    if (updatedSos && autoDispatchOutcome && autoDispatchOutcome.etaIdealMinutes !== undefined) {
+      updatedSos.etaIdealMinutes = autoDispatchOutcome.etaIdealMinutes;
+      updatedSos.etaRealisticMinutes = autoDispatchOutcome.etaRealisticMinutes;
+      updatedSos.trafficDelayMinutes = autoDispatchOutcome.trafficDelayMinutes;
+      updatedSos.trafficNote = autoDispatchOutcome.trafficNote;
+    }
 
     // 📡 Realtime: broadcast assignment to admin province room
     this.dispatchSocketService.broadcastSosStatusUpdate(

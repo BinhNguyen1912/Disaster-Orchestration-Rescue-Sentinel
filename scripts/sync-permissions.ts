@@ -130,21 +130,49 @@ async function syncPermissions(): Promise<void> {
         }
 
         // 2. Sync role-permission mappings
-        for (const roleId of permConfig.allowedRoleIds) {
+        const ROLE_ID_TO_NAME: Record<number, string> = {
+          1: 'SYSTEM_ADMIN',
+          2: 'PROVINCE_ADMIN',
+          3: 'RESCUE_TEAM_LEADER',
+          4: 'USER',
+          5: 'VOLUNTEER',
+        };
+
+        for (const configRoleId of permConfig.allowedRoleIds) {
+          const roleName = ROLE_ID_TO_NAME[configRoleId];
+          if (!roleName) {
+            console.warn(`  ⚠️ Unknown role ID in config: ${configRoleId}`);
+            continue;
+          }
+
+          const dbRole = await queryRunner.query(
+            'SELECT id FROM "role" WHERE name = $1',
+            [roleName]
+          );
+
+          if (dbRole.length === 0) {
+            console.warn(`  ⚠️ Role "${roleName}" not found in database!`);
+            continue;
+          }
+
+          const actualRoleId = dbRole[0].id;
+
           const existingMapping = await queryRunner.query(
             `SELECT "roleId", "permissionId" FROM role_permission
                WHERE "roleId" = $1 AND "permissionId" = $2`,
-            [roleId, permissionId],
+            [actualRoleId, permissionId],
           );
 
           if (existingMapping.length === 0) {
             await queryRunner.query(
               `INSERT INTO role_permission ("roleId", "permissionId", "grantedAt")
                  VALUES ($1, $2, NOW())`,
-              [roleId, permissionId],
+              [actualRoleId, permissionId],
             );
             stats.mappingsAdded++;
-            console.log(`  ✅ Mapped: roleId=${roleId} → ${permConfig.name}`);
+            console.log(
+              `  ✅ Mapped: Role "${roleName}" (dbId=${actualRoleId}) → ${permConfig.name}`,
+            );
           } else {
             stats.mappingsSkipped++;
           }

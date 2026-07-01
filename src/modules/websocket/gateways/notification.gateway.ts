@@ -27,8 +27,7 @@ import { RedisService } from '../../../infrastructure/redis/redis.service';
   cors: { origin: '*' },
 })
 export class NotificationGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(NotificationGateway.name);
 
   @WebSocketServer()
@@ -37,7 +36,7 @@ export class NotificationGateway
   constructor(
     private readonly notificationSocketService: NotificationSocketService,
     private readonly redisService: RedisService,
-  ) {}
+  ) { }
 
   afterInit(server: Server) {
     // ✅ Gán server cho service ngay khi gateway khởi tạo
@@ -60,7 +59,6 @@ export class NotificationGateway
         `[CONNECT] Socket ID: ${client.id} | User ID: ${userId} | Device: ${deviceType} joined room user:${userId}`,
       );
 
-      // Redis presence tracking: increment connection count and set online status
       const redisKey = `user:status:${userId}`;
       try {
         await this.redisService.hincrby(redisKey, 'connectionCount', 1);

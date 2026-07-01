@@ -19,6 +19,10 @@ export interface RankedCandidate {
   distanceMeters: number;
   teamType: string;
   activeCasesCount: number;
+  etaIdealMinutes?: number;
+  etaRealisticMinutes?: number;
+  trafficDelayMinutes?: number;
+  trafficNote?: string;
 }
 
 export interface IDispatchStrategy {

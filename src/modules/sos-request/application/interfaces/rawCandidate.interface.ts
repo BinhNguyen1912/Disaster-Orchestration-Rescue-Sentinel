@@ -6,4 +6,6 @@ export interface RawCandidate {
   activeCasesCount: number;
   maxCapacity: number;
   name: string;
+  lat?: number;
+  lng?: number;
 }

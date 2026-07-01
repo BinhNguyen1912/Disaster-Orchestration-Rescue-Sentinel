@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { RoutingController } from './presentation/controllers/routing.controller';
 import { OrsRoutingProvider } from './services/ors-routing.provider';
 import { DijkstraRoutingProvider } from './services/dijkstra-routing.provider';
+import { TomTomTrafficService } from './services/tomtom-traffic.service';
 
 @Module({
   imports: [ConfigModule],
@@ -10,11 +11,12 @@ import { DijkstraRoutingProvider } from './services/dijkstra-routing.provider';
   providers: [
     OrsRoutingProvider,
     DijkstraRoutingProvider,
+    TomTomTrafficService,
     {
       provide: 'IRoutingProvider',
       useClass: OrsRoutingProvider,
     },
   ],
-  exports: [OrsRoutingProvider, DijkstraRoutingProvider, 'IRoutingProvider'],
+  exports: [OrsRoutingProvider, DijkstraRoutingProvider, TomTomTrafficService, 'IRoutingProvider'],
 })
 export class RoutingModule {}

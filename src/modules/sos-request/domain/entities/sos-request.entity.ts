@@ -44,4 +44,8 @@ export interface SosRequest {
   assignedTeam?: any;
   assigner?: any;
   resolver?: any;
+  etaIdealMinutes?: number;
+  etaRealisticMinutes?: number;
+  trafficDelayMinutes?: number;
+  trafficNote?: string;
 }

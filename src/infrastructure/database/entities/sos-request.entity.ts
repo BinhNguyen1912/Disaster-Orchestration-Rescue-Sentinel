@@ -143,4 +143,9 @@ export class SosRequestEntity {
 
   @OneToMany(() => CasualtyEntity, (entity) => entity.sosRequest)
   casualties: CasualtyEntity[];
+
+  etaIdealMinutes?: number;
+  etaRealisticMinutes?: number;
+  trafficDelayMinutes?: number;
+  trafficNote?: string;
 }
