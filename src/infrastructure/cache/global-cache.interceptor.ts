@@ -28,20 +28,17 @@ export class GlobalCacheInterceptor implements NestInterceptor {
     const request = httpContext.getRequest();
     const { method, path: reqPath } = request;
 
-    // 1. Check for Cache Invalidation Rules
     const isWriteRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
     if (isWriteRequest) {
       await this.handleInvalidation(method, reqPath);
       return next.handle();
     }
 
-    // 2. Find matching Cache Rule
     const rule = this.findCacheRule(method, reqPath, request);
     if (!rule) {
       return next.handle();
     }
 
-    // 3. Generate unique cache key
     const cacheKey = rule.makeKey ? rule.makeKey(request) : rule.keyPrefix;
 
     try {
