@@ -1,8 +1,8 @@
 # 📊 Báo cáo Tiến độ Dự án — Disaster Rescue Management System (Backend)
 
-> **Lần cập nhật gần nhất:** 2026-06-15
-> **Người cập nhật:** AI Assistant (cập nhật cuối mỗi buổi code)
-> **Trạng thái tổng:** 🟡 **Phase 3 — Spatial NNS + WebSocket Real-time Dispatch**
+> **Lần cập nhật gần nhất:** 2026-07-01
+> **Người cập nhật:** AI Assistant (cập nhật sau khi tích hợp TomTom Traffic)
+> **Trạng thái tổng:** 🟢 **Phase 3.5 — Spatial NNS + TomTom Traffic Integration + WebSockets**
 
 ---
 
@@ -12,8 +12,8 @@
 |-------|-----|---------|-----------|
 | 1 | Hạ tầng & Foundation | ██████████ 100% | ✅ Hoàn thành |
 | 2 | Auth & Core Modules | ██████████ 100% | ✅ Hoàn thành |
-| 3 | Nghiệp vụ chính (SOS, Rescue, Dispatch) | ████████░░ 80% | 🟡 Đang làm |
-| 3.5 | Spatial NNS + WebSocket Real-time | ███░░░░░░░ 30% | 🔵 Mới bắt đầu |
+| 3 | Nghiệp vụ chính (SOS, Rescue, Dispatch) | ██████████ 100% | ✅ Hoàn thành |
+| 3.5 | Spatial NNS + TomTom Traffic + WebSocket | ████████░░ 80% | 🟢 Hoàn thành Tích hợp TomTom |
 | 4 | Mở rộng (Donation, Alert, IoT, Message) | ░░░░░░░░░░ 0% | 🔲 Chưa bắt đầu |
 
 ---
@@ -304,6 +304,7 @@ src/
 
 | Ngày | Nội dung công việc |
 |------|---------|
+| 2026-07-01 | **Tích hợp TomTom Traffic & Định Tuyến Tránh Ngập Lũ**: 1) Thiết kế dịch vụ `TomTomTrafficService` hỗ trợ định tuyến tính kẹt xe, in-memory caching làm tròn tọa độ 4 chữ số thập phân, clamp hệ số kẹt xe `[1.0, 5.0]`, bộ đếm hạn ngạch API hàng ngày reset chuẩn theo giờ UTC. 2) Cải tiến chiến lược điều phối `DistanceBasedDispatchStrategy` kết hợp né đa giác ngập lụt (`avoidPolygons` lấy từ `FloodZoneEntity`) và kẹt xe TomTom, áp dụng công thức xếp hạng 4 trọng số linh hoạt. 3) Bổ sung 4 trường ảo (`etaIdealMinutes`, `etaRealisticMinutes`, `trafficDelayMinutes`, `trafficNote`) lan truyền tự động từ dispatch orchestrator về REST response và Socket. 4) Viết bộ test suite đầy đủ `tomtom-traffic.service.spec.ts` cho các biên clamp kẹt xe cực đại/âm và chế độ fallback optional. 5) Sửa đổi unit test controller và hoàn thành chạy 153 unit test thành công 100%. 6) Git commit & branch merge đẩy code BE/FE lên GitHub. |
 | 2026-06-15 | **Spatial NNS Analysis + WebSocket Module Setup**: 1) Phân tích 8 thuật toán Spatial Nearest Neighbor Search (Brute Force, R-Tree/GiST, KD-Tree, Quadtree, Geohash, H3, LSH, Expanding Radius) — chọn R-Tree (GiST) + Expanding Radius. 2) Viết tài liệu BA đầy đủ `docs/spatial_nns_analysis.md` (Business Problem, Business Goals, Stakeholders, FR/NFR, Domain Model, Business Rules, Failure Scenarios). 3) Tạo `WebSocketModule` tập trung với 2 namespaces: `/dispatch` (DispatchGateway + DispatchSocketService) và `/notification` (NotificationGateway + NotificationSocketService). 4) Cài `@nestjs/websockets`, `@nestjs/platform-socket.io`, `socket.io`. 5) Thêm `IoAdapter` vào `main.ts`. 6) Kiểm tra và xác nhận Socket CHƯA setup trước đó (zero-from-scratch). |
 | 2026-06-12 | **Implement SOS Request Module & R2 Media Upload**: 1) Thiết lập Cloudflare R2 Upload qua `StorageService` và `UploadController` cùng `upload.helper.ts` cho phép xử lý in-memory streams. 2) Xây dựng `SosRequestModule` hỗ trợ đầy đủ quy trình gửi SOS (kể cả Guest/Rate limit), tự hủy, phân bổ đội (auto-dispatch bằng PostGIS `ST_Distance`), đổi đội (reassign) và tìm kiếm lân cận. 3) Cập nhật Postman collection với 8 use cases mới. 4) Viết unit & E2E integration tests. |
 | 2026-06-11 | **Fix & Migrate Unit Tests**: Di chuyển các unit test liên quan đến Member từ `RescueTeamService` sang `RescueTeamMemberService` để tương thích hoàn toàn với cấu trúc service mới. Sửa phương thức `delete` trong unit test của `RescueTeamService` để bỏ kiểm tra active members dư thừa. Tất cả 89 tests đã PASS thành công. |
