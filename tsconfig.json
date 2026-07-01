@@ -37,5 +37,7 @@
       "@modules/location/*": ["modules/location/*"],
       "@seeds/*": ["infrastructure/database/seeds/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "scratch"]
 }
+
