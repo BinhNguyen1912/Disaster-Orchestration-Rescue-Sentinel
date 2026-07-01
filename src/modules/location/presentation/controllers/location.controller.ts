@@ -82,8 +82,26 @@ export class LocationController {
   @Get('provinces/:id/center')
   async getProvinceCenter(@Param('id', ParseIntPipe) id: number) {
     const province = await this.locationService.getProvinceById(id);
+    if (!province) {
+      return {
+        success: true,
+        data: null,
+      };
+    }
+
+    if (province.centerPoint?.coordinates) {
+      return {
+        success: true,
+        data: {
+          provinceCode: province.code,
+          lng: province.centerPoint.coordinates[0],
+          lat: province.centerPoint.coordinates[1],
+        },
+      };
+    }
+
     const centers = this.locationService.getProvinceCenters();
-    const center = centers.find((c) => c.provinceCode === province?.code);
+    const center = centers.find((c) => c.provinceCode === province.code);
 
     return {
       success: true,

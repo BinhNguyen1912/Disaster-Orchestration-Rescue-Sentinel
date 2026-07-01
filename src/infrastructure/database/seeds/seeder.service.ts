@@ -51,13 +51,58 @@ export class SeederService {
     const rawData = fs.readFileSync(filePath, 'utf-8');
     const provinces = JSON.parse(rawData);
 
+    const centersPath = path.join(__dirname, 'data', 'province-centers.json');
+    let centers: any[] = [];
+    if (fs.existsSync(centersPath)) {
+      try {
+        const centersData = fs.readFileSync(centersPath, 'utf-8');
+        centers = JSON.parse(centersData);
+      } catch (err) {
+        this.logger.error('Failed to parse province-centers.json', err);
+      }
+    }
+
     for (const province of provinces) {
+      const center = centers.find((c: any) => c.provinceCode === province.code);
+      const centerPoint = center
+        ? { type: 'Point', coordinates: [center.lng, center.lat] }
+        : null;
+
       const exists = await this.provinceRepo.findOne({
         where: { code: province.code },
       });
       if (!exists) {
-        await this.provinceRepo.save(this.provinceRepo.create(province));
+        await this.provinceRepo.save(
+          this.provinceRepo.create({
+            ...province,
+            centerPoint,
+          }),
+        );
         this.logger.debug(`Inserted province: ${province.name}`);
+      } else {
+        let needsUpdate = false;
+        if (center) {
+          if (!exists.centerPoint) {
+            needsUpdate = true;
+          } else {
+            const currentCoords = exists.centerPoint.coordinates;
+            if (
+              !currentCoords ||
+              currentCoords[0] !== center.lng ||
+              currentCoords[1] !== center.lat
+            ) {
+              needsUpdate = true;
+            }
+          }
+        }
+
+        if (needsUpdate && centerPoint) {
+          exists.centerPoint = centerPoint;
+          await this.provinceRepo.save(exists);
+          this.logger.debug(
+            `Updated centerPoint for province: ${province.name}`,
+          );
+        }
       }
     }
   }
