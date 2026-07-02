@@ -18,18 +18,27 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
   ) {}
 
   async findById(id: number | string): Promise<SosRequest | null> {
-    return this.repo.findOne({
-      where: { id: Number(id) },
-      relations: [
-        'province',
-        'adminUnit',
-        'user',
-        'iotDevice',
-        'assignedTeam',
-        'assigner',
-        'resolver',
-      ],
-    });
+    const queryBuilder = this.repo
+      .createQueryBuilder('sos')
+      .leftJoinAndSelect('sos.province', 'province')
+      .leftJoinAndSelect('sos.adminUnit', 'adminUnit')
+      .leftJoinAndSelect('sos.user', 'user')
+      .leftJoinAndSelect('sos.iotDevice', 'iotDevice')
+      .leftJoinAndSelect('sos.assignedTeam', 'assignedTeam')
+      .leftJoinAndSelect('sos.assigner', 'assigner')
+      .leftJoinAndSelect('sos.resolver', 'resolver')
+      .addSelect('ST_X(sos.location::geometry)', 'sosLng')
+      .addSelect('ST_Y(sos.location::geometry)', 'sosLat')
+      .addSelect('ST_X(assignedTeam."currentLocation"::geometry)', 'teamLng')
+      .addSelect('ST_Y(assignedTeam."currentLocation"::geometry)', 'teamLat')
+      .where('sos.id = :id', { id: Number(id) });
+
+    const rawAndEntities = await queryBuilder.getRawAndEntities();
+    if (rawAndEntities.entities.length === 0) return null;
+
+    const entity = rawAndEntities.entities[0];
+    this.mergeCoordinates(entity, rawAndEntities.raw[0]);
+    return entity;
   }
 
   async findAll(options?: any): Promise<SosRequest[]> {
@@ -77,6 +86,13 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
         'ST_Distance(sos.location, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) / 1000',
         'distance_km',
       )
+      .addSelect('ST_X(sos.location::geometry)', 'sosLng')
+      .addSelect('ST_Y(sos.location::geometry)', 'sosLat')
+      .addSelect('ST_X(assignedTeam."currentLocation"::geometry)', 'teamLng')
+      .addSelect('ST_Y(assignedTeam."currentLocation"::geometry)', 'teamLat')
+      .leftJoinAndSelect('sos.province', 'province')
+      .leftJoinAndSelect('sos.adminUnit', 'adminUnit')
+      .leftJoinAndSelect('sos.assignedTeam', 'assignedTeam')
       .where(
         'ST_DWithin(sos.location, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, :radiusMeters)',
         {
@@ -96,10 +112,10 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
 
     return rawAndEntities.entities.map((entity, index) => {
       const raw = rawAndEntities.raw[index];
-      const distance_km = parseFloat(raw.distance_km);
+      this.mergeCoordinates(entity, raw);
       return {
         ...entity,
-        distance_km,
+        distance_km: parseFloat(raw.distance_km),
       } as any;
     });
   }
@@ -123,7 +139,11 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
       .leftJoinAndSelect('sos.province', 'province')
       .leftJoinAndSelect('sos.adminUnit', 'adminUnit')
       .leftJoinAndSelect('sos.user', 'user')
-      .leftJoinAndSelect('sos.assignedTeam', 'assignedTeam');
+      .leftJoinAndSelect('sos.assignedTeam', 'assignedTeam')
+      .addSelect('ST_X(sos.location::geometry)', 'sosLng')
+      .addSelect('ST_Y(sos.location::geometry)', 'sosLat')
+      .addSelect('ST_X(assignedTeam."currentLocation"::geometry)', 'teamLng')
+      .addSelect('ST_Y(assignedTeam."currentLocation"::geometry)', 'teamLat');
 
     if (provinceId) {
       queryBuilder.andWhere('sos.provinceId = :provinceId', { provinceId });
@@ -146,18 +166,35 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
       queryBuilder.andWhere('sos.requesterId = :requesterId', { requesterId });
     }
 
-    const [items, total] = await queryBuilder
+    // Get total count before pagination
+    const countQb = queryBuilder.clone();
+    const total = await countQb.getCount();
+
+    // Get paginated results with coordinates
+    const rawAndEntities = await queryBuilder
       .orderBy('sos.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
-      .getManyAndCount();
+      .getRawAndEntities();
+
+    rawAndEntities.entities.forEach((entity, index) => {
+      this.mergeCoordinates(entity, rawAndEntities.raw[index]);
+    });
 
     return {
-      items,
+      items: rawAndEntities.entities,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  private mergeCoordinates(entity: SosRequest, raw: any): void {
+    if (!entity || !raw) return;
+    (entity as any).lat = parseFloat(raw.sosLat) || null;
+    (entity as any).lng = parseFloat(raw.sosLng) || null;
+    (entity as any).teamLat = parseFloat(raw.teamLat) || null;
+    (entity as any).teamLng = parseFloat(raw.teamLng) || null;
   }
 }

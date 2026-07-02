@@ -147,6 +147,33 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
       try {
         const coords = await fetchCoords(addressQuery);
         if (coords) {
+          // Check if other teams already exist in this adminUnit with same coords
+          // If so, add a small random offset to avoid overlapping markers
+          const existingTeams = await this.teamRepo.findAll(
+            { adminUnitId },
+            { page: 1, limit: 100 },
+          );
+          const hasDuplicateLocation = (existingTeams.items || []).some(
+            (t) => {
+              const tc = (t as any).baseLocation?.coordinates;
+              if (!tc || tc.length < 2) return false;
+              const latDiff = Math.abs(tc[1] - coords.lat);
+              const lngDiff = Math.abs(tc[0] - coords.lng);
+              return latDiff < 0.0001 && lngDiff < 0.0001;
+            },
+          );
+
+          if (hasDuplicateLocation) {
+            // Add small random offset (~50-200m) to avoid marker overlap
+            const latOffset = (Math.random() - 0.5) * 0.003;
+            const lngOffset = (Math.random() - 0.5) * 0.003;
+            coords.lat += latOffset;
+            coords.lng += lngOffset;
+            console.log(
+              `[Geocoding] Offset applied for team in adminUnit ${adminUnitId}: ${coords.lat}, ${coords.lng}`,
+            );
+          }
+
           baseLocation = {
             type: 'Point',
             coordinates: [coords.lng, coords.lat],
@@ -203,46 +230,64 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
 
     for (let i = 0; i < missingTeams.length; i++) {
       const team = missingTeams[i];
-      const adminUnitName = (team as any).adminUnit?.name || '';
-      const provinceName = (team as any).province?.name || '';
-      if (!adminUnitName && !provinceName) continue;
+      const adminUnit = (team as any).adminUnit;
+      const centerPoint = adminUnit?.centerPoint;
 
-      const addressQuery = `${adminUnitName}, ${provinceName}`;
-      console.log(
-        `[Geocoding] [${i + 1}/${missingTeams.length}] Geocoding team: ${team.name} using address "${addressQuery}"`,
-      );
+      let location: { type: string; coordinates: number[] } | null = null;
 
-      try {
-        const coords = await fetchCoords(addressQuery);
-        if (coords) {
-          await this.teamRepo.update(team.id, {
-            baseLocation: {
-              type: 'Point',
-              coordinates: [coords.lng, coords.lat],
-            },
-            currentLocation: {
-              type: 'Point',
-              coordinates: [coords.lng, coords.lat],
-            },
-          });
+      if (centerPoint) {
+        // Use adminUnit.centerPoint directly if available
+        const raw = centerPoint as any;
+        if (raw && raw.coordinates && Array.isArray(raw.coordinates)) {
+          location = {
+            type: 'Point',
+            coordinates: [raw.coordinates[0], raw.coordinates[1]],
+          };
           console.log(
-            `[Geocoding] Successfully updated team ${team.name} to coordinates [${coords.lng}, ${coords.lat}]`,
-          );
-        } else {
-          console.warn(
-            `[Geocoding] Could not find coordinates for: "${addressQuery}"`,
+            `[Geocoding] [${i + 1}/${missingTeams.length}] Using adminUnit centerPoint for team: ${team.name}`,
           );
         }
-      } catch (err: any) {
-        console.error(
-          `[Geocoding] Error geocoding team ${team.name}:`,
-          err.message,
-        );
       }
 
-      // Nominatim rate limiting policy is 1 request per second max
-      if (i < missingTeams.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (!location) {
+        // Fallback: use Nominatim only if centerPoint not available
+        const adminUnitName = adminUnit?.name || '';
+        const provinceName = (team as any).province?.name || '';
+        if (!adminUnitName && !provinceName) continue;
+
+        const addressQuery = `${adminUnitName}, ${provinceName}`;
+        console.log(
+          `[Geocoding] [${i + 1}/${missingTeams.length}] Geocoding team: ${team.name} using address "${addressQuery}"`,
+        );
+
+        try {
+          const coords = await fetchCoords(addressQuery);
+          if (coords) {
+            location = {
+              type: 'Point',
+              coordinates: [coords.lng, coords.lat],
+            };
+          }
+        } catch (err: any) {
+          console.error(
+            `[Geocoding] Error geocoding team ${team.name}:`,
+            err.message,
+          );
+        }
+      }
+
+      if (location) {
+        await this.teamRepo.update(team.id, {
+          baseLocation: location,
+          currentLocation: location,
+        });
+        console.log(
+          `[Geocoding] Successfully updated team ${team.name} to coordinates [${location.coordinates[0]}, ${location.coordinates[1]}]`,
+        );
+      } else {
+        console.warn(
+          `[Geocoding] Could not find coordinates for team: ${team.name}`,
+        );
       }
     }
     console.log('[Geocoding] Finished geocoding missing teams.');

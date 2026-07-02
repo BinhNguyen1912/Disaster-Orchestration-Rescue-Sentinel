@@ -8,6 +8,7 @@ import {
   Request,
   Headers,
   ValidationPipe,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -32,6 +33,8 @@ import { Permissions } from '@shared/common/constants/permissions.constant';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Đăng nhập' })
@@ -46,7 +49,16 @@ export class AuthController {
     @Headers('x-forwarded-for') ip: string,
     @Headers('user-agent') userAgent: string,
   ) {
-    return this.authService.login(req.user, ip, userAgent);
+    const { password, ...logBody } = req.body || {};
+    this.logger.log(`[LOGIN ATTEMPT] body: ${JSON.stringify(logBody)}`);
+    try {
+      const result = await this.authService.login(req.user, ip, userAgent);
+      this.logger.log(`[LOGIN SUCCESS] identifier: ${req.body.identifier}`);
+      return result;
+    } catch (error) {
+      this.logger.warn(`[LOGIN FAILED] identifier: ${req.body.identifier}, error: ${error.message}`);
+      throw error;
+    }
   }
 
   @ApiOperation({ summary: 'Đăng ký tài khoản' })

@@ -7,22 +7,27 @@ export class LoggerMiddleware implements NestMiddleware {
 
   use(request: Request, response: Response, next: NextFunction): void {
     const { ip, method, originalUrl } = request;
-    const userAgent = request.get('user-agent') || '';
     const startTime = Date.now();
+    const requestBody = request.body || {};
 
     response.on('finish', () => {
       const { statusCode } = response;
-      const contentLength = response.get('content-length') || 0;
       const executionTime = Date.now() - startTime;
 
-      const logMessage = `[${method}] ${originalUrl} ${statusCode} ${contentLength}b - ${executionTime}ms - ${userAgent} ${ip}`;
+      const logData = {
+        method,
+        url: originalUrl,
+        statusCode,
+        duration: `${executionTime}ms`,
+        body: requestBody,
+      };
 
       if (statusCode >= 500) {
-        this.logger.error(logMessage);
+        this.logger.error(`[FAILED] ${JSON.stringify(logData)}`);
       } else if (statusCode >= 400) {
-        this.logger.warn(logMessage);
+        this.logger.warn(`[FAILED] ${JSON.stringify(logData)}`);
       } else {
-        this.logger.log(logMessage);
+        this.logger.log(`[SUCCESS] ${JSON.stringify(logData)}`);
       }
     });
 

@@ -9,6 +9,7 @@ export interface PaginationOptions {
 
 export interface RescueTeamFilters {
   provinceId?: number;
+  adminUnitId?: number;
   status?: string;
   teamType?: string;
   search?: string;

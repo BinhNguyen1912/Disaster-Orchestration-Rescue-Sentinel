@@ -17,16 +17,26 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
   ) {}
 
   async findById(id: number): Promise<RescueTeamEntity | null> {
-    return this.repo.findOne({
-      where: { id },
-      relations: [
-        'province',
-        'adminUnit',
-        'leader',
-        'specializations',
-        'members',
-      ],
-    });
+    const queryBuilder = this.repo
+      .createQueryBuilder('rt')
+      .leftJoinAndSelect('rt.province', 'province')
+      .leftJoinAndSelect('rt.adminUnit', 'adminUnit')
+      .leftJoinAndSelect('rt.specializations', 'specializations')
+      .leftJoinAndSelect('rt.members', 'members')
+      .leftJoinAndSelect('rt.leader', 'leader')
+      .addSelect('ST_X(rt."currentLocation"::geometry)', 'currentLocationLng')
+      .addSelect('ST_Y(rt."currentLocation"::geometry)', 'currentLocationLat')
+      .addSelect('ST_X(rt."baseLocation"::geometry)', 'baseLocationLng')
+      .addSelect('ST_Y(rt."baseLocation"::geometry)', 'baseLocationLat')
+      .where('rt.id = :id', { id });
+
+    const rawAndEntities = await queryBuilder.getRawAndEntities();
+    if (rawAndEntities.entities.length === 0) return null;
+
+    const entity = rawAndEntities.entities[0];
+    const raw = rawAndEntities.raw[0];
+    this.mergeCoordinates(entity, raw);
+    return entity;
   }
 
   async findAll(
@@ -42,16 +52,43 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .leftJoinAndSelect('rt.adminUnit', 'adminUnit')
       .leftJoinAndSelect('rt.specializations', 'specializations')
       .leftJoinAndSelect('rt.members', 'members')
-      .leftJoinAndSelect('rt.leader', 'leader');
+      .leftJoinAndSelect('rt.leader', 'leader')
+      .addSelect('ST_X(rt."currentLocation"::geometry)', 'currentLocationLng')
+      .addSelect('ST_Y(rt."currentLocation"::geometry)', 'currentLocationLat')
+      .addSelect('ST_X(rt."baseLocation"::geometry)', 'baseLocationLng')
+      .addSelect('ST_Y(rt."baseLocation"::geometry)', 'baseLocationLat');
 
     queryBuilder = this.applyFilters(queryBuilder, filters);
 
-    const [items, total] = await queryBuilder
+    const rawAndEntities = await queryBuilder
       .skip(skip)
       .take(limit)
-      .getManyAndCount();
+      .getRawAndEntities();
 
-    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+    rawAndEntities.entities.forEach((entity, index) => {
+      this.mergeCoordinates(entity, rawAndEntities.raw[index]);
+    });
+
+    const total = rawAndEntities.raw.length > 0
+      ? await queryBuilder.clone().getCount()
+      : 0;
+
+    return {
+      items: rawAndEntities.entities,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  private mergeCoordinates(entity: RescueTeamEntity, raw: any): void {
+    if (!entity || !raw) return;
+    // Set lat/lng from raw SQL expressions for frontend convenience
+    (entity as any).lng = parseFloat(raw.currentLocationLng) || null;
+    (entity as any).lat = parseFloat(raw.currentLocationLat) || null;
+    (entity as any).baseLng = parseFloat(raw.baseLocationLng) || null;
+    (entity as any).baseLat = parseFloat(raw.baseLocationLat) || null;
   }
 
   private applyFilters(
@@ -61,6 +98,11 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
     if (filters.provinceId) {
       queryBuilder.andWhere('rt.provinceId = :provinceId', {
         provinceId: filters.provinceId,
+      });
+    }
+    if (filters.adminUnitId) {
+      queryBuilder.andWhere('rt.adminUnitId = :adminUnitId', {
+        adminUnitId: filters.adminUnitId,
       });
     }
     if (filters.status) {
