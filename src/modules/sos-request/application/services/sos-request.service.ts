@@ -274,6 +274,13 @@ export class SosRequestService implements ISosRequestService {
       }
     }
 
+    if (newStatus === SosStatus.ON_SITE && sos.assignedTeamId) {
+      const team = await this.teamRepo.findById(sos.assignedTeamId);
+      if (team) {
+        await this.teamRepo.update(team.id, { status: TeamStatus.BUSY });
+      }
+    }
+
     const updated = await this.sosRepo.update(id, sos);
 
     // 📡 Realtime: broadcast status change to admin province room

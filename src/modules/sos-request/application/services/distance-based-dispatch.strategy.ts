@@ -171,6 +171,15 @@ export class DistanceBasedDispatchStrategy implements IDispatchStrategy {
         `with best score: ${best.score.toFixed(4)} (pool size: ${ranked.length})`,
     );
 
+    this.logger.log(`[v6] Ranking summary of all pool candidates (lower score is better):`);
+    ranked.forEach((r, idx) => {
+      this.logger.log(
+        `   Rank #${idx + 1}: Team ID ${r.teamId} (Type: ${r.teamType}) | Score: ${r.score.toFixed(4)} | ` +
+        `Distance: ${r.distanceMeters.toFixed(1)}m | ETA: ${r.etaRealisticMinutes?.toFixed(1) ?? 'N/A'}m | ` +
+        `Active Cases: ${r.activeCasesCount}`,
+      );
+    });
+
     return {
       bestTeamId: best.teamId,
       bestScore: best.score,
@@ -337,7 +346,7 @@ export class DistanceBasedDispatchStrategy implements IDispatchStrategy {
         casesNorm * weights.cases +
         skillMismatch * weights.skill;
 
-      this.logger.debug(
+      this.logger.log(
         `[Pha 2] Single team ${c.name} (ID: ${c.teamId}): Score=${score.toFixed(4)} (dist_norm=0.00, pool=1)`,
       );
 
@@ -379,7 +388,7 @@ export class DistanceBasedDispatchStrategy implements IDispatchStrategy {
         casesNorm * weights.cases +
         skillMismatch * weights.skill;
 
-      this.logger.debug(
+      this.logger.log(
         `[Pha 2] Team ${c.name} (ID: ${c.teamId}, Type: ${c.teamType}): ` +
           `Dist=${c.distanceMeters.toFixed(1)}m (Norm=${distNorm.toFixed(3)}), ` +
           `Cases=${c.activeCasesCount} (Norm=${casesNorm.toFixed(3)}), ` +
@@ -581,7 +590,7 @@ export class DistanceBasedDispatchStrategy implements IDispatchStrategy {
         casesNorm * w4_cases +
         skillMismatch * w3_skill;
 
-      this.logger.debug(
+      this.logger.log(
         `[Pha 2 Ext] Team ${c.name} (ID: ${c.teamId}): ` +
           `Dist=${c.distanceMeters.toFixed(1)}m (Norm=${distNorm.toFixed(3)}), ` +
           `Duration=${c.etaRealisticMinutes.toFixed(1)}m (Norm=${durationNorm.toFixed(3)}), ` +

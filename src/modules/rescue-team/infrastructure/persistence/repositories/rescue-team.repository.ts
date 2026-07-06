@@ -160,6 +160,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .andWhere('rt.status IN (:...statuses)', {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
+      .andWhere('(rt.leaderId IS NOT NULL OR rt.leaderCitizenName IS NOT NULL)')
       .orderBy(
         `ST_Distance(rt."currentLocation", ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))`,
         'ASC',
@@ -185,6 +186,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .andWhere('rt.status IN (:...statuses)', {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
+      .andWhere('(rt.leaderId IS NOT NULL OR rt.leaderCitizenName IS NOT NULL)')
       .andWhere(
         `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, ${radiusMeters})`,
       )
@@ -218,6 +220,7 @@ export class RescueTeamRepositoryImpl implements IRescueTeamRepository {
       .andWhere('rt.status IN (:...statuses)', {
         statuses: ['AVAILABLE', 'STANDBY'],
       })
+      .andWhere('(rt.leaderId IS NOT NULL OR rt.leaderCitizenName IS NOT NULL)')
       .andWhere(
         `ST_DWithin(rt."currentLocation"::geography, ${point}::geography, ${radiusMeters})`,
       ) //chỉ lấy các đội trong bán kính

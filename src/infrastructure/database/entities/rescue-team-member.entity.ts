@@ -9,9 +9,11 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('rescue_team_member')
+@Index('idx_active_user_member', ['userId'], { unique: false, where: '"isActive" = true AND "userId" IS NOT NULL' })
 export class RescueTeamMemberEntity {
   @PrimaryGeneratedColumn()
   id: number;

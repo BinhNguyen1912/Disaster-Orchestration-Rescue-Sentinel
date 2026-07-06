@@ -144,6 +144,9 @@ export class SosRequestEntity {
   @OneToMany(() => CasualtyEntity, (entity) => entity.sosRequest)
   casualties: CasualtyEntity[];
 
+  @Column({ type: 'double precision', nullable: true, name: 'distance_km' })
+  distanceKm?: number | null;
+
   etaIdealMinutes?: number;
   etaRealisticMinutes?: number;
   trafficDelayMinutes?: number;

@@ -48,4 +48,5 @@ export interface SosRequest {
   etaRealisticMinutes?: number;
   trafficDelayMinutes?: number;
   trafficNote?: string;
+  distanceKm?: number | null;
 }
