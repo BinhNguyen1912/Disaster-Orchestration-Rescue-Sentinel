@@ -31,6 +31,20 @@ export class RescueTeamMemberService implements IRescueTeamMemberService {
       throw new BadRequestException('Must provide userId or citizenName');
     }
 
+    // Kiểm tra xem tài khoản hệ thống (userId) đã tham gia đội nào chưa
+    if (dto.userId) {
+      const existingMember = await this.memberRepo.findByUserId(dto.userId);
+      if (existingMember) {
+        if (existingMember.teamId === teamId) {
+          throw new ConflictException('Người dùng đã là thành viên của đội này');
+        } else {
+          throw new ConflictException(
+            `Người dùng đã tham gia đội cứu hộ khác (${existingMember.team?.name || `ID #${existingMember.teamId}`})`,
+          );
+        }
+      }
+    }
+
     // Kiểm tra citizenName + citizenPhone đã tồn tại trong team này chưa (nếu là citizen)
     if (!dto.userId && dto.citizenName) {
       const existingByCitizen = await this.memberRepo.findByCitizenInfo(

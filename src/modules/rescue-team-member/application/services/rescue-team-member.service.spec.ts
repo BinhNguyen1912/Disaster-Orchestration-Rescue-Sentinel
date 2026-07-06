@@ -47,6 +47,7 @@ describe('RescueTeamMemberService', () => {
   // ========================================
   describe('addMember', () => {
     beforeEach(() => {
+      mockMemberRepo.findByUserId.mockResolvedValue(null);
       mockMemberRepo.findByCitizenInfo.mockResolvedValue(null);
       mockMemberRepo.findLeaderByTeamId.mockResolvedValue(null);
       mockMemberRepo.create.mockResolvedValue({ id: 1, teamId: 1 });
@@ -104,6 +105,15 @@ describe('RescueTeamMemberService', () => {
         roleInTeam: RoleInTeam.MEMBER,
       };
       mockMemberRepo.findByCitizenInfo.mockResolvedValue({ id: 5 });
+
+      await expect(service.addMember(1, dto)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
+    it('should throw ConflictException when user already belongs to another team', async () => {
+      const dto = { userId: 5, roleInTeam: RoleInTeam.MEMBER };
+      mockMemberRepo.findByUserId.mockResolvedValue({ id: 1, teamId: 2, team: { name: 'Rescue Team A' } });
 
       await expect(service.addMember(1, dto)).rejects.toThrow(
         ConflictException,

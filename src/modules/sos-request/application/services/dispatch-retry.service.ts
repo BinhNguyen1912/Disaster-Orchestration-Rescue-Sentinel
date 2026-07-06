@@ -81,11 +81,13 @@ export class DispatchRetryService
           { page: 1, limit: 100 },
         );
 
-        // Filter available or standby teams
+        // Filter available or standby teams that have a leader
         const availableTeamsCount = teamsResult.items.filter(
           (t) =>
-            t.status === TeamStatus.AVAILABLE ||
-            t.status === TeamStatus.STANDBY,
+            (t.status === TeamStatus.AVAILABLE ||
+              t.status === TeamStatus.STANDBY) &&
+            (t.leaderId !== null && t.leaderId !== undefined ||
+              t.leaderCitizenName !== null && t.leaderCitizenName !== undefined),
         ).length;
 
         if (availableTeamsCount > 0) {

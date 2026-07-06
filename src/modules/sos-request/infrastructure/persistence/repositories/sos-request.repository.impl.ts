@@ -29,8 +29,8 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
       .leftJoinAndSelect('sos.resolver', 'resolver')
       .addSelect('ST_X(sos.location::geometry)', 'sosLng')
       .addSelect('ST_Y(sos.location::geometry)', 'sosLat')
-      .addSelect('ST_X(assignedTeam."currentLocation"::geometry)', 'teamLng')
-      .addSelect('ST_Y(assignedTeam."currentLocation"::geometry)', 'teamLat')
+      .addSelect('ST_X("assignedTeam"."currentLocation"::geometry)', 'teamLng')
+      .addSelect('ST_Y("assignedTeam"."currentLocation"::geometry)', 'teamLat')
       .where('sos.id = :id', { id: Number(id) });
 
     const rawAndEntities = await queryBuilder.getRawAndEntities();
@@ -88,8 +88,8 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
       )
       .addSelect('ST_X(sos.location::geometry)', 'sosLng')
       .addSelect('ST_Y(sos.location::geometry)', 'sosLat')
-      .addSelect('ST_X(assignedTeam."currentLocation"::geometry)', 'teamLng')
-      .addSelect('ST_Y(assignedTeam."currentLocation"::geometry)', 'teamLat')
+      .addSelect('ST_X("assignedTeam"."currentLocation"::geometry)', 'teamLng')
+      .addSelect('ST_Y("assignedTeam"."currentLocation"::geometry)', 'teamLat')
       .leftJoinAndSelect('sos.province', 'province')
       .leftJoinAndSelect('sos.adminUnit', 'adminUnit')
       .leftJoinAndSelect('sos.assignedTeam', 'assignedTeam')
@@ -142,8 +142,8 @@ export class SosRequestRepositoryImpl implements ISosRequestRepository {
       .leftJoinAndSelect('sos.assignedTeam', 'assignedTeam')
       .addSelect('ST_X(sos.location::geometry)', 'sosLng')
       .addSelect('ST_Y(sos.location::geometry)', 'sosLat')
-      .addSelect('ST_X(assignedTeam."currentLocation"::geometry)', 'teamLng')
-      .addSelect('ST_Y(assignedTeam."currentLocation"::geometry)', 'teamLat');
+      .addSelect('ST_X("assignedTeam"."currentLocation"::geometry)', 'teamLng')
+      .addSelect('ST_Y("assignedTeam"."currentLocation"::geometry)', 'teamLat');
 
     if (provinceId) {
       queryBuilder.andWhere('sos.provinceId = :provinceId', { provinceId });

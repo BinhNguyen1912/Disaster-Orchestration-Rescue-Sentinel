@@ -216,6 +216,7 @@ export class DispatchOrchestratorService {
           dbSos.etaRealisticMinutes = candidateInfo.etaRealisticMinutes;
           dbSos.trafficDelayMinutes = candidateInfo.trafficDelayMinutes;
           dbSos.trafficNote = candidateInfo.trafficNote;
+          dbSos.distanceKm = candidateInfo.distanceMeters ? candidateInfo.distanceMeters / 1000 : null;
         }
 
         await manager.save(SosRequestEntity, dbSos);
@@ -466,6 +467,10 @@ export class DispatchOrchestratorService {
       sos.specialistPending = false;
       sos.specialistType = undefined;
       sos.pendingSince = undefined;
+
+      const teamLoc = (team.currentLocation || team.baseLocation) as any;
+      sos.distanceKm = this.calculateDistanceKm(sos.location, teamLoc);
+
       await manager.save(SosRequestEntity, sos);
 
       // Cập nhật đội mới
@@ -596,5 +601,26 @@ export class DispatchOrchestratorService {
         err,
       );
     });
+  }
+  /**
+   * Tính toán khoảng cách địa lý Haversine giữa 2 toạ độ hình học
+   */
+  private calculateDistanceKm(loc1: any, loc2: any): number | null {
+    if (!loc1?.coordinates || !loc2?.coordinates) return null;
+    const [lng1, lat1] = loc1.coordinates;
+    const [lng2, lat2] = loc2.coordinates;
+    if (!lat1 || !lng1 || !lat2 || !lng2) return null;
+
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lng2 - lng1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 }
