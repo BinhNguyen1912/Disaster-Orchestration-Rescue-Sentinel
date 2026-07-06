@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 
 @Entity('rescue_team_member')
-@Index('uq_active_user_member', ['userId'], { unique: true, where: '"isActive" = true AND "userId" IS NOT NULL' })
+@Index('idx_active_user_member', ['userId'], { unique: false, where: '"isActive" = true AND "userId" IS NOT NULL' })
 export class RescueTeamMemberEntity {
   @PrimaryGeneratedColumn()
   id: number;
