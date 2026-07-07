@@ -54,13 +54,16 @@ export class DispatchOrchestratorService {
     private readonly dispatchSocketService: DispatchSocketService,
     @InjectRepository(SosStatusHistoryEntity)
     private readonly historyRepo: Repository<SosStatusHistoryEntity>,
-  ) {}
+  ) { }
 
   /**
    * Entry point cho auto-dispatch: Nhận SOS, chạy Two-Phase scoring,
    * quyết định Single/Dual dispatch, commit trong transaction ngắn.
    */
-  async dispatch(sosRequest: SosRequest): Promise<DispatchOutcome> {
+  async dispatch(
+    sosRequest: SosRequest,
+    manager?: EntityManager,
+  ): Promise<DispatchOutcome> {
     // 1. Chạy strategy tìm candidates (ở ngoài transaction để giữ lock duration tối thiểu)
     const result = await this.dispatchStrategy.assignTeam(sosRequest);
     if (!result) {
@@ -69,8 +72,8 @@ export class DispatchOrchestratorService {
       );
 
       // Fallback Cấp 3: Specialist Pending (chờ specialist)
-      await this.dataSource.transaction(async (manager) => {
-        const dbSos = await manager.findOne(SosRequestEntity, {
+      const executeFallback = async (txManager: EntityManager) => {
+        const dbSos = await txManager.findOne(SosRequestEntity, {
           where: { id: sosRequest.id },
         });
         if (dbSos) {
@@ -78,9 +81,15 @@ export class DispatchOrchestratorService {
           dbSos.specialistType = sosRequest.requestType;
           dbSos.pendingSince = new Date();
           dbSos.status = SosStatus.PENDING_SPECIALIST;
-          await manager.save(SosRequestEntity, dbSos);
+          await txManager.save(SosRequestEntity, dbSos);
         }
-      });
+      };
+
+      if (manager) {
+        await executeFallback(manager);
+      } else {
+        await this.dataSource.transaction(executeFallback);
+      }
 
       this.dispatchSocketService.alertNoTeamAvailable(
         sosRequest.provinceId,
@@ -94,20 +103,20 @@ export class DispatchOrchestratorService {
         fromStatus: SosStatus.PENDING,
         toStatus: SosStatus.PENDING_SPECIALIST,
         note: 'Không tìm thấy đội nào phù hợp. Chuyển sang chờ đội chuyên môn.',
-      });
+      }, manager);
 
-      return { type: 'specialist_pending' };
+      return { type: 'specialist_pending' as const };
     }
 
     // 2. Mở transaction ngắn để lock team và thực hiện atomic commit
-    return await this.dataSource.transaction(async (manager) => {
+    const commitTx = async (txManager: EntityManager): Promise<DispatchOutcome> => {
       // Tìm đội khả dụng đầu tiên trong danh sách xếp hạng
       let selectedTeam: RescueTeam | null = null;
 
       for (const candidate of result.rankedCandidates) {
         const team = await this.teamRepo.lockTeamForUpdate(
           candidate.teamId,
-          manager,
+          txManager,
         );
         if (
           team &&
@@ -154,17 +163,17 @@ export class DispatchOrchestratorService {
             isDualDispatch: false,
             priorityScore,
           },
-          manager,
+          txManager,
         );
 
         // Cập nhật SOS status PENDING và không gán team
-        const dbSos = await manager.findOne(SosRequestEntity, {
+        const dbSos = await txManager.findOne(SosRequestEntity, {
           where: { id: sosRequest.id },
         });
         if (dbSos) {
           dbSos.status = SosStatus.PENDING;
           dbSos.assignedTeamId = undefined;
-          await manager.save(SosRequestEntity, dbSos);
+          await txManager.save(SosRequestEntity, dbSos);
         }
 
         // 📝 History: Queued
@@ -176,10 +185,10 @@ export class DispatchOrchestratorService {
           teamId: bestQueueTeam.teamId,
           dispatchMethod: DispatchMethod.AUTO,
           note: `Yêu cầu được xếp hàng chờ đội cứu hộ #${bestQueueTeam.teamId}.`,
-        });
+        }, txManager);
 
         return {
-          type: 'queued',
+          type: 'queued' as const,
           assignedTeamId: bestQueueTeam.teamId,
         };
       }
@@ -189,7 +198,7 @@ export class DispatchOrchestratorService {
         `[Orchestrator] Dispatched team ${selectedTeam.id} immediately for SOS ${sosRequest.id}.`,
       );
 
-      const dbSos = await manager.findOne(SosRequestEntity, {
+      const dbSos = await txManager.findOne(SosRequestEntity, {
         where: { id: sosRequest.id },
       });
 
@@ -219,12 +228,12 @@ export class DispatchOrchestratorService {
           dbSos.distanceKm = candidateInfo.distanceMeters ? candidateInfo.distanceMeters / 1000 : null;
         }
 
-        await manager.save(SosRequestEntity, dbSos);
+        await txManager.save(SosRequestEntity, dbSos);
       }
 
       selectedTeam.status = TeamStatus.DISPATCHED;
       selectedTeam.activeCasesCount = (selectedTeam.activeCasesCount || 0) + 1;
-      await manager.save(RescueTeamEntity, selectedTeam);
+      await txManager.save(RescueTeamEntity, selectedTeam);
 
       // 5. Kiểm tra Dual Dispatch (chỉ áp dụng khi requiresEquipment/requestType requires it)
       if (this.requiresDualDispatch(sosRequest)) {
@@ -256,7 +265,7 @@ export class DispatchOrchestratorService {
             // Kiểm tra quota Dual Dispatch
             const canDual = await this.tryStartDualDispatch(
               sosRequest.provinceId,
-              manager,
+              txManager,
             );
             if (canDual) {
               this.logger.log(
@@ -271,7 +280,7 @@ export class DispatchOrchestratorService {
                   isDualDispatch: true,
                   priorityScore,
                 },
-                manager,
+                txManager,
               );
 
               // 📝 History: Dual dispatch - primary team
@@ -283,10 +292,10 @@ export class DispatchOrchestratorService {
                 teamId: selectedTeam.id,
                 dispatchMethod: DispatchMethod.AUTO,
                 note: `Tự động phân công đội cứu hộ #${selectedTeam.id}. Đội chuyên môn #${busySpecialistCand.teamId} đang chờ sẵn.`,
-              });
+              }, txManager);
 
               return {
-                type: 'dual_dispatched',
+                type: 'dual_dispatched' as const,
                 assignedTeamId: selectedTeam.id,
                 secondTeamId: busySpecialistCand.teamId,
                 ...etaFields,
@@ -309,14 +318,20 @@ export class DispatchOrchestratorService {
         teamId: selectedTeam.id,
         dispatchMethod: DispatchMethod.AUTO,
         note: `Tự động phân công đội cứu hộ #${selectedTeam.id}.`,
-      });
+      }, txManager);
 
       return {
-        type: 'dispatched',
+        type: 'dispatched' as const,
         assignedTeamId: selectedTeam.id,
         ...etaFields,
       };
-    });
+    };
+
+    if (manager) {
+      return await commitTx(manager);
+    } else {
+      return await this.dataSource.transaction(commitTx);
+    }
   }
 
   /**
@@ -413,9 +428,10 @@ export class DispatchOrchestratorService {
     sosRequestId: number,
     teamId: number,
     userId: number,
+    manager?: EntityManager,
   ): Promise<DispatchOutcome> {
-    return await this.dataSource.transaction(async (manager) => {
-      const sos = await manager.findOne(SosRequestEntity, {
+    const executeManual = async (txManager: EntityManager): Promise<DispatchOutcome> => {
+      const sos = await txManager.findOne(SosRequestEntity, {
         where: { id: sosRequestId },
       });
       if (!sos) {
@@ -432,7 +448,7 @@ export class DispatchOrchestratorService {
         );
       }
 
-      const team = await this.teamRepo.lockTeamForUpdate(teamId, manager);
+      const team = await this.teamRepo.lockTeamForUpdate(teamId, txManager);
       if (!team) {
         throw new NotFoundException(
           `Không tìm thấy đội cứu hộ với ID ${teamId}`,
@@ -443,7 +459,7 @@ export class DispatchOrchestratorService {
       if (sos.assignedTeamId && sos.assignedTeamId !== team.id) {
         const oldTeam = await this.teamRepo.lockTeamForUpdate(
           sos.assignedTeamId,
-          manager,
+          txManager,
         );
         if (oldTeam) {
           const oldActiveCases = Math.max(
@@ -454,7 +470,7 @@ export class DispatchOrchestratorService {
           if (oldActiveCases === 0 && oldTeam.status === TeamStatus.BUSY) {
             oldTeam.status = TeamStatus.AVAILABLE;
           }
-          await manager.save(RescueTeamEntity, oldTeam);
+          await txManager.save(RescueTeamEntity, oldTeam);
         }
       }
 
@@ -471,14 +487,14 @@ export class DispatchOrchestratorService {
       const teamLoc = (team.currentLocation || team.baseLocation) as any;
       sos.distanceKm = this.calculateDistanceKm(sos.location, teamLoc);
 
-      await manager.save(SosRequestEntity, sos);
+      await txManager.save(SosRequestEntity, sos);
 
       // Cập nhật đội mới
       team.status = TeamStatus.DISPATCHED;
       team.activeCasesCount = (team.activeCasesCount || 0) + 1;
-      await manager.save(RescueTeamEntity, team);
+      await txManager.save(RescueTeamEntity, team);
 
-      // 📝 History: Manual dispatch trong orchestrator (reassign)
+      // History: Manual dispatch trong orchestrator (reassign)
       const isReassign = !!sos.assignedTeamId && sos.assignedTeamId !== team.id;
       this.recordHistory({
         sosRequestId: sosRequestId,
@@ -492,15 +508,21 @@ export class DispatchOrchestratorService {
         previousTeamId: isReassign ? (sos.assignedTeamId ?? null) : null,
         dispatchMethod: DispatchMethod.MANUAL,
         note: isReassign
-          ? `Chuyển đội cứu hộ từ #${sos.assignedTeamId} sang #${team.id}.`
-          : `Thủ công phân công đội cứu hộ #${team.id}.`,
-      });
+          ? `Chuyển đội cứu hộ từ #${sos.assignedTeamId} sang #${team.id}`
+          : `Thủ công phân công đội cứu hộ #${team.id}`,
+      }, txManager);
 
       return {
-        type: 'dispatched',
+        type: 'dispatched' as const,
         assignedTeamId: team.id,
       };
-    });
+    };
+
+    if (manager) {
+      return await executeManual(manager);
+    } else {
+      return await this.dataSource.transaction(executeManual);
+    }
   }
 
   /**
@@ -554,7 +576,7 @@ export class DispatchOrchestratorService {
     const settings = await this.systemSettingService.getAllSettings();
     const maxDual = parseInt(
       settings[DISPATCH_KEYS.MAX_SIMULTANEOUS_DUAL_DISPATCHES] ??
-        String(DISPATCH_DEFAULTS.MAX_SIMULTANEOUS_DUAL_DISPATCHES),
+      String(DISPATCH_DEFAULTS.MAX_SIMULTANEOUS_DUAL_DISPATCHES),
       10,
     );
 
@@ -573,35 +595,54 @@ export class DispatchOrchestratorService {
   /**
    * Fire-and-forget helper để ghi lịch sử (non-fatal).
    */
-  private recordHistory(opts: {
-    sosRequestId: number;
-    eventType: SosHistoryEventType;
-    fromStatus?: SosStatus | null;
-    toStatus?: SosStatus | null;
-    changedById?: number | null;
-    teamId?: number | null;
-    previousTeamId?: number | null;
-    dispatchMethod?: DispatchMethod | null;
-    note?: string | null;
-  }): void {
-    const entry = this.historyRepo.create({
-      sosRequestId: opts.sosRequestId,
-      eventType: opts.eventType,
-      fromStatus: opts.fromStatus ?? null,
-      toStatus: opts.toStatus ?? null,
-      changedById: opts.changedById ?? null,
-      teamId: opts.teamId ?? null,
-      previousTeamId: opts.previousTeamId ?? null,
-      dispatchMethod: opts.dispatchMethod ?? null,
-      note: opts.note ?? null,
-    });
-    this.historyRepo.save(entry).catch((err) => {
+  private recordHistory(
+    opts: {
+      sosRequestId: number;
+      eventType: SosHistoryEventType;
+      fromStatus?: SosStatus | null;
+      toStatus?: SosStatus | null;
+      changedById?: number | null;
+      teamId?: number | null;
+      previousTeamId?: number | null;
+      dispatchMethod?: DispatchMethod | null;
+      note?: string | null;
+    },
+    manager?: EntityManager,
+  ): void {
+    const entry = manager
+      ? manager.create(SosStatusHistoryEntity, {
+        sosRequestId: opts.sosRequestId,
+        eventType: opts.eventType,
+        fromStatus: opts.fromStatus ?? null,
+        toStatus: opts.toStatus ?? null,
+        changedById: opts.changedById ?? null,
+        teamId: opts.teamId ?? null,
+        previousTeamId: opts.previousTeamId ?? null,
+        dispatchMethod: opts.dispatchMethod ?? null,
+        note: opts.note ?? null,
+      })
+      : this.historyRepo.create({
+        sosRequestId: opts.sosRequestId,
+        eventType: opts.eventType,
+        fromStatus: opts.fromStatus ?? null,
+        toStatus: opts.toStatus ?? null,
+        changedById: opts.changedById ?? null,
+        teamId: opts.teamId ?? null,
+        previousTeamId: opts.previousTeamId ?? null,
+        dispatchMethod: opts.dispatchMethod ?? null,
+        note: opts.note ?? null,
+      });
+    const savePromise = manager
+      ? manager.save(SosStatusHistoryEntity, entry)
+      : this.historyRepo.save(entry);
+    savePromise.catch((err) => {
       this.logger.error(
         '[DispatchOrchestrator] Failed to record SOS history:',
         err,
       );
     });
   }
+
   /**
    * Tính toán khoảng cách địa lý Haversine giữa 2 toạ độ hình học
    */
@@ -617,9 +658,9 @@ export class DispatchOrchestratorService {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }

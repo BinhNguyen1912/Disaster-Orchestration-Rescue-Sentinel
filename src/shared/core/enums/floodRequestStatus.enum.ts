@@ -1,0 +1,7 @@
+export enum FloodRequestStatus {
+  PENDING    = 'PENDING',
+  VERIFYING  = 'VERIFYING',
+  APPROVED   = 'APPROVED',
+  REJECTED   = 'REJECTED',
+  DISPATCHED = 'DISPATCHED',
+}

@@ -31,6 +31,15 @@ export class DispatchSocketService {
     );
   }
 
+  broadcastNewFloodRequest(provinceId: number, req: any) {
+    this.server
+      ?.to(`province:${provinceId}`)
+      .emit('flood-request:created', req);
+    this.logger.log(
+      `📡 [province:${provinceId}] flood-request:created`,
+    );
+  }
+
   /** Cập nhật trạng thái SOS cho admin tỉnh */
   broadcastSosStatusUpdate(
     provinceId: number,

@@ -31,6 +31,9 @@ export * from './core/enums/teamType.enum';
 export * from './core/enums/equipmentStatus.enum';
 export * from './core/enums/weatherAlertType.enum';
 export * from './core/enums/weatherSource.enum';
+export * from './core/enums/floodRequestPurpose.enum';
+export * from './core/enums/floodRequestStatus.enum';
+
 
 // Domain entities
 export * from './domain/entities/team-specialization.entity';
