@@ -20,7 +20,9 @@
       "WebFetch(domain:chatgpt.com)",
       "WebFetch(domain:drive.google.com)",
       "WebFetch(domain:res.cloudinary.com)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

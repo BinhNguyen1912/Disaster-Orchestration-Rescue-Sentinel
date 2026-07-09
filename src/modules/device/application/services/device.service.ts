@@ -42,7 +42,7 @@ export class DeviceService implements IDeviceService {
     });
   }
 
-  async getUserDevicesAndSessions(userId: number): Promise<any[]> {
+  async getUserDevicesAndSessions(userId: number, currentUserAgent?: string, currentIp?: string): Promise<any[]> {
     const devices = await this.deviceRepo.findByUserId(userId);
     const refreshTokens = await this.refreshTokenRepo.find({
       where: { userId, isRevoked: false },
@@ -58,6 +58,7 @@ export class DeviceService implements IDeviceService {
       ipAddress: 'N/A',
       lastActiveAt: d.lastActiveAt || d.createdAt,
       isActive: d.isActive,
+      isCurrent: false,
     }));
 
     const mappedWeb = refreshTokens.map(t => {
@@ -75,6 +76,8 @@ export class DeviceService implements IDeviceService {
       else if (ua.includes('iPhone') || ua.includes('iPad')) osName = 'iOS';
       else if (ua.includes('Android')) osName = 'Android';
 
+      const isCurrent = t.userAgent === currentUserAgent && t.ipAddress === currentIp;
+
       return {
         id: t.id,
         key: `web-${t.id}`,
@@ -84,6 +87,7 @@ export class DeviceService implements IDeviceService {
         ipAddress: t.ipAddress || 'Không xác định',
         lastActiveAt: t.createdAt,
         isActive: t.expiresAt > new Date(),
+        isCurrent,
       };
     });
 
@@ -111,5 +115,14 @@ export class DeviceService implements IDeviceService {
     }
     token.isRevoked = true;
     await this.refreshTokenRepo.save(token);
+  }
+
+  async revokeAllDevicesAndSessions(userId: number): Promise<void> {
+    // 1. Revoke all active web refresh tokens
+    await this.refreshTokenRepo.update({ userId, isRevoked: false }, { isRevoked: true });
+
+    // 2. Unlink/delete all registered mobile devices
+    const devices = await this.deviceRepo.findByUserId(userId);
+    await Promise.all(devices.map(d => this.deviceRepo.delete(d.id)));
   }
 }

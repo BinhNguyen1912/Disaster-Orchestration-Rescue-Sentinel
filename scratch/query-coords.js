@@ -6,10 +6,11 @@ async function main() {
         connectionString: 'postgresql://postgres:123123@localhost:5433/rescue_system?schema=public'
     });
     await client.connect();
-    console.log('🧹 Clearing all SOS requests, history, and queues...');
-    await client.query('TRUNCATE TABLE sos_status_history, dispatch_queue, sos_request CASCADE');
-    console.log('✅ Database cleared successfully!');
+    const userRes = await client.query('SELECT DISTINCT "provinceId" FROM "user"');
+    console.log('DISTINCT user provinceIds:', userRes.rows);
+    const teamRes = await client.query('SELECT DISTINCT "provinceId" FROM "rescue_team"');
+    console.log('DISTINCT team provinceIds:', teamRes.rows);
     await client.end();
 }
 main().catch(console.error);
-//# sourceMappingURL=clear-sos.js.map
+//# sourceMappingURL=query-coords.js.map

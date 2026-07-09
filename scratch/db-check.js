@@ -1,41 +1,58 @@
-const { Client } = require('pg');
-const fs = require('fs');
-const path = require('path');
-
-let env = {};
-try {
-  const envFile = fs.readFileSync(path.join(__dirname, '../.env'), 'utf-8');
-  envFile.split('\n').forEach(line => {
-    const parts = line.split('=');
-    if (parts.length >= 2) {
-      const key = parts[0].trim();
-      const value = parts.slice(1).join('=').trim().replace(/(^["']|["']$)/g, '');
-      env[key] = value;
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-  });
-} catch (e) {}
-
-const client = new Client({
-  host: env.DB_HOST || 'localhost',
-  port: parseInt(env.DB_PORT || '5433', 10),
-  user: env.DB_USERNAME || 'postgres',
-  password: env.DB_PASSWORD || 'postgres',
-  database: env.DB_DATABASE || 'rescue_system',
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
 });
-
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+const typeorm_1 = require("typeorm");
+const dotenv = __importStar(require("dotenv"));
+const path = __importStar(require("path"));
+dotenv.config({ path: path.join(__dirname, '../.env') });
+const AppDataSource = new typeorm_1.DataSource({
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5433', 10),
+    username: process.env.DB_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_DATABASE || 'rescue_system',
+    entities: [],
+    synchronize: false,
+});
 async function run() {
-  await client.connect();
-  console.log('Database connected!');
-
-  const filePath = path.join(__dirname, '../src/infrastructure/database/seeds/data/administrative-unit.json');
-  const raw = fs.readFileSync(filePath, 'utf-8');
-  const units = JSON.parse(raw);
-  const pIds = new Set(units.map(u => u.provinceId));
-  console.log('Distinct provinceId in administrative-unit.json:', Array.from(pIds));
-
-  const dbIds = await client.query('SELECT DISTINCT "provinceId" FROM administrative_unit');
-  console.log('Distinct provinceId in DB administrative_unit table:', dbIds.rows.map(r => r.provinceId));
-
-  await client.end();
+    await AppDataSource.initialize();
+    console.log('Database connected!');
+    const users = await AppDataSource.query('SELECT id, email, "provinceId" FROM "user"');
+    console.log('Users in database:', users);
+    await AppDataSource.destroy();
 }
 run().catch(console.error);
+//# sourceMappingURL=db-check.js.map

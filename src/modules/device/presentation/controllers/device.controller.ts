@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Request,
+  Headers,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -37,9 +38,25 @@ export class DeviceController {
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách thiết bị và phiên trình duyệt đang hoạt động' })
-  async getDevicesAndSessions(@Request() req: any) {
+  async getDevicesAndSessions(
+    @Request() req: any,
+    @Headers('user-agent') userAgent: string,
+    @Headers('x-forwarded-for') xForwardedFor: string,
+  ) {
     const userId = req.user.userId ?? req.user.sub;
-    return this.service.getUserDevicesAndSessions(userId);
+    const ip = xForwardedFor || req.ip || req.socket?.remoteAddress || '127.0.0.1';
+    return this.service.getUserDevicesAndSessions(userId, userAgent, ip);
+  }
+
+  @Delete('all')
+  @ApiOperation({ summary: 'Đăng xuất khỏi tất cả các thiết bị và phiên trình duyệt' })
+  @HttpCode(HttpStatus.OK)
+  async revokeAll(
+    @Request() req: any,
+  ) {
+    const userId = req.user.userId ?? req.user.sub;
+    await this.service.revokeAllDevicesAndSessions(userId);
+    return { success: true, message: 'Đã đăng xuất khỏi tất cả thiết bị thành công' };
   }
 
   @Delete(':id')
