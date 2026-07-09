@@ -22,6 +22,7 @@ import { Permissions } from '@shared/common/constants/permissions.constant';
 import { UpdateUserValidationDto } from '../dtos/validation/update-user.validation.dto';
 import { QueryUserValidationDto } from '../dtos/validation/query-user.validation.dto';
 import { ChangePasswordValidationDto } from '../dtos/validation/change-password.validation.dto';
+import { BulkUpdateUserValidationDto } from '../dtos/validation/bulk-update-user.validation.dto';
 import { CurrentUser } from '@shared/common/decorators/current-user.decorator';
 
 @ApiTags('Users')
@@ -84,6 +85,16 @@ export class UserController {
     const userId = req.user.userId ?? req.user.sub;
     await this.service.changePassword(userId, dto);
     return { success: true };
+  }
+
+  @Patch('bulk-update')
+  @ApiOperation({ summary: 'Cập nhật hàng loạt người dùng (vai trò, trạng thái)' })
+  @RequirePermissions(Permissions.USER_UPDATE)
+  async bulkUpdate(
+    @Body(new ValidationPipe({ transform: true }))
+    dto: BulkUpdateUserValidationDto,
+  ) {
+    return this.service.bulkUpdate(dto);
   }
 
   @Get(':id')

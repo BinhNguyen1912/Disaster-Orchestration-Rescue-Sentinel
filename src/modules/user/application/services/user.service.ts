@@ -9,6 +9,7 @@ import type { IUserService } from '../interfaces/user.service.interface';
 import type { UpdateUserDto } from '../dtos/update-user.dto';
 import type { QueryUserDto } from '../dtos/query-user.dto';
 import type { ChangePasswordDto } from '../dtos/change-password.dto';
+import type { BulkUpdateUserDto } from '../dtos/bulk-update-user.dto';
 import {
   PaginationParams,
   PaginatedResult,
@@ -124,5 +125,10 @@ export class UserService implements IUserService {
 
   async search(query: string): Promise<User[]> {
     return this.userRepo.search(query);
+  }
+
+  async bulkUpdate(dto: BulkUpdateUserDto): Promise<{ updated: number }> {
+    const { ids, roleId, isActive } = dto;
+    return this.userRepo.bulkUpdate(ids, { roleId, isActive });
   }
 }

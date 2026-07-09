@@ -29,4 +29,8 @@ export interface IUserRepository {
   softDelete(id: number): Promise<boolean>;
   count(conditions: Partial<User>): Promise<number>;
   search(query: string): Promise<User[]>;
+  bulkUpdate(
+    ids: number[],
+    data: { roleId?: number; isActive?: boolean },
+  ): Promise<{ updated: number }>;
 }

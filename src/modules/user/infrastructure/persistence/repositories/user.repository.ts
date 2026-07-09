@@ -176,4 +176,55 @@ export class UserRepositoryImpl implements IUserRepository {
       .getMany();
     return users;
   }
+
+  async bulkUpdate(
+    ids: number[],
+    data: { roleId?: number; isActive?: boolean },
+  ): Promise<{ updated: number }> {
+    const userRoleRepo = this.repo.manager.getRepository(UserRoleEntity);
+    let updatedCount = 0;
+
+    for (const id of ids) {
+      const user = await this.repo.findOne({ where: { id, deletedAt: IsNull() } });
+      if (!user) continue;
+
+      if (data.isActive !== undefined) {
+        user.isActive = data.isActive;
+      }
+      await this.repo.save(user);
+
+      if (data.roleId !== undefined) {
+        const activeRole = await userRoleRepo.findOne({
+          where: { userId: id, isActive: true },
+        });
+
+        if (activeRole) {
+          let changed = false;
+          if (activeRole.roleId !== data.roleId) {
+            activeRole.roleId = data.roleId;
+            activeRole.assignedAt = new Date();
+            changed = true;
+          }
+          if (activeRole.provinceId !== user.provinceId) {
+            activeRole.provinceId = user.provinceId;
+            changed = true;
+          }
+          if (changed) {
+            await userRoleRepo.save(activeRole);
+          }
+        } else {
+          const newRole = userRoleRepo.create({
+            userId: id,
+            roleId: data.roleId,
+            provinceId: user.provinceId || 1,
+            isActive: true,
+          });
+          await userRoleRepo.save(newRole);
+        }
+      }
+      updatedCount++;
+    }
+
+    return { updated: updatedCount };
+  }
 }
