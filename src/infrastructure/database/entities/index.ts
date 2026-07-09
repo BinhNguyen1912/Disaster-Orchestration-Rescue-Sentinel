@@ -32,3 +32,6 @@ export * from './notification.entity';
 export * from './system-setting.entity';
 export * from './system-category.entity';
 export * from './rescue-equipment.entity';
+export * from './flood-request.entity';
+export * from './flood-request-status-history.entity';
+
