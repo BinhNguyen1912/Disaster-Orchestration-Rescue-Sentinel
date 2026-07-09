@@ -73,6 +73,19 @@ export class UserController {
     return this.service.updateProfile(userId, dto);
   }
 
+  @Patch('profile/password')
+  @ApiOperation({ summary: 'Đổi mật khẩu bản thân' })
+  @HttpCode(HttpStatus.OK)
+  async changeOwnPassword(
+    @Request() req: any,
+    @Body(new ValidationPipe({ transform: true }))
+    dto: ChangePasswordValidationDto,
+  ) {
+    const userId = req.user.userId ?? req.user.sub;
+    await this.service.changePassword(userId, dto);
+    return { success: true };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Lấy thông tin người dùng theo ID' })
   @RequirePermissions(Permissions.USER_READ)

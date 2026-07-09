@@ -18,6 +18,10 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // API versioning — all REST routes prefixed with /api/v1
+  // Swagger UI mounted at /api is excluded from the prefix
+  app.setGlobalPrefix('api/v1', { exclude: ['api', 'api/(.*)'] });
+
   const config = new DocumentBuilder()
     .setTitle('Rescue System API')
     .setDescription('API documentation for the Disaster Rescue System')
@@ -30,10 +34,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   await app.listen(process.env.PORT ?? 8585);
-  console.log(
-    'Application is running on: ' +
-    `http://localhost:${process.env.PORT ?? 8585}`,
-  );
-  console.log('Swagger : http://localhost:8585/api');
+  console.log('API v1    : http://localhost:8585/api/v1');
+  console.log('Swagger   : http://localhost:8585/api');
 }
 bootstrap();

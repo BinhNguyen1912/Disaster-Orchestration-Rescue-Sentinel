@@ -7,6 +7,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DataSource, Repository, MoreThan, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FloodRequestEntity } from '@infrastructure/database/entities/flood-request.entity';
@@ -32,6 +33,7 @@ import { PaginatedResult } from '@shared/common/dtos/pagination.dto';
 import { LocationService } from '../../../location/application/services/location.service';
 import { DispatchSocketService } from '../../../websocket/services/dispatch-socket.service';
 import { DispatchOrchestratorService } from '../../../sos-request/application/services/dispatch-orchestrator.service';
+import { RedisService } from '../../../../infrastructure/redis/redis.service';
 
 @Injectable()
 export class FloodRequestService {
@@ -45,6 +47,8 @@ export class FloodRequestService {
     private readonly locationService: LocationService,
     private readonly dispatchSocketService: DispatchSocketService,
     private readonly dispatchOrchestrator: DispatchOrchestratorService,
+    private readonly redisService: RedisService,
+    private readonly config: ConfigService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -74,21 +78,20 @@ export class FloodRequestService {
     dto: CreateFloodRequestValidationDto,
     user?: AccessTokenPayload,
   ): Promise<FloodRequest> {
-    // 1. Phone-based Rate Limiting: max 1 request per 2 minutes per phone
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-    const recentRequest = await this.repo.findAll({
-      where: {
-        requesterPhone: dto.requesterPhone,
-        createdAt: MoreThan(twoMinutesAgo),
-      },
-    });
+    // 1. Phone-based Rate Limiting via Redis: max 1 request per 2 minutes per phone
+    const redisKey = `rate-limit:flood-request:phone:${dto.requesterPhone}`;
+    const isRateLimited = await this.redisService.get(redisKey);
 
-    if (recentRequest && recentRequest.length > 0) {
+    if (isRateLimited) {
       throw new HttpException(
         'Vui lòng đợi 2 phút trước khi gửi yêu cầu tiếp theo với số điện thoại này.',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
+
+    // Set rate limit key in Redis with TTL from config (default 120s)
+    const cooldownSeconds = this.config.get<number>('FLOOD_REQUEST_COOLDOWN_SECONDS', 120);
+    await this.redisService.set(redisKey, '1', cooldownSeconds);
 
     // 2. Resolve locations if not provided
     let provinceId = dto.provinceId;
@@ -108,8 +111,8 @@ export class FloodRequestService {
           provinceId = defaultUnit.provinceId;
           adminUnitId = defaultUnit.id;
         } else {
-          provinceId = provinceId || 1;
-          adminUnitId = adminUnitId || 1;
+          provinceId = provinceId || this.config.get<number>('DEFAULT_PROVINCE_ID', 1);
+          adminUnitId = adminUnitId || this.config.get<number>('DEFAULT_ADMIN_UNIT_ID', 1);
         }
       }
     }
@@ -305,6 +308,10 @@ export class FloodRequestService {
     dto: DispatchFloodRequestValidationDto,
     user: AccessTokenPayload,
   ): Promise<FloodRequest> {
+    if (dto.method === DispatchMethod.MANUAL && !dto.teamId) {
+      throw new BadRequestException('ID Đội cứu hộ là bắt buộc khi chọn điều phối thủ công');
+    }
+
     return await this.dataSource.transaction(async (manager) => {
       // 1. SELECT FOR UPDATE to prevent race conditions
       const floodRequest = await manager.findOne(FloodRequestEntity, {
@@ -339,12 +346,12 @@ export class FloodRequestService {
         requestType: SosRequestType.FLOOD,
         status: SosStatus.PENDING,
         severity: floodRequest.severity,
-        trappedPeopleCount: 1,
+        trappedPeopleCount: this.config.get<number>('DEFAULT_SOS_TRAPPED_PEOPLE', 1),
         specialNeedsTags: [],
         imageUrls: floodRequest.imageUrls || [],
         description: floodRequest.description || floodRequest.title,
         source: floodRequest.source,
-        requiresEquipment: false,
+        requiresEquipment: this.config.get<boolean>('DEFAULT_SOS_REQUIRES_EQUIPMENT', false),
       };
 
       const sosEntity = manager.create(SosRequestEntity, sosData);
@@ -378,11 +385,8 @@ export class FloodRequestService {
         outcome = await this.dispatchOrchestrator.dispatch(savedSos as any, manager);
         teamId = outcome.assignedTeamId || null;
       } else {
-        if (!dto.teamId) {
-          throw new BadRequestException('ID Đội cứu hộ là bắt buộc khi chọn điều phối thủ công');
-        }
-        outcome = await this.dispatchOrchestrator.dispatchManual(savedSos.id, dto.teamId, user.sub, manager);
-        teamId = dto.teamId;
+        outcome = await this.dispatchOrchestrator.dispatchManual(savedSos.id, dto.teamId!, user.sub, manager);
+        teamId = dto.teamId!;
       }
 
       // 6. Update FloodRequest

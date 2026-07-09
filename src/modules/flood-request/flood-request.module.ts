@@ -13,6 +13,7 @@ import { FloodRequestRepositoryImpl } from './infrastructure/persistence/reposit
 import { LocationModule } from '../location/location.module';
 import { WebSocketModule } from '../websocket/websocket.module';
 import { SosRequestModule } from '../sos-request/sos-request.module';
+import { RedisModule } from '../../infrastructure/redis/redis.module';
 
 @Module({
   imports: [

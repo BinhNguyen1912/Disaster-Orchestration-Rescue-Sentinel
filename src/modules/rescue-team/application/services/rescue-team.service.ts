@@ -23,6 +23,7 @@ import { LocationService } from '../../../location/application/services/location
 import { APP_MESSAGES } from '@shared/index';
 import { ConfigService } from '@nestjs/config';
 import { TeamType } from '@shared/core/enums/teamType.enum';
+import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import * as https from 'https';
 
 function fetchCoords(
@@ -402,6 +403,28 @@ export class RescueTeamService implements IRescueTeamService, OnModuleInit {
       throw new NotFoundException(APP_MESSAGES.RESCUE.RESCUE_TEAM_NOT_FOUND);
     }
     return this.populateLogoFallback(team);
+  }
+
+  async bulkUpdateStatus(
+    ids: number[],
+    status: TeamStatus,
+  ): Promise<{ updated: number; failed: number[] }> {
+    const failed: number[] = [];
+    await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const team = await this.teamRepo.findById(id);
+          if (!team) {
+            failed.push(id);
+            return;
+          }
+          await this.teamRepo.update(id, { status });
+        } catch {
+          failed.push(id);
+        }
+      }),
+    );
+    return { updated: ids.length - failed.length, failed };
   }
 
   async delete(id: number): Promise<void> {

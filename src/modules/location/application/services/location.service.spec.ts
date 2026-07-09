@@ -7,14 +7,24 @@ import { AdministrativeUnitEntity } from '@infrastructure/database/entities/admi
 describe('LocationService', () => {
   let service: LocationService;
 
+  // Builder helper để mock createQueryBuilder chain
+  const createQbMock = (result: any) => ({
+    where: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    setParameters: jest.fn().mockReturnThis(),
+    getOne: jest.fn().mockResolvedValue(result),
+  });
+
   const mockProvinceRepo = {
     find: jest.fn(),
     findOne: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
   const mockWardRepo = {
     find: jest.fn(),
     findOne: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -137,4 +147,94 @@ describe('LocationService', () => {
       });
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  describe('findUnitByCoordinates', () => {
+    const LAT = 10.727;
+    const LNG = 106.6988;
+    const mockUnit = { id: 1001, provinceId: 2, name: 'Nhà Bè', type: 'DISTRICT' };
+    const mockProvince = { id: 2, name: 'TP. Hồ Chí Minh' };
+
+    it('Strategy 1: should return unit when ST_Contains finds a boundary match', async () => {
+      // First wardRepo call (ST_Contains) returns a hit
+      mockWardRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(mockUnit));
+
+      const result = await service.findUnitByCoordinates(LAT, LNG);
+
+      expect(result).toEqual(mockUnit);
+      // provinceRepo should NOT be called — no need to go to strategy 2
+      expect(mockProvinceRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('Strategy 2: should resolve correct province first, then find unit within it (cross-province fix)', async () => {
+      // ST_Contains miss
+      mockWardRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(null));
+      // Nearest province → TP.HCM (not Đồng Nai / Bình Dương)
+      mockProvinceRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(mockProvince));
+      // Nearest unit WITHIN TP.HCM
+      mockWardRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(mockUnit));
+
+      const result = await service.findUnitByCoordinates(LAT, LNG);
+
+      expect(result).toEqual(mockUnit);
+      expect(result!.provinceId).toBe(2); // phải đúng tỉnh, không bị lạc sang tỉnh khác
+    });
+
+    it('Strategy 2: should NOT return a unit from a different province (regression guard)', async () => {
+      const wrongProvince = { id: 28, name: 'Tỉnh Đồng Nai' };
+      const wrongUnit = { id: 5026, provinceId: 28, name: 'Thủ Dầu Một' };
+
+      mockWardRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(null));
+      // nearest province = Đồng Nai (wrong, simulating bad data)
+      mockProvinceRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(wrongProvince));
+      // unit within Đồng Nai
+      mockWardRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(wrongUnit));
+
+      const result = await service.findUnitByCoordinates(LAT, LNG);
+
+      // Result must belong to the nearest province (whatever it is), not jump to another
+      expect(result!.provinceId).toBe(wrongProvince.id);
+    });
+
+    it('Strategy 3: global fallback when both ST_Contains and province-scoped fail', async () => {
+      const globalFallbackUnit = { id: 9999, provinceId: 5, name: 'Đơn vị fallback' };
+
+      mockWardRepo.createQueryBuilder
+        .mockReturnValueOnce(createQbMock(null))   // Strategy 1 miss
+        .mockReturnValueOnce(createQbMock(null))   // Strategy 2 unit-in-province miss
+        .mockReturnValueOnce(createQbMock(globalFallbackUnit)); // Strategy 3
+
+      mockProvinceRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(mockProvince));
+
+      const result = await service.findUnitByCoordinates(LAT, LNG);
+
+      expect(result).toEqual(globalFallbackUnit);
+    });
+
+    it('should return null when no unit found at all', async () => {
+      mockWardRepo.createQueryBuilder
+        .mockReturnValueOnce(createQbMock(null))   // Strategy 1
+        .mockReturnValueOnce(createQbMock(null))   // Strategy 2 unit
+        .mockReturnValueOnce(createQbMock(null));  // Strategy 3
+
+      mockProvinceRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(mockProvince));
+
+      const result = await service.findUnitByCoordinates(LAT, LNG);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when no province found and no global unit exists', async () => {
+      mockWardRepo.createQueryBuilder
+        .mockReturnValueOnce(createQbMock(null))   // Strategy 1
+        .mockReturnValueOnce(createQbMock(null));  // Strategy 3 global fallback
+
+      mockProvinceRepo.createQueryBuilder.mockReturnValueOnce(createQbMock(null)); // No province
+
+      const result = await service.findUnitByCoordinates(LAT, LNG);
+
+      expect(result).toBeNull();
+    });
+  });
 });
+

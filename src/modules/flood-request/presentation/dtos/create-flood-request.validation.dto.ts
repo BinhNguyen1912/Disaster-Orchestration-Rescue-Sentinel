@@ -33,9 +33,7 @@ export class CreateFloodRequestValidationDto {
   @ApiProperty({ example: '0917234567' })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^(0[3|5|7|8|9])+([0-9]{8})$/, {
-    message: 'Số điện thoại không hợp lệ (phải là số điện thoại Việt Nam)',
-  })
+
   requesterPhone: string;
 
   @ApiProperty({ example: 10.7589 })

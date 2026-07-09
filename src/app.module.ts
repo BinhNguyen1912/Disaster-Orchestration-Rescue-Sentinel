@@ -22,6 +22,7 @@ import { RoleModule } from './modules/role/role.module';
 import { TeamSpecializationModule } from './modules/team-specialization/team-specialization.module';
 import { RescueTeamMemberModule } from './modules/rescue-team-member/rescue-team-member.module';
 import { UserModule } from './modules/user/user.module';
+import { DeviceModule } from './modules/device/device.module';
 import { SosRequestModule } from './modules/sos-request/sos-request.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
@@ -67,6 +68,7 @@ export class AppController {
     TeamSpecializationModule,
     RescueTeamMemberModule,
     UserModule,
+    DeviceModule,
     SosRequestModule,
     UploadModule,
     WebSocketModule,
