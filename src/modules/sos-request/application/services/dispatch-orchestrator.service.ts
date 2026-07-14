@@ -56,6 +56,49 @@ export class DispatchOrchestratorService {
     private readonly historyRepo: Repository<SosStatusHistoryEntity>,
   ) { }
 
+  /** Số lần retry tối đa khi assignTeam gặp lỗi nhất thời (timeout routing, conflict) */
+  private static readonly MAX_DISPATCH_RETRY = 3;
+
+  /**
+   * Wrapper retry cho dispatch(): tự động thử lại khi gặp lỗi nhất thời.
+   * Dừng và propagate error ngay nếu là lỗi nghiêm trọng (NotFoundException v.v.).
+   * Mỗi lần retry tăng delay theo cấp số nhân (50ms, 100ms, 200ms...).
+   */
+  async dispatchWithRetry(
+    sosRequest: SosRequest,
+    manager?: EntityManager,
+    attempt = 0,
+  ): Promise<DispatchOutcome> {
+    try {
+      return await this.dispatch(sosRequest, manager);
+    } catch (err) {
+      // Không retry những lỗi nghiêm trọng
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
+
+      if (attempt >= DispatchOrchestratorService.MAX_DISPATCH_RETRY) {
+        this.logger.error(
+          `[Orchestrator] dispatchWithRetry: đã hết ${DispatchOrchestratorService.MAX_DISPATCH_RETRY} lần retry cho SOS ${sosRequest.id}. ` +
+          `Lỗi cuối: ${err.message}`,
+        );
+        throw err;
+      }
+
+      const delayMs = 50 * Math.pow(2, attempt); // 50ms → 100ms → 200ms
+      this.logger.warn(
+        `[Orchestrator] dispatchWithRetry: lần #${attempt + 1} gặp lỗi "${err.message}" cho SOS ${sosRequest.id}. ` +
+        `Thử lại sau ${delayMs}ms...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+      return this.dispatchWithRetry(sosRequest, manager, attempt + 1);
+    }
+  }
+
   /**
    * Entry point cho auto-dispatch: Nhận SOS, chạy Two-Phase scoring,
    * quyết định Single/Dual dispatch, commit trong transaction ngắn.

@@ -18,13 +18,16 @@ import type { IUserRepository } from '../../domain/repositories/user.repository.
 import { User } from '../../domain/entities/user.entity';
 import { APP_MESSAGES } from '@shared/index';
 import * as bcrypt from 'bcrypt';
+import { NotificationSocketService } from '../../../websocket/services/notification-socket.service';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
     @Inject('IUserRepository')
     private readonly userRepo: IUserRepository,
+    private readonly notificationSocketService: NotificationSocketService,
   ) {}
+
 
   async findAll(
     filters: QueryUserDto,
@@ -131,4 +134,40 @@ export class UserService implements IUserService {
     const { ids, roleId, isActive } = dto;
     return this.userRepo.bulkUpdate(ids, { roleId, isActive });
   }
+
+  async getStats(provinceId?: number): Promise<{
+    total: number;
+    verified: number;
+    unverified: number;
+    volunteers: number;
+    needsHelp: number;
+  }> {
+    const userRoleId = await this.userRepo.findRoleIdByName('RESIDENT') || 9;
+    const filter: any = { roleId: userRoleId }; // Strictly filter by Resident role
+    if (provinceId) {
+      filter.provinceId = provinceId;
+    }
+
+    const [total, verified, unverified, volunteers, needsHelp] = await Promise.all([
+      this.userRepo.count(filter),
+      this.userRepo.count({ ...filter, isVerified: true }),
+      this.userRepo.count({ ...filter, isVerified: false }),
+      this.userRepo.count({ ...filter, isVolunteer: true }),
+      this.userRepo.count({ ...filter, needsHelp: true }),
+    ]);
+
+    return { total, verified, unverified, volunteers, needsHelp };
+  }
+
+  async sendNotification(
+    id: number,
+    payload: { title: string; body: string; type: string; senderId?: number },
+  ): Promise<void> {
+    const user = await this.userRepo.findById(id);
+    if (!user) {
+      throw new NotFoundException(APP_MESSAGES.USER.USER_NOT_FOUND);
+    }
+    await this.notificationSocketService.pushToUser(id, payload);
+  }
 }
+

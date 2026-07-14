@@ -54,6 +54,7 @@ export class NotificationGateway
 
     if (userId) {
       (client as any).userId = userId;
+      (client as any).deviceType = deviceType;
       client.join(`user:${userId}`);
       this.logger.log(
         `[CONNECT] Socket ID: ${client.id} | User ID: ${userId} | Device: ${deviceType} joined room user:${userId}`,
@@ -62,9 +63,9 @@ export class NotificationGateway
       const redisKey = `user:status:${userId}`;
       try {
         await this.redisService.hincrby(redisKey, 'connectionCount', 1);
+        await this.redisService.hincrby(redisKey, `connCount:${deviceType}`, 1);
         await this.redisService.hsetAll(redisKey, {
           status: 'online',
-          device: deviceType,
           lastActive: Math.floor(Date.now() / 1000).toString(),
         });
       } catch (err) {
@@ -82,6 +83,7 @@ export class NotificationGateway
 
   async handleDisconnect(client: Socket) {
     const userId = (client as any).userId;
+    const deviceType = (client as any).deviceType || 'web';
     if (userId) {
       this.logger.log(
         `[DISCONNECT] Socket ID: ${client.id} | User ID: ${userId} disconnected`,
@@ -93,18 +95,31 @@ export class NotificationGateway
           'connectionCount',
           -1,
         );
+        const deviceCount = await this.redisService.hincrby(
+          redisKey,
+          `connCount:${deviceType}`,
+          -1,
+        );
+
+        const updates: Record<string, string> = {
+          lastActive: Math.floor(Date.now() / 1000).toString(),
+        };
+
         if (count <= 0) {
-          await this.redisService.hsetAll(redisKey, {
-            status: 'offline',
-            connectionCount: '0', // ensure it doesn't stay negative
-            lastActive: Math.floor(Date.now() / 1000).toString(),
-          });
+          updates.status = 'offline';
+          updates.connectionCount = '0';
+          updates[`connCount:${deviceType}`] = '0';
+          await this.redisService.hsetAll(redisKey, updates);
           this.logger.log(
             `👤 User ${userId} is now offline (all connections closed)`,
           );
         } else {
+          if (deviceCount <= 0) {
+            updates[`connCount:${deviceType}`] = '0';
+          }
+          await this.redisService.hsetAll(redisKey, updates);
           this.logger.log(
-            `🔌 remaining connections for user ${userId}: ${count}`,
+            `🔌 remaining connections for user ${userId}: ${count} (device ${deviceType}: ${Math.max(0, deviceCount)})`,
           );
         }
       } catch (err) {

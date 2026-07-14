@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Body,
@@ -97,12 +98,36 @@ export class UserController {
     return this.service.bulkUpdate(dto);
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Lấy thống kê số lượng người dân' })
+  @RequirePermissions(Permissions.USER_READ)
+  async getStats(@Request() req: any) {
+    const provinceScope = req['provinceScope'];
+    const provinceId = provinceScope?.provinceId;
+    return this.service.getStats(provinceId);
+  }
+
+  @Post(':id/notify')
+  @ApiOperation({ summary: 'Gửi thông báo tới người dùng' })
+  @RequirePermissions(Permissions.USER_MANAGE)
+  async sendNotification(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('title') title: string,
+    @Body('body') body: string,
+    @Body('type') type: string,
+    @CurrentUser('sub') senderId: number,
+  ) {
+    await this.service.sendNotification(id, { title, body, type, senderId });
+    return { success: true };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Lấy thông tin người dùng theo ID' })
   @RequirePermissions(Permissions.USER_READ)
   async findById(@Param('id', ParseIntPipe) id: number) {
     return this.service.findById(id);
   }
+
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cập nhật người dùng' })

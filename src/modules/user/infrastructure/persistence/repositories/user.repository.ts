@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import { UserRoleEntity } from '@infrastructure/database/entities/user-role.entity';
+import { RoleEntity } from '@infrastructure/database/entities/role.entity';
 import {
   IUserRepository,
   QueryUserParams,
@@ -15,7 +16,7 @@ export class UserRepositoryImpl implements IUserRepository {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   async findById(id: number): Promise<User | null> {
     const user = await this.repo.findOne({
@@ -51,7 +52,7 @@ export class UserRepositoryImpl implements IUserRepository {
     pagination: { page: number; limit: number },
   ): Promise<PaginatedResult<User>> {
     const { page, limit } = pagination;
-    const { provinceId, adminUnitId, isActive, isVerified, search } = filters;
+    const { provinceId, adminUnitId, isActive, isVerified, search, roleId, isVolunteer, needsHelp } = filters;
 
     const queryBuilder = this.repo
       .createQueryBuilder('user')
@@ -77,12 +78,28 @@ export class UserRepositoryImpl implements IUserRepository {
       queryBuilder.andWhere('user.isVerified = :isVerified', { isVerified });
     }
 
+    if (roleId) {
+      queryBuilder.andWhere(
+        'EXISTS (SELECT 1 FROM user_role ur WHERE ur."userId" = user.id AND ur."roleId" = :roleId AND ur."isActive" = true)',
+        { roleId }
+      );
+    }
+
+    if (isVolunteer !== undefined) {
+      queryBuilder.andWhere('user.isVolunteer = :isVolunteer', { isVolunteer });
+    }
+
+    if (needsHelp !== undefined) {
+      queryBuilder.andWhere('user.needsHelp = :needsHelp', { needsHelp });
+    }
+
     if (search) {
       queryBuilder.andWhere(
         '(user.fullName LIKE :search OR user.phone LIKE :search OR user.email LIKE :search OR user.nationalId LIKE :search)',
         { search: `%${search}%` },
       );
     }
+
 
     const [items, total] = await queryBuilder
       .skip((page - 1) * limit)
@@ -115,6 +132,16 @@ export class UserRepositoryImpl implements IUserRepository {
 
     const { roleId, ...userData } = data;
     Object.assign(existing, userData);
+
+    if (roleId !== undefined) {
+      const role = await this.repo.manager.findOne(RoleEntity, {
+        where: { id: roleId },
+      });
+      if (role) {
+        existing.isVolunteer = role.name === 'VOLUNTEER';
+      }
+    }
+
     await this.repo.save(existing);
 
     if (roleId !== undefined) {
@@ -160,9 +187,24 @@ export class UserRepositoryImpl implements IUserRepository {
     return (result.affected ?? 0) > 0;
   }
 
-  async count(conditions: Partial<User>): Promise<number> {
-    return this.repo.count({ where: { ...conditions, deletedAt: IsNull() } });
+  async count(conditions: any): Promise<number> {
+    const { roleId, ...rest } = conditions;
+    const queryBuilder = this.repo.createQueryBuilder('user').where('user.deletedAt IS NULL');
+
+    Object.keys(rest).forEach((key) => {
+      queryBuilder.andWhere(`user.${key} = :${key}`, { [key]: rest[key] });
+    });
+
+    if (roleId) {
+      queryBuilder.andWhere(
+        'EXISTS (SELECT 1 FROM user_role ur WHERE ur."userId" = user.id AND ur."roleId" = :roleId AND ur."isActive" = true)',
+        { roleId }
+      );
+    }
+
+    return queryBuilder.getCount();
   }
+
 
   async search(query: string): Promise<User[]> {
     const users = await this.repo
@@ -184,12 +226,25 @@ export class UserRepositoryImpl implements IUserRepository {
     const userRoleRepo = this.repo.manager.getRepository(UserRoleEntity);
     let updatedCount = 0;
 
+    let isVolunteerRole = false;
+    if (data.roleId !== undefined) {
+      const role = await this.repo.manager.findOne(RoleEntity, {
+        where: { id: data.roleId },
+      });
+      if (role) {
+        isVolunteerRole = role.name === 'VOLUNTEER';
+      }
+    }
+
     for (const id of ids) {
       const user = await this.repo.findOne({ where: { id, deletedAt: IsNull() } });
       if (!user) continue;
 
       if (data.isActive !== undefined) {
         user.isActive = data.isActive;
+      }
+      if (data.roleId !== undefined) {
+        user.isVolunteer = isVolunteerRole;
       }
       await this.repo.save(user);
 
@@ -226,5 +281,13 @@ export class UserRepositoryImpl implements IUserRepository {
     }
 
     return { updated: updatedCount };
+  }
+
+  async findRoleIdByName(name: string): Promise<number | null> {
+    const names = name === 'RESIDENT' || name === 'USER' ? ['RESIDENT', 'USER'] : [name];
+    const role = await this.repo.manager.findOne(RoleEntity, {
+      where: names.map((n) => ({ name: n })) as any,
+    });
+    return role ? role.id : null;
   }
 }

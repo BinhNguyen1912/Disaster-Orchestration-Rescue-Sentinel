@@ -5,4 +5,7 @@ export interface QueryUserDto {
   isVerified?: boolean;
   roleId?: number;
   search?: string;
+  isVolunteer?: boolean;
+  needsHelp?: boolean;
 }
+

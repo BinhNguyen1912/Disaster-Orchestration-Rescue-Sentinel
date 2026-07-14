@@ -14,4 +14,5 @@ export interface IUserRepository extends IBaseRepository<User> {
     provinceId: number,
     assignedBy?: number,
   ): Promise<void>;
+  findRoleIdByName(name: string): Promise<number | null>;
 }

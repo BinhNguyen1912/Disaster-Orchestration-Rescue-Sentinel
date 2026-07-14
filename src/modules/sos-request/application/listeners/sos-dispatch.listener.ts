@@ -42,7 +42,7 @@ export class SosDispatchListener {
         this.logger.warn(
           `No candidates found for SOS ${sos.id}. Running standard orchestrator dispatch (specialist pending).`,
         );
-        await this.dispatchOrchestrator.dispatch(sos);
+        await this.dispatchOrchestrator.dispatchWithRetry(sos);
         return;
       }
 
@@ -82,7 +82,7 @@ export class SosDispatchListener {
               this.logger.log(
                 `[Timeout] Hết 30 giây nhưng không có đội nào tiếp nhận SOS ${sos.id}. Kích hoạt gán cưỡng bức.`,
               );
-              await this.dispatchOrchestrator.dispatch(currentSos);
+              await this.dispatchOrchestrator.dispatchWithRetry(currentSos);
             }
           } catch (err) {
             this.logger.error(

@@ -32,4 +32,16 @@ export interface IUserService {
   changePassword(id: number, dto: ChangePasswordDto): Promise<void>;
   search(query: string): Promise<User[]>;
   bulkUpdate(dto: BulkUpdateUserDto): Promise<{ updated: number }>;
+  getStats(provinceId?: number): Promise<{
+    total: number;
+    verified: number;
+    unverified: number;
+    volunteers: number;
+    needsHelp: number;
+  }>;
+  sendNotification(
+    id: number,
+    payload: { title: string; body: string; type: string; senderId?: number },
+  ): Promise<void>;
 }
+

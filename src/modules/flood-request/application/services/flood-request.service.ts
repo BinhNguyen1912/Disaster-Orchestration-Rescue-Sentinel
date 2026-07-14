@@ -34,6 +34,7 @@ import { LocationService } from '../../../location/application/services/location
 import { DispatchSocketService } from '../../../websocket/services/dispatch-socket.service';
 import { DispatchOrchestratorService } from '../../../sos-request/application/services/dispatch-orchestrator.service';
 import { RedisService } from '../../../../infrastructure/redis/redis.service';
+import { NotificationService } from '../../../notification/application/services/notification.service';
 
 @Injectable()
 export class FloodRequestService {
@@ -50,6 +51,7 @@ export class FloodRequestService {
     private readonly redisService: RedisService,
     private readonly config: ConfigService,
     private readonly dataSource: DataSource,
+    private readonly notificationService: NotificationService,
   ) {}
 
   private async logAction(
@@ -103,13 +105,14 @@ export class FloodRequestService {
         dto.longitude,
       );
       if (resolvedUnit) {
-        provinceId = resolvedUnit.provinceId;
+        // Only override provinceId if it was NOT explicitly provided in the DTO
+        if (!provinceId) provinceId = resolvedUnit.provinceId;
         adminUnitId = resolvedUnit.id;
       } else {
         const defaultUnit = await this.locationService.findFirstUnit();
         if (defaultUnit) {
-          provinceId = defaultUnit.provinceId;
-          adminUnitId = defaultUnit.id;
+          if (!provinceId) provinceId = defaultUnit.provinceId;
+          if (!adminUnitId) adminUnitId = defaultUnit.id;
         } else {
           provinceId = provinceId || this.config.get<number>('DEFAULT_PROVINCE_ID', 1);
           adminUnitId = adminUnitId || this.config.get<number>('DEFAULT_ADMIN_UNIT_ID', 1);
@@ -167,6 +170,16 @@ export class FloodRequestService {
 
     // Notify province admins
     this.dispatchSocketService.broadcastNewFloodRequest(created.provinceId, created);
+
+    // 📡 Event-Driven: Trigger system notification
+    this.notificationService.send({
+      event: 'FLOOD_CREATED',
+      provinceId: created.provinceId,
+      data: {
+        address: created.locationName || created.addressDetail || `Vĩ độ: ${dto.latitude}, Kinh độ: ${dto.longitude}`,
+        depth: created.floodDepthCmMax || 0,
+      },
+    }).catch((err) => console.error('Failed to send Flood notification:', err));
 
     // Return the formatted object with lat/lng
     return this.repo.findById(created.id) as any;
@@ -382,7 +395,7 @@ export class FloodRequestService {
       let outcome;
       let teamId: number | null = null;
       if (dto.method === DispatchMethod.AUTO) {
-        outcome = await this.dispatchOrchestrator.dispatch(savedSos as any, manager);
+        outcome = await this.dispatchOrchestrator.dispatchWithRetry(savedSos as any, manager);
         teamId = outcome.assignedTeamId || null;
       } else {
         outcome = await this.dispatchOrchestrator.dispatchManual(savedSos.id, dto.teamId!, user.sub, manager);

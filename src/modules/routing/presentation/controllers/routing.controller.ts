@@ -6,8 +6,10 @@ import {
   ValidationPipe,
   Inject,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import { Public } from '@shared/common/decorators/public.decorator';
 import type {
   IRoutingProvider,
@@ -26,11 +28,13 @@ export class CalculateRouteDto {
 @ApiTags('Routing')
 @Controller('routing')
 export class RoutingController {
+  private readonly logger = new Logger(RoutingController.name);
+
   constructor(
     @Inject('IRoutingProvider')
     private readonly routingProvider: IRoutingProvider,
-    // Comment out Dijkstra provider dependency
-    // private readonly dijkstraRoutingProvider: DijkstraRoutingProvider,
+    private readonly dijkstraRoutingProvider: DijkstraRoutingProvider,
+    private readonly configService: ConfigService,
   ) { }
 
   @Public()
@@ -49,8 +53,27 @@ export class RoutingController {
     };
 
     let result: RouteResult;
+    let dijkstraResult: RouteResult | null = null;
     let isIsolated = false;
 
+    // Xác định provider đang dùng
+    const service = (this.configService.get<string>('ROUTING_SERVICE') || 'DIJKSTRA').toUpperCase();
+    const isDijkstraPrimary = service === 'DIJKSTRA';
+    // 1. Nếu primary không phải Dijkstra: tính Dijkstra trước làm đường phụ đối chứng + safety-net
+    if (!isDijkstraPrimary) {
+      try {
+        dijkstraResult = await this.dijkstraRoutingProvider.calculateRoute(
+          startCoords,
+          endCoords,
+          dto.avoidPolygons || [],
+          dto.profile || 'car',
+        );
+      } catch (dijkstraErr) {
+        this.logger.warn(`Failed to calculate auxiliary Dijkstra route: ${dijkstraErr.message}`);
+      }
+    }
+
+    // 2. Tính toán đường đi chính thức
     try {
       result = await this.routingProvider.calculateRoute(
         startCoords,
@@ -59,19 +82,27 @@ export class RoutingController {
         dto.profile || 'car',
       );
     } catch (err) {
-      // Nếu không tìm được đường tránh ngập, thử tìm đường đi không tránh ngập (cô lập)
-      try {
-        result = await this.routingProvider.calculateRoute(
-          startCoords,
-          endCoords,
-          [],
-          dto.profile || 'car',
-        );
-        isIsolated = true;
-      } catch (orsErr) {
-        throw new BadRequestException(
-          `Không thể tính toán tuyến đường: ${orsErr?.message || 'Lỗi kết nối bản đồ'}`,
-        );
+      this.logger.warn(
+        `[Routing] Primary provider (${service}) failed: ${err.message}. Falling back to Dijkstra...`,
+      );
+      // Nếu ORS lỗi, sử dụng Dijkstra làm đường đi chính
+      if (dijkstraResult) {
+        result = dijkstraResult;
+        dijkstraResult = null; // Đặt null để không vẽ trùng lặp đường phụ lên FE
+      } else {
+        // Thử tính toán lại Dijkstra nếu bước 1 chưa chạy hoặc bị lỗi
+        try {
+          result = await this.dijkstraRoutingProvider.calculateRoute(
+            startCoords,
+            endCoords,
+            dto.avoidPolygons || [],
+            dto.profile || 'car',
+          );
+        } catch (dijkstraErr) {
+          throw new BadRequestException(
+            `Không thể tính toán tuyến đường: ${dijkstraErr?.message || 'Lỗi mạng chốt giao thông'}`,
+          );
+        }
       }
     }
 
@@ -79,7 +110,7 @@ export class RoutingController {
       success: true,
       data: {
         primary: result,
-        dijkstra: null,
+        dijkstra: dijkstraResult,
         isIsolated,
       },
     };

@@ -30,6 +30,7 @@ import { SystemSettingModule } from './modules/system-setting/system-setting.mod
 import { RescueEquipmentModule } from './modules/rescue-equipment/rescue-equipment.module';
 import { RoutingModule } from './modules/routing/routing.module';
 import { FloodRequestModule } from './modules/flood-request/flood-request.module';
+import { NotificationModule } from './modules/notification/notification.module';
 import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
 import { Public } from '@shared/common/decorators/public.decorator';
@@ -76,6 +77,7 @@ export class AppController {
     RescueEquipmentModule,
     RoutingModule,
     FloodRequestModule,
+    NotificationModule,
   ],
 
   controllers: [AppController],

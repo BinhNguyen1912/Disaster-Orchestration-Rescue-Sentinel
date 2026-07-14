@@ -47,6 +47,19 @@ export class QueryUserValidationDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  isVolunteer?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  needsHelp?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   search?: string;
 }
+

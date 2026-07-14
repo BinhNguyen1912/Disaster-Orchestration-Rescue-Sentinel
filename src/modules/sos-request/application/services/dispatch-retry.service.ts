@@ -101,7 +101,7 @@ export class DispatchRetryService
             await this.dispatchQueueRepo.delete({ sosRequestId: sos.id });
 
             // Trigger orchestrator auto-dispatch scoring pipeline
-            await this.dispatchOrchestrator.dispatch(sos);
+            await this.dispatchOrchestrator.dispatchWithRetry(sos);
           } catch (dispatchErr) {
             this.logger.error(
               `Error occurred while retrying auto-dispatch for SOS request ${sos.id}:`,

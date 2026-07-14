@@ -14,9 +14,11 @@ import { LocationModule } from '../location/location.module';
 import { WebSocketModule } from '../websocket/websocket.module';
 import { SosRequestModule } from '../sos-request/sos-request.module';
 import { RedisModule } from '../../infrastructure/redis/redis.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
+    NotificationModule,
     TypeOrmModule.forFeature([
       FloodRequestEntity,
       FloodRequestStatusHistoryEntity,

@@ -26,8 +26,11 @@ export interface User {
   trustScore: number;
   isVerified: boolean;
   isActive: boolean;
+  isVolunteer: boolean;
+  needsHelp: boolean;
   createdAt: Date;
   updatedAt: Date;
   lastSeenAt?: Date;
   deletedAt?: Date;
 }
+

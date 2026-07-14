@@ -5,6 +5,7 @@ import { User } from '@modules/auth/domain/entities/user';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import { UserRoleEntity } from '@infrastructure/database/entities/user-role.entity';
+import { RoleEntity } from '@infrastructure/database/entities/role.entity';
 import { BaseRepository } from './base.repository';
 
 @Injectable()
@@ -82,5 +83,13 @@ export class UserRepositoryImpl
       isActive: true,
     });
     await this.userRoleRepository.save(userRole);
+  }
+
+  async findRoleIdByName(name: string): Promise<number | null> {
+    const names = name === 'RESIDENT' || name === 'USER' ? ['RESIDENT', 'USER'] : [name];
+    const role = await this.userRepository.manager.findOne(RoleEntity, {
+      where: names.map((n) => ({ name: n })) as any,
+    });
+    return role ? role.id : null;
   }
 }

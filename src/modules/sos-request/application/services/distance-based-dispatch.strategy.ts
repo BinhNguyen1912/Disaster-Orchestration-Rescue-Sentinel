@@ -472,22 +472,50 @@ export class DistanceBasedDispatchStrategy implements IDispatchStrategy {
   private parseSkillMapping(
     settings: Record<string, string>,
   ): Record<string, Record<string, number>> {
+    let parsed: Record<string, Record<string, number>>;
+
     try {
       const raw = settings[DISPATCH_KEYS.SKILL_MAPPING];
       if (raw) {
-        const parsed = JSON.parse(raw);
-        // Validate structure
-        if (typeof parsed === 'object' && parsed !== null) {
-          return parsed;
+        const candidate = JSON.parse(raw);
+        if (typeof candidate === 'object' && candidate !== null) {
+          parsed = candidate;
+        } else {
+          throw new Error('skill_mapping không phải object hợp lệ');
         }
+      } else {
+        parsed = { ...DISPATCH_DEFAULTS.SKILL_MAPPING };
       }
     } catch (e) {
       this.logger.warn(
-        `[Config] Failed to parse ${DISPATCH_KEYS.SKILL_MAPPING}, using defaults.`,
+        `[Config] Failed to parse ${DISPATCH_KEYS.SKILL_MAPPING}: ${e.message}. Using defaults.`,
       );
+      parsed = { ...DISPATCH_DEFAULTS.SKILL_MAPPING };
     }
 
-    return { ...DISPATCH_DEFAULTS.SKILL_MAPPING };
+    // ── Validator: phát hiện requestType bị thiếu trong mapping ─────────────
+    // Dùng danh sách requestType đã biết từ DISPATCH_DEFAULTS.SKILL_MAPPING làm chuẩn tham chiếu
+    const knownRequestTypes = Object.keys(DISPATCH_DEFAULTS.SKILL_MAPPING);
+    const missingTypes: string[] = [];
+
+    for (const requestType of knownRequestTypes) {
+      if (!parsed[requestType]) {
+        missingTypes.push(requestType);
+      }
+    }
+
+    if (missingTypes.length > 0) {
+      this.logger.warn(
+        `[SkillMapping Validator] Phát hiện ${missingTypes.length} requestType bị THIẾU trong skill_mapping: ` +
+        `[${missingTypes.join(', ')}]. ` +
+        `Các loại SOS này sẽ nhận mismatch=1.0 (phạt tối đa) khi dispatch — ` +
+        `kiểm tra lại cấu hình dispatch.skill_mapping trong system_setting.`,
+      );
+    } else {
+      this.logger.debug('[SkillMapping Validator] All known requestTypes are covered in skill_mapping. ✓');
+    }
+
+    return parsed;
   }
 
   /** Lấy mức lệch chuyên môn cho cặp (requestType, teamType) */

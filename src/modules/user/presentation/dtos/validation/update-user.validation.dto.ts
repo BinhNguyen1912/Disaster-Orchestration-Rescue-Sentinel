@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsObject, IsBoolean } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateUserValidationDto {
@@ -56,4 +56,15 @@ export class UpdateUserValidationDto {
   @IsOptional()
   @IsObject()
   homeLocation?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isVolunteer?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  needsHelp?: boolean;
 }
+
