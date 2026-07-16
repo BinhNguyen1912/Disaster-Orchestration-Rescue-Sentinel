@@ -9,6 +9,7 @@ import { DisasterEventEntity } from '@infrastructure/database/entities/disaster-
 import { DonationEntity } from '@infrastructure/database/entities/donation.entity';
 import { RescueEquipmentEntity } from '@infrastructure/database/entities/rescue-equipment.entity';
 import { CasualtyEntity } from '@infrastructure/database/entities/casualty.entity';
+import { UserEntity } from '@infrastructure/database/entities/user.entity';
 import { SosStatus } from '@shared/core/enums/sosStatus.enum';
 import { TeamStatus } from '@shared/core/enums/teamStatus.enum';
 import { EventStatus } from '@shared/core/enums/eventStatus.enum';
@@ -31,17 +32,31 @@ export class DashboardService implements IDashboardService {
     private readonly equipmentRepo: Repository<RescueEquipmentEntity>,
     @InjectRepository(CasualtyEntity)
     private readonly casualtyRepo: Repository<CasualtyEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
   ) {}
 
   // 1. Stats tổng quan (Top cards)
-  async getStats(provinceId: number | null): Promise<any> {
-    // a. Hộ dân
-    let householdQuery = this.householdRepo.createQueryBuilder('hp');
+  async getStats(
+    provinceId: number | null,
+    startDate?: Date,
+    endDate?: Date,
+    adminUnitId?: number,
+  ): Promise<any> {
+    // a. Hộ dân (Đếm các user có role là RESIDENT)
+    let householdQuery = this.userRepo.createQueryBuilder('u')
+      .innerJoin('user_role', 'ur', 'ur.userId = u.id')
+      .innerJoin('role', 'r', 'ur.roleId = r.id')
+      .where('r.name = :roleName', { roleName: 'RESIDENT' })
+      .andWhere('ur.isActive = :isActive', { isActive: true });
+
     if (provinceId) {
-      householdQuery.where('hp.provinceId = :provinceId', { provinceId });
+      householdQuery.andWhere('ur.provinceId = :provinceId', { provinceId });
     }
-    const totalHouseholdsDb = await householdQuery.getCount();
-    const totalHouseholds = totalHouseholdsDb > 0 ? totalHouseholdsDb : 845;
+    if (adminUnitId) {
+      householdQuery.andWhere('u.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    const totalHouseholds = await householdQuery.getCount();
 
     // b. Đội cứu hộ
     let teamQuery = this.rescueTeamRepo.createQueryBuilder('rt')
@@ -49,19 +64,29 @@ export class DashboardService implements IDashboardService {
     if (provinceId) {
       teamQuery.andWhere('rt.provinceId = :provinceId', { provinceId });
     }
-    const activeRescueTeamsDb = await teamQuery.getCount();
-    const activeRescueTeams = activeRescueTeamsDb > 0 ? activeRescueTeamsDb : 18;
+    if (adminUnitId) {
+      teamQuery.andWhere('rt.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    const activeRescueTeams = await teamQuery.getCount();
 
-    // c. SOS đang hoạt động
+    // c. SOS đang hoạt động (Đếm tất cả SOS trong thời gian lọc, kể cả đã hoàn thành)
     let sosQuery = this.sosRepo.createQueryBuilder('sos')
-      .where('sos.status IN (:...statuses)', {
-        statuses: [SosStatus.PENDING, SosStatus.DISPATCHED, SosStatus.ON_SITE, SosStatus.PENDING_SPECIALIST],
-      });
+      .where('1=1');
     if (provinceId) {
       sosQuery.andWhere('sos.provinceId = :provinceId', { provinceId });
     }
-    const activeSosRequestsDb = await sosQuery.getCount();
-    const activeSosRequests = activeSosRequestsDb > 0 ? activeSosRequestsDb : 5;
+    if (adminUnitId) {
+      sosQuery.andWhere('sos.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    if (startDate) {
+      sosQuery.andWhere('sos.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      sosQuery.andWhere('sos.createdAt <= :endDate', { endDate: end });
+    }
+    const activeSosRequests = await sosQuery.getCount();
 
     // d. Thiên tai đang diễn ra
     let disasterQuery = this.disasterRepo.createQueryBuilder('de')
@@ -69,8 +94,15 @@ export class DashboardService implements IDashboardService {
     if (provinceId) {
       disasterQuery.andWhere('de.provinceId = :provinceId', { provinceId });
     }
-    const ongoingDisastersDb = await disasterQuery.getCount();
-    const ongoingDisasters = ongoingDisastersDb > 0 ? ongoingDisastersDb : 2;
+    if (startDate) {
+      disasterQuery.andWhere('de.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      disasterQuery.andWhere('de.createdAt <= :endDate', { endDate: end });
+    }
+    const ongoingDisasters = await disasterQuery.getCount();
 
     // e. Tổng quyên góp
     let donationQuery = this.donationRepo.createQueryBuilder('d')
@@ -81,65 +113,116 @@ export class DashboardService implements IDashboardService {
     if (provinceId) {
       donationQuery.andWhere('d.provinceId = :provinceId', { provinceId });
     }
+    if (startDate) {
+      donationQuery.andWhere('d.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      donationQuery.andWhere('d.createdAt <= :endDate', { endDate: end });
+    }
     const donationSum = await donationQuery.getRawOne();
-    const donationTotalVal = donationSum?.total ? Number(donationSum.total) : 0;
-    const totalDonations = donationTotalVal > 0 ? donationTotalVal : 1245000000;
+    const totalDonations = donationSum?.total ? Number(donationSum.total) : 0;
 
-    // Sparklines (7 ngày gần nhất)
-    const baselineSparkline = [10, 18, 17, 27, 30, 47, 34];
+    // Sparklines
+    const baselineSparkline = [0, 0, 0, 0, 0, 0, 0];
     
-    // Sparkline cho SOS
+    // Sparkline cho SOS theo date range
+    const endRange = endDate || new Date();
+    const startRange = startDate || (() => {
+      const d = new Date(endRange);
+      d.setDate(d.getDate() - 6);
+      return d;
+    })();
+    const startStr = startRange.toISOString().split('T')[0];
+    const endStr = endRange.toISOString().split('T')[0];
+
+    const sqlParams = [startStr, endStr];
+    let queryConditions = '';
+    if (provinceId) {
+      sqlParams.push(String(provinceId));
+      queryConditions += ` AND s."provinceId" = $${sqlParams.length}`;
+    }
+    if (adminUnitId) {
+      sqlParams.push(String(adminUnitId));
+      queryConditions += ` AND s."adminUnitId" = $${sqlParams.length}`;
+    }
+
     const sosSparkData = await this.sosRepo.query(`
       SELECT 
         d.date::date as date,
         COALESCE(COUNT(s.id), 0)::int as count
       FROM (
-        SELECT GENERATE_SERIES(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day')::date as date
+        SELECT GENERATE_SERIES($1::date, $2::date, '1 day')::date as date
       ) d
-      LEFT JOIN sos_request s ON DATE(s."createdAt") = d.date
-      ${provinceId ? 'AND s."provinceId" = $1' : ''}
+      LEFT JOIN sos_request s ON DATE(s."createdAt") = d.date ${queryConditions}
       GROUP BY d.date
       ORDER BY d.date ASC
-    `, provinceId ? [provinceId] : []);
+    `, sqlParams);
 
     const activeSosRequestsSparkline = sosSparkData.map((pt, idx) => 
-      pt.count > 0 ? pt.count : baselineSparkline[idx]
+      pt.count > 0 ? pt.count : (sosSparkData.length === 7 ? baselineSparkline[idx] : 0)
     );
 
     return {
       totalHouseholds: {
         value: totalHouseholds,
-        trend: 12,
-        sparkline: [100, 105, 110, 108, 115, 120, 124],
+        trend: 0,
+        sparkline: [totalHouseholds, totalHouseholds, totalHouseholds, totalHouseholds, totalHouseholds, totalHouseholds, totalHouseholds],
       },
       activeRescueTeams: {
         value: activeRescueTeams,
-        trend: 3,
-        sparkline: [12, 14, 15, 14, 16, 17, 18],
+        trend: 0,
+        sparkline: [activeRescueTeams, activeRescueTeams, activeRescueTeams, activeRescueTeams, activeRescueTeams, activeRescueTeams, activeRescueTeams],
       },
       activeSosRequests: {
         value: activeSosRequests,
-        trend: -2,
+        trend: 0,
         sparkline: activeSosRequestsSparkline,
       },
       ongoingDisasters: {
         value: ongoingDisasters,
         trend: 0,
-        sparkline: [1, 2, 2, 1, 2, 2, 2],
+        sparkline: [ongoingDisasters, ongoingDisasters, ongoingDisasters, ongoingDisasters, ongoingDisasters, ongoingDisasters, ongoingDisasters],
       },
       totalDonations: {
         value: totalDonations,
-        trend: 18,
-        sparkline: [50, 60, 55, 75, 80, 110, 95],
+        trend: 0,
+        sparkline: [totalDonations, totalDonations, totalDonations, totalDonations, totalDonations, totalDonations, totalDonations],
       },
     };
   }
 
   // 2. Charts xu hướng SOS & kết quả
-  async getCharts(provinceId: number | null, days: number): Promise<any> {
-    const periodDays = days > 0 ? days : 7;
+  async getCharts(
+    provinceId: number | null,
+    days?: number,
+    startDate?: Date,
+    endDate?: Date,
+    adminUnitId?: number,
+  ): Promise<any> {
+    const end = endDate || new Date();
+    const start = startDate || (() => {
+      const d = new Date(end);
+      const period = days && days > 0 ? days : 7;
+      d.setDate(d.getDate() - (period - 1));
+      return d;
+    })();
 
-    // Lấy dữ liệu đồ thị SOS theo thời gian thực từ DB
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
+
+    const sqlParams = [startStr, endStr];
+    let queryConditions = '';
+    if (provinceId) {
+      sqlParams.push(String(provinceId));
+      queryConditions += ` AND s."provinceId" = $${sqlParams.length}`;
+    }
+    if (adminUnitId) {
+      sqlParams.push(String(adminUnitId));
+      queryConditions += ` AND s."adminUnitId" = $${sqlParams.length}`;
+    }
+
     const dbSosOverTime = await this.sosRepo.query(`
       SELECT 
         TO_CHAR(d.date, 'DD/MM') as date,
@@ -147,15 +230,13 @@ export class DashboardService implements IDashboardService {
         COALESCE(COUNT(CASE WHEN s.status = 'RESOLVED' THEN 1 END), 0)::int as resolved,
         COALESCE(COUNT(CASE WHEN s.status IN ('PENDING', 'DISPATCHED', 'ON_SITE', 'PENDING_SPECIALIST') THEN 1 END), 0)::int as pending
       FROM (
-        SELECT GENERATE_SERIES(CURRENT_DATE - CAST(($1 || ' days') as INTERVAL), CURRENT_DATE, '1 day')::date as date
+        SELECT GENERATE_SERIES($1::date, $2::date, '1 day')::date as date
       ) d
-      LEFT JOIN sos_request s ON DATE(s."createdAt") = d.date
-      ${provinceId ? 'AND s."provinceId" = $2' : ''}
+      LEFT JOIN sos_request s ON DATE(s."createdAt") = d.date ${queryConditions}
       GROUP BY d.date
       ORDER BY d.date ASC
-    `, provinceId ? [periodDays - 1, provinceId] : [periodDays - 1]);
+    `, sqlParams);
 
-    // Fallback baseline data nếu DB rỗng
     const fallbackCharts = [
       { date: '26/05', total: 60, resolved: 45, pending: 15 },
       { date: '27/05', total: 55, resolved: 40, pending: 15 },
@@ -166,13 +247,25 @@ export class DashboardService implements IDashboardService {
       { date: '01/06', total: 95, resolved: 70, pending: 25 },
     ];
 
-    const sosOverTime = dbSosOverTime.length > 0 ? dbSosOverTime : fallbackCharts;
+    const sosOverTime = dbSosOverTime;
 
     // Tỷ lệ kết quả cứu hộ
     let outcomeQuery = this.sosRepo.createQueryBuilder('sos');
     if (provinceId) {
       outcomeQuery.where('sos.provinceId = :provinceId', { provinceId });
     }
+    if (adminUnitId) {
+      outcomeQuery.andWhere('sos.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    if (startDate) {
+      outcomeQuery.andWhere('sos.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      outcomeQuery.andWhere('sos.createdAt <= :endDate', { endDate: endVal });
+    }
+
     const resolvedCount = await outcomeQuery.clone()
       .andWhere('sos.status = :status', { status: SosStatus.RESOLVED })
       .getCount();
@@ -187,25 +280,95 @@ export class DashboardService implements IDashboardService {
 
     const totalOutcomes = resolvedCount + ongoingCount + pendingCount;
 
+    // Tỉnh/Thành phố hoặc Quận/Huyện dựa trên provinceId
+    const sqlParamsReg: any[] = [];
+    let conditionsReg = '1=1';
+
+    if (provinceId) {
+      sqlParamsReg.push(provinceId);
+      conditionsReg += ` AND s."provinceId" = $${sqlParamsReg.length}`;
+    }
+    if (adminUnitId) {
+      sqlParamsReg.push(adminUnitId);
+      conditionsReg += ` AND s."adminUnitId" = $${sqlParamsReg.length}`;
+    }
+    if (startDate) {
+      sqlParamsReg.push(startDate);
+      conditionsReg += ` AND s."createdAt" >= $${sqlParamsReg.length}`;
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      sqlParamsReg.push(endVal);
+      conditionsReg += ` AND s."createdAt" <= $${sqlParamsReg.length}`;
+    }
+
+    const regQuery = provinceId 
+      ? `
+        SELECT 
+          au.name as region,
+          COUNT(s.id)::int as count
+        FROM sos_request s
+        INNER JOIN administrative_unit au ON s."adminUnitId" = au.id
+        WHERE ${conditionsReg}
+        GROUP BY au.id, au.name
+        ORDER BY count DESC
+        LIMIT 5
+      `
+      : `
+        SELECT 
+          p.name as region,
+          COUNT(s.id)::int as count
+        FROM sos_request s
+        INNER JOIN province p ON s."provinceId" = p.id
+        WHERE ${conditionsReg}
+        GROUP BY p.id, p.name
+        ORDER BY count DESC
+        LIMIT 5
+      `;
+
+    const dbSosByRegion = await this.sosRepo.query(regQuery, sqlParamsReg);
+
+    const maxCount = dbSosByRegion.length > 0 ? Math.max(...dbSosByRegion.map((r: any) => r.count)) : 0;
+    const sosByRegion = dbSosByRegion.map((r: any) => ({
+      region: r.region,
+      count: r.count,
+      percent: maxCount > 0 ? Math.min(Math.round((r.count / maxCount) * 100), 100) : 0,
+    }));
+
     return {
       sosOverTime,
       rescueOutcomes: {
-        total: totalOutcomes > 0 ? totalOutcomes : 152,
-        saved: resolvedCount > 0 ? resolvedCount : 112,
-        ongoing: ongoingCount > 0 ? ongoingCount : 28,
-        failed: pendingCount > 0 ? pendingCount : 12,
+        total: totalOutcomes,
+        saved: resolvedCount,
+        ongoing: ongoingCount,
+        failed: pendingCount,
       },
+      sosByRegion,
     };
   }
 
   // 3. Alerts khẩn cấp & SOS mới nhất
-  async getAlerts(provinceId: number | null): Promise<any> {
+  async getAlerts(
+    provinceId: number | null,
+    startDate?: Date,
+    endDate?: Date,
+    adminUnitId?: number,
+  ): Promise<any> {
     // 5 Thiên tai mới nhất
     let disasterQuery = this.disasterRepo.createQueryBuilder('de')
       .orderBy('de.createdAt', 'DESC')
       .limit(5);
     if (provinceId) {
       disasterQuery.where('de.provinceId = :provinceId', { provinceId });
+    }
+    if (startDate) {
+      disasterQuery.andWhere('de.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      disasterQuery.andWhere('de.createdAt <= :endDate', { endDate: endVal });
     }
     const dbDisasters = await disasterQuery.getMany();
 
@@ -246,11 +409,22 @@ export class DashboardService implements IDashboardService {
     let sosQuery = this.sosRepo.createQueryBuilder('sos')
       .leftJoinAndSelect('sos.adminUnit', 'au')
       .leftJoinAndSelect('sos.province', 'p')
-      .where('sos.status = :status', { status: SosStatus.PENDING })
+      .where('1=1')
       .orderBy('sos.createdAt', 'DESC')
       .limit(5);
     if (provinceId) {
       sosQuery.andWhere('sos.provinceId = :provinceId', { provinceId });
+    }
+    if (adminUnitId) {
+      sosQuery.andWhere('sos.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    if (startDate) {
+      sosQuery.andWhere('sos.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      sosQuery.andWhere('sos.createdAt <= :endDate', { endDate: endVal });
     }
     const dbSos = await sosQuery.getMany();
 
@@ -261,32 +435,34 @@ export class DashboardService implements IDashboardService {
         ? `${s.adminUnit.name}, ${s.province.name}` 
         : 'Địa chỉ chưa xác định',
       time: s.createdAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      status: s.status,
     }));
 
-    const fallbackSos = [
-      { id: 1, title: 'Cần cứu hộ khẩn cấp', address: 'Quận 7, TP. Hồ Chí Minh', time: '10:25' },
-      { id: 2, title: 'Người bị thương cần hỗ trợ', address: 'Quảng Trị', time: '10:20' },
-      { id: 3, title: 'Thiếu thực phẩm, nước uống', address: 'Hòa Bình', time: '10:15' },
-    ];
-
     return {
-      disasters: disasters.length > 0 ? disasters : fallbackDisasters,
-      latestSos: latestSos.length > 0 ? latestSos : fallbackSos,
+      disasters: disasters,
+      latestSos: latestSos,
     };
   }
 
   // 4. Map markers & active missions
-  async getMapTasks(provinceId: number | null): Promise<any> {
+  async getMapTasks(
+    provinceId: number | null,
+    startDate?: Date,
+    endDate?: Date,
+    adminUnitId?: number,
+  ): Promise<any> {
     // Lấy Đội cứu hộ hoạt động làm Markers
     let teamQuery = this.rescueTeamRepo.createQueryBuilder('rt')
       .where('rt.currentLocation IS NOT NULL');
     if (provinceId) {
       teamQuery.andWhere('rt.provinceId = :provinceId', { provinceId });
     }
+    if (adminUnitId) {
+      teamQuery.andWhere('rt.adminUnitId = :adminUnitId', { adminUnitId });
+    }
     const dbTeams = await teamQuery.getMany();
 
     const teamMarkers = dbTeams.map((t) => {
-      // Trích xuất tọa độ từ PostGIS Geometry Point
       const coords = t.currentLocation?.coordinates || [106.660172, 10.762622];
       return {
         id: `team-${t.id}`,
@@ -305,6 +481,17 @@ export class DashboardService implements IDashboardService {
       });
     if (provinceId) {
       sosQuery.andWhere('sos.provinceId = :provinceId', { provinceId });
+    }
+    if (adminUnitId) {
+      sosQuery.andWhere('sos.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    if (startDate) {
+      sosQuery.andWhere('sos.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      sosQuery.andWhere('sos.createdAt <= :endDate', { endDate: endVal });
     }
     const dbSos = await sosQuery.getMany();
 
@@ -332,6 +519,17 @@ export class DashboardService implements IDashboardService {
     if (provinceId) {
       missionQuery.andWhere('sos.provinceId = :provinceId', { provinceId });
     }
+    if (adminUnitId) {
+      missionQuery.andWhere('sos.adminUnitId = :adminUnitId', { adminUnitId });
+    }
+    if (startDate) {
+      missionQuery.andWhere('sos.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      missionQuery.andWhere('sos.createdAt <= :endDate', { endDate: endVal });
+    }
     const dbMissions = await missionQuery.getMany();
 
     const missions = dbMissions.map((m) => ({
@@ -342,19 +540,19 @@ export class DashboardService implements IDashboardService {
       color: m.status === SosStatus.ON_SITE ? 'bg-blue-500' : 'bg-amber-500',
     }));
 
-    const fallbackMissions = [
-      { name: 'Cứu hộ tại xã Hòa Bình', team: 'Đội 1', percent: 75, color: 'bg-emerald-500' },
-      { name: 'Tiếp tế tại Quảng Trị', team: 'Đội 2', percent: 50, color: 'bg-amber-500' },
-    ];
-
     return {
       markers: [...teamMarkers, ...sosMarkers],
-      missions: missions.length > 0 ? missions : fallbackMissions,
+      missions: missions,
     };
   }
 
   // 5. Thống kê vật tư cứu trợ & đóng góp tài chính
-  async getResources(provinceId: number | null): Promise<any> {
+  async getResources(
+    provinceId: number | null,
+    startDate?: Date,
+    endDate?: Date,
+    adminUnitId?: number,
+  ): Promise<any> {
     // Lấy hàng hóa thiết bị cứu trợ từ kho DB
     let equipQuery = this.equipmentRepo.createQueryBuilder('e')
       .select('e.name', 'name')
@@ -363,37 +561,51 @@ export class DashboardService implements IDashboardService {
     if (provinceId) {
       equipQuery.innerJoin('e.team', 'team')
         .where('team.provinceId = :provinceId', { provinceId });
+      if (adminUnitId) {
+        equipQuery.andWhere('team.adminUnitId = :adminUnitId', { adminUnitId });
+      }
     }
     const dbEquip = await equipQuery.getRawMany();
 
-    const fallbackInventory = [
-      { name: 'Áo phao cứu sinh', current: 120, target: 150, percent: 80, color: 'bg-blue-500' },
-      { name: 'Xuồng cao tốc', current: 8, target: 12, percent: 66, color: 'bg-amber-500' },
-      { name: 'Lương khô & Nước uống', current: 450, target: 500, percent: 90, color: 'bg-emerald-500' },
-      { name: 'Thuốc men & Sơ cứu', current: 85, target: 100, percent: 85, color: 'bg-rose-500' },
-    ];
+    const inventory = dbEquip.map((eq) => {
+      const current = Number(eq.current);
+      const target = Math.max(current * 1.2, 50);
+      const percent = Math.min(Math.round((current / target) * 100), 100);
+      return {
+        name: eq.name,
+        current,
+        target: Math.round(target),
+        percent,
+        color: percent > 80 ? 'bg-emerald-500' : percent > 50 ? 'bg-blue-500' : 'bg-rose-500',
+      };
+    });
 
-    const inventory = dbEquip.length > 0 
-      ? dbEquip.map((eq) => {
-          const current = Number(eq.current);
-          const target = Math.max(current * 1.2, 50); // Mapped dynamic target
-          const percent = Math.min(Math.round((current / target) * 100), 100);
-          return {
-            name: eq.name,
-            current,
-            target: Math.round(target),
-            percent,
-            color: percent > 80 ? 'bg-emerald-500' : percent > 50 ? 'bg-blue-500' : 'bg-rose-500',
-          };
-        })
-      : fallbackInventory;
+    // Lấy quyên góp thực tế
+    let donationQuery = this.donationRepo.createQueryBuilder('d')
+      .select('SUM(d.amountVnd)', 'total')
+      .where('d.status IN (:...statuses)', {
+        statuses: [DonationStatus.RECEIVED, DonationStatus.DISTRIBUTED],
+      });
+    if (provinceId) {
+      donationQuery.andWhere('d.provinceId = :provinceId', { provinceId });
+    }
+    if (startDate) {
+      donationQuery.andWhere('d.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      const endVal = new Date(endDate);
+      endVal.setHours(23, 59, 59, 999);
+      donationQuery.andWhere('d.createdAt <= :endDate', { endDate: endVal });
+    }
+    const donationSum = await donationQuery.getRawOne();
+    const totalDonations = donationSum?.total ? Number(donationSum.total) : 0;
 
     return {
       inventory,
       donations: {
-        totalAmount: 1245000000,
-        trendPercent: 18,
-        sparkline: [10, 18, 17, 27, 30, 47, 34, 27, 28, 18, 13, 18, 26, 23, 25, 33],
+        totalAmount: totalDonations,
+        trendPercent: 0,
+        sparkline: [totalDonations, totalDonations, totalDonations, totalDonations, totalDonations, totalDonations, totalDonations],
       },
     };
   }

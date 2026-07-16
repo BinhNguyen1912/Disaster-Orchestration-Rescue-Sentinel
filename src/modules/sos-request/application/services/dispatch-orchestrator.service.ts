@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository, Not, In } from 'typeorm';
 import { SosRequest } from '../../domain/entities/sos-request.entity';
 import { RescueTeam } from '../../../rescue-team/domain/entities/rescue-team';
 import { SosRequestEntity } from '@infrastructure/database/entities/sos-request.entity';
@@ -380,7 +380,7 @@ export class DispatchOrchestratorService {
   /**
    * Bàn giao Atomic khi một đội hoàn thành ca nhiệm vụ.
    */
-  async releaseTeamAndResolveQueue(teamId: number): Promise<void> {
+  async releaseTeamAndResolveQueue(teamId: number, currentSosId?: number): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
       // 1. Lock dòng đội cứu hộ
       const team = await this.teamRepo.lockTeamForUpdate(teamId, manager);
@@ -427,8 +427,21 @@ export class DispatchOrchestratorService {
         }
 
         // Tải trọng giữ nguyên (bớt 1 ca cũ, thêm 1 ca mới)
-        team.activeCasesCount =
-          Math.max(0, (team.activeCasesCount ?? 1) - 1) + 1;
+        let activeCases = 1;
+        if (currentSosId) {
+          const othersCount = await manager.count(SosRequestEntity, {
+            where: {
+              assignedTeamId: team.id,
+              status: In([SosStatus.DISPATCHED, SosStatus.ON_SITE, SosStatus.PENDING_SPECIALIST]),
+              id: Not(currentSosId),
+            },
+          });
+          activeCases = othersCount + 1;
+        } else {
+          activeCases = Math.max(0, (team.activeCasesCount ?? 1) - 1) + 1;
+        }
+
+        team.activeCasesCount = activeCases;
         team.status = TeamStatus.DISPATCHED;
         await manager.save(RescueTeamEntity, team);
 
@@ -451,7 +464,19 @@ export class DispatchOrchestratorService {
           `[Handoff] No queue entries for team ${teamId}. Releasing team to AVAILABLE.`,
         );
 
-        const activeCases = Math.max(0, (team.activeCasesCount ?? 1) - 1);
+        let activeCases = 0;
+        if (currentSosId) {
+          activeCases = await manager.count(SosRequestEntity, {
+            where: {
+              assignedTeamId: team.id,
+              status: In([SosStatus.DISPATCHED, SosStatus.ON_SITE, SosStatus.PENDING_SPECIALIST]),
+              id: Not(currentSosId),
+            },
+          });
+        } else {
+          activeCases = Math.max(0, (team.activeCasesCount ?? 1) - 1);
+        }
+
         team.activeCasesCount = activeCases;
         if (activeCases === 0) {
           team.status = TeamStatus.AVAILABLE;
@@ -505,13 +530,18 @@ export class DispatchOrchestratorService {
           txManager,
         );
         if (oldTeam) {
-          const oldActiveCases = Math.max(
-            0,
-            (oldTeam.activeCasesCount || 0) - 1,
-          );
+          const oldActiveCases = await txManager.count(SosRequestEntity, {
+            where: {
+              assignedTeamId: oldTeam.id,
+              status: In([SosStatus.DISPATCHED, SosStatus.ON_SITE, SosStatus.PENDING_SPECIALIST]),
+              id: Not(sos.id),
+            },
+          });
           oldTeam.activeCasesCount = oldActiveCases;
-          if (oldActiveCases === 0 && oldTeam.status === TeamStatus.BUSY) {
+          if (oldActiveCases === 0) {
             oldTeam.status = TeamStatus.AVAILABLE;
+          } else {
+            oldTeam.status = TeamStatus.BUSY;
           }
           await txManager.save(RescueTeamEntity, oldTeam);
         }

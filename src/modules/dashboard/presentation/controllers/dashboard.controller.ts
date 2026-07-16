@@ -19,10 +19,23 @@ export class DashboardController {
   async getStats(
     @Req() req: any,
     @Query('provinceId') provinceId?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('adminUnitId') adminUnitId?: number,
   ) {
-    // Nếu bị giới hạn bởi ProvinceScopeGuard thì bắt buộc dùng provinceId của user
     const scopeId = req['provinceScope']?.provinceId ?? provinceId ?? null;
-    return this.service.getStats(scopeId ? Number(scopeId) : null);
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+    const result = await this.service.getStats(
+      scopeId ? Number(scopeId) : null,
+      start,
+      end,
+      adminUnitId ? Number(adminUnitId) : undefined,
+    );
+    return {
+      success: true,
+      data: result,
+    };
   }
 
   @Get('charts')
@@ -32,9 +45,24 @@ export class DashboardController {
     @Req() req: any,
     @Query('provinceId') provinceId?: number,
     @Query('days') days?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('adminUnitId') adminUnitId?: number,
   ) {
     const scopeId = req['provinceScope']?.provinceId ?? provinceId ?? null;
-    return this.service.getCharts(scopeId ? Number(scopeId) : null, days ? Number(days) : 7);
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+    const result = await this.service.getCharts(
+      scopeId ? Number(scopeId) : null,
+      days ? Number(days) : undefined,
+      start,
+      end,
+      adminUnitId ? Number(adminUnitId) : undefined,
+    );
+    return {
+      success: true,
+      data: result,
+    };
   }
 
   @Get('alerts')
@@ -43,9 +71,23 @@ export class DashboardController {
   async getAlerts(
     @Req() req: any,
     @Query('provinceId') provinceId?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('adminUnitId') adminUnitId?: number,
   ) {
     const scopeId = req['provinceScope']?.provinceId ?? provinceId ?? null;
-    return this.service.getAlerts(scopeId ? Number(scopeId) : null);
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+    const result = await this.service.getAlerts(
+      scopeId ? Number(scopeId) : null,
+      start,
+      end,
+      adminUnitId ? Number(adminUnitId) : undefined,
+    );
+    return {
+      success: true,
+      data: result,
+    };
   }
 
   @Get('map-tasks')
@@ -54,9 +96,23 @@ export class DashboardController {
   async getMapTasks(
     @Req() req: any,
     @Query('provinceId') provinceId?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('adminUnitId') adminUnitId?: number,
   ) {
     const scopeId = req['provinceScope']?.provinceId ?? provinceId ?? null;
-    return this.service.getMapTasks(scopeId ? Number(scopeId) : null);
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+    const result = await this.service.getMapTasks(
+      scopeId ? Number(scopeId) : null,
+      start,
+      end,
+      adminUnitId ? Number(adminUnitId) : undefined,
+    );
+    return {
+      success: true,
+      data: result,
+    };
   }
 
   @Get('resources')
@@ -65,8 +121,22 @@ export class DashboardController {
   async getResources(
     @Req() req: any,
     @Query('provinceId') provinceId?: number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('adminUnitId') adminUnitId?: number,
   ) {
     const scopeId = req['provinceScope']?.provinceId ?? provinceId ?? null;
-    return this.service.getResources(scopeId ? Number(scopeId) : null);
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+    const result = await this.service.getResources(
+      scopeId ? Number(scopeId) : null,
+      start,
+      end,
+      adminUnitId ? Number(adminUnitId) : undefined,
+    );
+    return {
+      success: true,
+      data: result,
+    };
   }
 }

@@ -280,17 +280,22 @@ export class SosRequestService implements ISosRequestService {
       sos.resolvedBy = user.sub;
 
       // Release team workload and resolve queue
-      if (sos.assignedTeamId) {
+      const teamId = sos.assignedTeamId || sos.assignedTeam?.id;
+      if (teamId) {
         await this.dispatchOrchestrator.releaseTeamAndResolveQueue(
-          sos.assignedTeamId,
+          teamId,
+          sos.id,
         );
       }
     }
 
-    if (newStatus === SosStatus.ON_SITE && sos.assignedTeamId) {
-      const team = await this.teamRepo.findById(sos.assignedTeamId);
-      if (team) {
-        await this.teamRepo.update(team.id, { status: TeamStatus.BUSY });
+    if (newStatus === SosStatus.ON_SITE) {
+      const teamId = sos.assignedTeamId || sos.assignedTeam?.id;
+      if (teamId) {
+        const team = await this.teamRepo.findById(teamId);
+        if (team) {
+          await this.teamRepo.update(team.id, { status: TeamStatus.BUSY });
+        }
       }
     }
 
@@ -525,9 +530,11 @@ export class SosRequestService implements ISosRequestService {
     sos.resolutionNotes = `Hủy yêu cầu: ${dto.reason}`;
 
     // Release team if assigned and resolve queue
-    if (sos.assignedTeamId) {
+    const teamId = sos.assignedTeamId || sos.assignedTeam?.id;
+    if (teamId) {
       await this.dispatchOrchestrator.releaseTeamAndResolveQueue(
-        sos.assignedTeamId,
+        teamId,
+        sos.id,
       );
     }
 

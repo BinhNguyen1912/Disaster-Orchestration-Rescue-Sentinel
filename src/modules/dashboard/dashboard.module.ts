@@ -9,6 +9,7 @@ import { DisasterEventEntity } from '@infrastructure/database/entities/disaster-
 import { DonationEntity } from '@infrastructure/database/entities/donation.entity';
 import { RescueEquipmentEntity } from '@infrastructure/database/entities/rescue-equipment.entity';
 import { CasualtyEntity } from '@infrastructure/database/entities/casualty.entity';
+import { UserEntity } from '@infrastructure/database/entities/user.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CasualtyEntity } from '@infrastructure/database/entities/casualty.entit
       DonationEntity,
       RescueEquipmentEntity,
       CasualtyEntity,
+      UserEntity,
     ]),
   ],
   controllers: [DashboardController],
