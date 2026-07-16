@@ -22,6 +22,7 @@ import { RoleModule } from './modules/role/role.module';
 import { TeamSpecializationModule } from './modules/team-specialization/team-specialization.module';
 import { RescueTeamMemberModule } from './modules/rescue-team-member/rescue-team-member.module';
 import { UserModule } from './modules/user/user.module';
+import { DeviceModule } from './modules/device/device.module';
 import { SosRequestModule } from './modules/sos-request/sos-request.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
@@ -29,6 +30,8 @@ import { SystemSettingModule } from './modules/system-setting/system-setting.mod
 import { RescueEquipmentModule } from './modules/rescue-equipment/rescue-equipment.module';
 import { RoutingModule } from './modules/routing/routing.module';
 import { FloodRequestModule } from './modules/flood-request/flood-request.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AccessGuard } from '@modules/auth/infrastructure/auth/guards/access.guard';
 import { PermissionGuard } from '@modules/auth/infrastructure/auth/guards/permission.guard';
 import { Public } from '@shared/common/decorators/public.decorator';
@@ -67,6 +70,7 @@ export class AppController {
     TeamSpecializationModule,
     RescueTeamMemberModule,
     UserModule,
+    DeviceModule,
     SosRequestModule,
     UploadModule,
     WebSocketModule,
@@ -74,6 +78,8 @@ export class AppController {
     RescueEquipmentModule,
     RoutingModule,
     FloodRequestModule,
+    NotificationModule,
+    DashboardModule,
   ],
 
   controllers: [AppController],

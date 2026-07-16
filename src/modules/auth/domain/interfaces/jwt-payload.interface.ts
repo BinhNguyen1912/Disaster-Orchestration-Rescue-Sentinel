@@ -14,3 +14,14 @@ export interface RefreshTokenPayload {
   exp?: number;
   iat?: number;
 }
+
+export interface RequestUser {
+  userId: number;
+  sub: number;
+  provinceId: number;
+  roleId?: number;
+  email?: string;
+  fullName?: string;
+  phone?: string;
+}
+

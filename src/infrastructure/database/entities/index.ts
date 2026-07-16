@@ -34,4 +34,10 @@ export * from './system-category.entity';
 export * from './rescue-equipment.entity';
 export * from './flood-request.entity';
 export * from './flood-request-status-history.entity';
+export * from './notification-event.entity';
+export * from './notification-template-group.entity';
+export * from './notification-template.entity';
+export * from './sys-notification.entity';
+export * from './notification-recipient.entity';
+export * from './notification-log.entity';
 

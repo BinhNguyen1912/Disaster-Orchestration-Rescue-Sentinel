@@ -10,7 +10,10 @@ export interface QueryUserParams {
   isVerified?: boolean;
   roleId?: number;
   search?: string;
+  isVolunteer?: boolean;
+  needsHelp?: boolean;
 }
+
 
 export interface IUserRepository {
   findById(id: number): Promise<User | null>;
@@ -27,6 +30,11 @@ export interface IUserRepository {
     data: Partial<User> & { roleId?: number },
   ): Promise<User | null>;
   softDelete(id: number): Promise<boolean>;
-  count(conditions: Partial<User>): Promise<number>;
+  count(conditions: any): Promise<number>;
   search(query: string): Promise<User[]>;
+  bulkUpdate(
+    ids: number[],
+    data: { roleId?: number; isActive?: boolean },
+  ): Promise<{ updated: number }>;
+  findRoleIdByName(name: string): Promise<number | null>;
 }

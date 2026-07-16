@@ -16,6 +16,7 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiHeader,
 } from '@nestjs/swagger';
 import { AuthService } from '../../application/services/auth.service';
 import { LoginDto } from '../dtos/auth/login.dto';
@@ -40,15 +41,18 @@ export class AuthController {
   @ApiOperation({ summary: 'Đăng nhập' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Đăng nhập thành công' })
+  @ApiHeader({ name: 'x-forwarded-for', required: false, description: 'IP của client (tùy chọn, dùng cho audit log)' })
+  @ApiHeader({ name: 'user-agent', required: false, description: 'Thông tin trình duyệt/thiết bị (tùy chọn, dùng cho audit log)' })
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
-    @Request() req,
-    @Headers('x-forwarded-for') ip: string,
+    @Request() req: any,
+    @Headers('x-forwarded-for') xForwardedFor: string,
     @Headers('user-agent') userAgent: string,
   ) {
+    const ip = xForwardedFor || req.ip || req.socket?.remoteAddress || '127.0.0.1';
     const { password, ...logBody } = req.body || {};
     this.logger.log(`[LOGIN ATTEMPT] body: ${JSON.stringify(logBody)}`);
     try {
@@ -92,14 +96,18 @@ export class AuthController {
   @ApiOperation({ summary: 'Cấp lại Access Token' })
   @ApiBody({ type: RefreshTokenRequestDto })
   @ApiResponse({ status: 200, description: 'Cấp lại token thành công' })
+  @ApiHeader({ name: 'x-forwarded-for', required: false, description: 'IP của client (tùy chọn, dùng cho audit log)' })
+  @ApiHeader({ name: 'user-agent', required: false, description: 'Thông tin trình duyệt/thiết bị (tùy chọn, dùng cho audit log)' })
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(
     @Body(new ValidationPipe({ transform: true })) dto: RefreshTokenRequestDto,
-    @Headers('x-forwarded-for') ip: string,
+    @Headers('x-forwarded-for') xForwardedFor: string,
     @Headers('user-agent') userAgent: string,
+    @Request() req: any,
   ) {
+    const ip = xForwardedFor || req.ip || req.socket?.remoteAddress || '127.0.0.1';
     return this.authService.refresh(dto.refreshToken, ip, userAgent);
   }
 

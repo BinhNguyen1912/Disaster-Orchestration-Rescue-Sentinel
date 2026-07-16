@@ -27,6 +27,7 @@ import { CreateRescueTeamValidationDto } from '../dtos/rescue-team/create-rescue
 import { UpdateRescueTeamValidationDto } from '../dtos/rescue-team/update-rescue-team.dto';
 import { UpdateRescueTeamLocationValidationDto } from '../dtos/rescue-team/update-rescue-team-location.dto';
 import { QueryRescueTeamValidationDto } from '../dtos/rescue-team/query-rescue-team.dto';
+import { BulkUpdateStatusValidationDto } from '../dtos/rescue-team/bulk-update-status.dto';
 
 @ApiTags('Rescue Teams')
 @Controller('rescue-teams')
@@ -94,6 +95,18 @@ export class RescueTeamController {
     dto: UpdateRescueTeamLocationValidationDto,
   ) {
     return this.service.updateLocation(parseInt(teamId, 10), dto);
+  }
+
+  @ApiOperation({ summary: 'Cập nhật trạng thái hàng loạt đội cứu hộ' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
+  @Patch('bulk-status')
+  @RequirePermissions(Permissions.RESCUE_UPDATE)
+  async bulkUpdateStatus(
+    @Body(new ValidationPipe({ transform: true }))
+    dto: BulkUpdateStatusValidationDto,
+  ) {
+    return this.service.bulkUpdateStatus(dto.ids, dto.status);
   }
 
   @ApiOperation({ summary: 'Xóa đội cứu hộ' })

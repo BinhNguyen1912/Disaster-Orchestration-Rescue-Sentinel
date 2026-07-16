@@ -118,12 +118,14 @@ export class AuthService {
       dateOfBirth: new Date(registerInput.dateOfBirth),
     });
 
-    // Mặc định gán role USER (4) cho tỉnh thành đã đăng ký
-    await this.userRepository.assignRole(newUser.id, 4, newUser.provinceId);
+    const userRoleId = await this.userRepository.findRoleIdByName('RESIDENT') || 9;
+    // Mặc định gán role RESIDENT cho tỉnh thành đã đăng ký
+    await this.userRepository.assignRole(newUser.id, userRoleId, newUser.provinceId);
 
-    // Nếu chọn là tình nguyện viên, gán thêm role VOLUNTEER (5)
+    // Nếu chọn là tình nguyện viên, gán thêm role VOLUNTEER
     if (registerInput.isVolunteer) {
-      await this.userRepository.assignRole(newUser.id, 5, newUser.provinceId);
+      const volunteerRoleId = await this.userRepository.findRoleIdByName('VOLUNTEER') || 10;
+      await this.userRepository.assignRole(newUser.id, volunteerRoleId, newUser.provinceId);
     }
 
     const userWithRole = await this.userRepository.findByIdentifier(
@@ -172,7 +174,18 @@ export class AuthService {
       createdBy,
     );
 
+    const volunteerRoleId = await this.userRepository.findRoleIdByName('VOLUNTEER') || 10;
+    if (adminRegisterInput.isVolunteer && adminRegisterInput.roleId !== volunteerRoleId) {
+      await this.userRepository.assignRole(
+        newUser.id,
+        volunteerRoleId,
+        adminRegisterInput.provinceId,
+        createdBy,
+      );
+    }
+
     const userWithRole = await this.userRepository.findById(newUser.id);
+
 
     return {
       statusCode: 201,

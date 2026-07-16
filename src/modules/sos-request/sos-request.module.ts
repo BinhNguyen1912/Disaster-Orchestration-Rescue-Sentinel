@@ -22,6 +22,7 @@ import { SosHistoryService } from './application/services/sos-history.service';
 import { DispatchRetryService } from './application/services/dispatch-retry.service';
 import { WebSocketModule } from '../websocket/websocket.module';
 import { SosDispatchListener } from './application/listeners/sos-dispatch.listener';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { SosDispatchListener } from './application/listeners/sos-dispatch.listen
     LocationModule,
     WebSocketModule,
     RoutingModule,
+    NotificationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

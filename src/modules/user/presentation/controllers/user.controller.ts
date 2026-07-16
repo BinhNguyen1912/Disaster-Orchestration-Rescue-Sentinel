@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Body,
@@ -22,6 +23,7 @@ import { Permissions } from '@shared/common/constants/permissions.constant';
 import { UpdateUserValidationDto } from '../dtos/validation/update-user.validation.dto';
 import { QueryUserValidationDto } from '../dtos/validation/query-user.validation.dto';
 import { ChangePasswordValidationDto } from '../dtos/validation/change-password.validation.dto';
+import { BulkUpdateUserValidationDto } from '../dtos/validation/bulk-update-user.validation.dto';
 import { CurrentUser } from '@shared/common/decorators/current-user.decorator';
 
 @ApiTags('Users')
@@ -73,12 +75,59 @@ export class UserController {
     return this.service.updateProfile(userId, dto);
   }
 
+  @Patch('profile/password')
+  @ApiOperation({ summary: 'Đổi mật khẩu bản thân' })
+  @HttpCode(HttpStatus.OK)
+  async changeOwnPassword(
+    @Request() req: any,
+    @Body(new ValidationPipe({ transform: true }))
+    dto: ChangePasswordValidationDto,
+  ) {
+    const userId = req.user.userId ?? req.user.sub;
+    await this.service.changePassword(userId, dto);
+    return { success: true };
+  }
+
+  @Patch('bulk-update')
+  @ApiOperation({ summary: 'Cập nhật hàng loạt người dùng (vai trò, trạng thái)' })
+  @RequirePermissions(Permissions.USER_UPDATE)
+  async bulkUpdate(
+    @Body(new ValidationPipe({ transform: true }))
+    dto: BulkUpdateUserValidationDto,
+  ) {
+    return this.service.bulkUpdate(dto);
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Lấy thống kê số lượng người dân' })
+  @RequirePermissions(Permissions.USER_READ)
+  async getStats(@Request() req: any) {
+    const provinceScope = req['provinceScope'];
+    const provinceId = provinceScope?.provinceId;
+    return this.service.getStats(provinceId);
+  }
+
+  @Post(':id/notify')
+  @ApiOperation({ summary: 'Gửi thông báo tới người dùng' })
+  @RequirePermissions(Permissions.USER_MANAGE)
+  async sendNotification(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('title') title: string,
+    @Body('body') body: string,
+    @Body('type') type: string,
+    @CurrentUser('sub') senderId: number,
+  ) {
+    await this.service.sendNotification(id, { title, body, type, senderId });
+    return { success: true };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Lấy thông tin người dùng theo ID' })
   @RequirePermissions(Permissions.USER_READ)
   async findById(@Param('id', ParseIntPipe) id: number) {
     return this.service.findById(id);
   }
+
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cập nhật người dùng' })

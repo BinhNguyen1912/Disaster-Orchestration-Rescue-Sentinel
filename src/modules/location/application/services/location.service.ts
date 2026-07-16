@@ -117,13 +117,43 @@ export class LocationService {
       return containingUnit;
     }
 
+    // Strategy 2: fallback — nearest province by centerPoint, then nearest unit within that province
+    // This prevents cross-province contamination (e.g. Nhà Bè coords resolving to Bình Dương)
+    const nearestProvince = await this.provinceRepo
+      .createQueryBuilder('province')
+      .where('province.centerPoint IS NOT NULL')
+      .orderBy(
+        `ST_Distance(province.centerPoint, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))`,
+        'ASC',
+      )
+      .setParameters({ lat, lng })
+      .getOne();
+
+    if (nearestProvince) {
+      const nearestUnitInProvince = await this.wardRepo
+        .createQueryBuilder('unit')
+        .where('unit.provinceId = :provinceId AND unit.centerPoint IS NOT NULL', {
+          provinceId: nearestProvince.id,
+        })
+        .orderBy(
+          `ST_Distance(unit.centerPoint, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))`,
+          'ASC',
+        )
+        .setParameters({ lat, lng })
+        .getOne();
+
+      if (nearestUnitInProvince) return nearestUnitInProvince;
+    }
+
+    // Strategy 3: last resort — nearest unit globally (old behavior)
     const nearestUnit = await this.wardRepo
       .createQueryBuilder('unit')
       .where('unit.centerPoint IS NOT NULL')
       .orderBy(
-        `ST_Distance(unit.centerPoint, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))`,
+        `ST_Distance(unit.centerPoint, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))`,
         'ASC',
       )
+      .setParameters({ lat, lng })
       .getOne();
 
     return nearestUnit || null;

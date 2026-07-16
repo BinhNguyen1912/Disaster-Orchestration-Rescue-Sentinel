@@ -27,6 +27,7 @@ import { DispatchOrchestratorService } from './dispatch-orchestrator.service';
 import { SosHistoryService } from './sos-history.service';
 import { SosHistoryEventType } from '@infrastructure/database/entities/sos-status-history.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationService } from '../../../notification/application/services/notification.service';
 
 import type {
   ISosRequestRepository,
@@ -52,6 +53,7 @@ export class SosRequestService implements ISosRequestService {
     @InjectRepository(AuditLogEntity)
     private readonly auditLogRepo: Repository<AuditLogEntity>,
     private readonly eventEmitter: EventEmitter2,
+    private readonly notificationService: NotificationService,
   ) {}
 
   private async logAction(
@@ -153,6 +155,17 @@ export class SosRequestService implements ISosRequestService {
 
     // 📡 Realtime: Notify admins in the same province about the new SOS request
     this.dispatchSocketService.broadcastNewSos(created.provinceId, created);
+
+    // 📡 Event-Driven: Trigger system notification
+    this.notificationService.send({
+      event: 'SOS_CREATED',
+      provinceId: created.provinceId,
+      data: {
+        citizenName: created.requesterName || 'Người dân ẩn danh',
+        address: created.description || `Tọa độ [${dto.longitude}, ${dto.latitude}]`,
+        priority: created.severity || 'CRITICAL',
+      },
+    }).catch((err) => console.error('Failed to send SOS notification:', err));
 
     await this.logAction(
       'CREATE',
@@ -267,17 +280,22 @@ export class SosRequestService implements ISosRequestService {
       sos.resolvedBy = user.sub;
 
       // Release team workload and resolve queue
-      if (sos.assignedTeamId) {
+      const teamId = sos.assignedTeamId || sos.assignedTeam?.id;
+      if (teamId) {
         await this.dispatchOrchestrator.releaseTeamAndResolveQueue(
-          sos.assignedTeamId,
+          teamId,
+          sos.id,
         );
       }
     }
 
-    if (newStatus === SosStatus.ON_SITE && sos.assignedTeamId) {
-      const team = await this.teamRepo.findById(sos.assignedTeamId);
-      if (team) {
-        await this.teamRepo.update(team.id, { status: TeamStatus.BUSY });
+    if (newStatus === SosStatus.ON_SITE) {
+      const teamId = sos.assignedTeamId || sos.assignedTeam?.id;
+      if (teamId) {
+        const team = await this.teamRepo.findById(teamId);
+        if (team) {
+          await this.teamRepo.update(team.id, { status: TeamStatus.BUSY });
+        }
       }
     }
 
@@ -347,7 +365,7 @@ export class SosRequestService implements ISosRequestService {
 
     if (!teamId) {
       // Auto Dispatch via orchestrator
-      const outcome = await this.dispatchOrchestrator.dispatch(sos);
+      const outcome = await this.dispatchOrchestrator.dispatchWithRetry(sos);
       autoDispatchOutcome = outcome;
 
       if (outcome.type === 'specialist_pending') {
@@ -512,9 +530,11 @@ export class SosRequestService implements ISosRequestService {
     sos.resolutionNotes = `Hủy yêu cầu: ${dto.reason}`;
 
     // Release team if assigned and resolve queue
-    if (sos.assignedTeamId) {
+    const teamId = sos.assignedTeamId || sos.assignedTeam?.id;
+    if (teamId) {
       await this.dispatchOrchestrator.releaseTeamAndResolveQueue(
-        sos.assignedTeamId,
+        teamId,
+        sos.id,
       );
     }
 

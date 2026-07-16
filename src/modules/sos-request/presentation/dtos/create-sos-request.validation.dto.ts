@@ -24,9 +24,7 @@ export class CreateSosRequestValidationDto {
   @ApiProperty({ example: '0917234567', required: false })
   @IsString()
   @IsOptional()
-  @Matches(/^(0[3|5|7|8|9])+([0-9]{8})$/, {
-    message: 'Số điện thoại không hợp lệ (phải là số điện thoại Việt Nam)',
-  })
+
   requesterPhone?: string;
 
   @ApiProperty({ enum: SosRequestType, example: SosRequestType.FLOOD })

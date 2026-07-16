@@ -10,6 +10,7 @@ import {
   MinLength,
   Matches,
   IsObject,
+  IsBoolean,
 } from 'class-validator';
 import { Gender } from '@shared/core/enums/gender.enum';
 
@@ -83,4 +84,15 @@ export class AdminRegisterDto {
   @IsOptional()
   @IsObject()
   homeLocation?: any;
+
+  @ApiPropertyOptional({ example: false, description: 'Tình nguyện viên' })
+  @IsBoolean()
+  @IsOptional()
+  isVolunteer?: boolean;
+
+  @ApiPropertyOptional({ example: false, description: 'Cần hỗ trợ' })
+  @IsBoolean()
+  @IsOptional()
+  needsHelp?: boolean;
 }
+

@@ -15,6 +15,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuditLogEntity } from '@infrastructure/database/entities/audit-log.entity';
 import { SosHistoryService } from './sos-history.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationService } from '../../../notification/application/services/notification.service';
 
 describe('SosRequestService', () => {
   let service: SosRequestService;
@@ -54,6 +55,7 @@ describe('SosRequestService', () => {
 
   const mockDispatchOrchestrator = {
     dispatch: jest.fn(),
+    dispatchWithRetry: jest.fn(),
     releaseTeamAndResolveQueue: jest.fn(),
     dispatchManual: jest.fn(),
   };
@@ -69,6 +71,10 @@ describe('SosRequestService', () => {
 
   const mockEventEmitter = {
     emit: jest.fn(),
+  };
+
+  const mockNotificationService = {
+    send: jest.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(async () => {
@@ -90,6 +96,7 @@ describe('SosRequestService', () => {
           useValue: mockAuditLogRepo,
         },
         { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: NotificationService, useValue: mockNotificationService },
       ],
     }).compile();
 
@@ -281,7 +288,7 @@ describe('SosRequestService', () => {
       expect(result.status).toBe(SosStatus.RESOLVED);
       expect(
         mockDispatchOrchestrator.releaseTeamAndResolveQueue,
-      ).toHaveBeenCalledWith(10);
+      ).toHaveBeenCalledWith(10, 1);
     });
   });
 
@@ -306,7 +313,7 @@ describe('SosRequestService', () => {
         status: SosStatus.DISPATCHED,
         dispatchMethod: DispatchMethod.AUTO,
       });
-      mockDispatchOrchestrator.dispatch.mockResolvedValue({
+      mockDispatchOrchestrator.dispatchWithRetry.mockResolvedValue({
         type: 'dispatched',
         assignedTeamId: 22,
       });
@@ -315,7 +322,7 @@ describe('SosRequestService', () => {
 
       expect(result.assignedTeamId).toBe(22);
       expect(result.dispatchMethod).toBe(DispatchMethod.AUTO);
-      expect(mockDispatchOrchestrator.dispatch).toHaveBeenCalledWith(
+      expect(mockDispatchOrchestrator.dispatchWithRetry).toHaveBeenCalledWith(
         expect.objectContaining({ id: 1 }),
       );
     });
@@ -418,7 +425,7 @@ describe('SosRequestService', () => {
       expect(result.status).toBe(SosStatus.CANCELLED);
       expect(
         mockDispatchOrchestrator.releaseTeamAndResolveQueue,
-      ).toHaveBeenCalledWith(10);
+      ).toHaveBeenCalledWith(10, 1);
     });
 
     it('should allow guest cancellation (no user token) if status is PENDING', async () => {
