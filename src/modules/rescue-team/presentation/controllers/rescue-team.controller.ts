@@ -71,6 +71,18 @@ export class RescueTeamController {
     return this.service.findById(parseInt(teamId, 10));
   }
 
+  @ApiOperation({ summary: 'Cập nhật trạng thái hàng loạt đội cứu hộ' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
+  @Patch('bulk-status')
+  @RequirePermissions(Permissions.RESCUE_UPDATE)
+  async bulkUpdateStatus(
+    @Body(new ValidationPipe({ transform: true }))
+    dto: BulkUpdateStatusValidationDto,
+  ) {
+    return this.service.bulkUpdateStatus(dto.ids, dto.status);
+  }
+
   @ApiOperation({ summary: 'Cập nhật đội cứu hộ' })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
@@ -95,18 +107,6 @@ export class RescueTeamController {
     dto: UpdateRescueTeamLocationValidationDto,
   ) {
     return this.service.updateLocation(parseInt(teamId, 10), dto);
-  }
-
-  @ApiOperation({ summary: 'Cập nhật trạng thái hàng loạt đội cứu hộ' })
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Cập nhật thành công' })
-  @Patch('bulk-status')
-  @RequirePermissions(Permissions.RESCUE_UPDATE)
-  async bulkUpdateStatus(
-    @Body(new ValidationPipe({ transform: true }))
-    dto: BulkUpdateStatusValidationDto,
-  ) {
-    return this.service.bulkUpdateStatus(dto.ids, dto.status);
   }
 
   @ApiOperation({ summary: 'Xóa đội cứu hộ' })

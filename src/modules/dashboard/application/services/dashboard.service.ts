@@ -308,7 +308,14 @@ export class DashboardService implements IDashboardService {
         SELECT 
           au.name as region,
           COUNT(s.id)::int as count
-        FROM sos_request s
+        FROM (
+          SELECT id, "provinceId", "adminUnitId", "createdAt"
+          FROM sos_request
+          UNION ALL
+          SELECT id, province_id as "provinceId", admin_unit_id as "adminUnitId", created_at as "createdAt"
+          FROM flood_request
+          WHERE is_approved_for_map = true
+        ) s
         INNER JOIN administrative_unit au ON s."adminUnitId" = au.id
         WHERE ${conditionsReg}
         GROUP BY au.id, au.name
@@ -319,7 +326,14 @@ export class DashboardService implements IDashboardService {
         SELECT 
           p.name as region,
           COUNT(s.id)::int as count
-        FROM sos_request s
+        FROM (
+          SELECT id, "provinceId", "adminUnitId", "createdAt"
+          FROM sos_request
+          UNION ALL
+          SELECT id, province_id as "provinceId", admin_unit_id as "adminUnitId", created_at as "createdAt"
+          FROM flood_request
+          WHERE is_approved_for_map = true
+        ) s
         INNER JOIN province p ON s."provinceId" = p.id
         WHERE ${conditionsReg}
         GROUP BY p.id, p.name

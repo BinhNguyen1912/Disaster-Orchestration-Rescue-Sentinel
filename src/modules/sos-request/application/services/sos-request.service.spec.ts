@@ -102,7 +102,6 @@ describe('SosRequestService', () => {
 
     service = module.get<SosRequestService>(SosRequestService);
   });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
